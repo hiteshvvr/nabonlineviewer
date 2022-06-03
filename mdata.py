@@ -1,6 +1,6 @@
-from turtle import shape
 from matplotlib.pyplot import axis
 import numpy as np
+
 
 class MData():
     def __init__(self) -> None:
@@ -15,7 +15,8 @@ class MData():
         self.bins = 100
 
     def getoffset(self):
-        header_index = -1                         # -1 is reserved for indication of no header
+        # -1 is reserved for indication of no header
+        header_index = -1
         data = np.fromfile(self.fname, dtype=np.uint32)
         for i in range(0, len(data)):
             if(data[i] == self.eventsig):
@@ -53,59 +54,56 @@ class MData():
         del tdata
         return(self.headerinfo)
 
-    def getarea(self,chan):
+    def getarea(self, chan):
         if self.mdata is not None:
             talldata = self.mdata[:, chan].flatten()
             return(talldata.sum())
         else:
             return(0)
-    
-    def getsingle_chan_evnt(self,evtno,chan):
-        if self.mdata is not None:
-            ydata = self.mdata[evtno,chan]
-            xdata = self.timebinwidth * np.arange(len(ydata))
-            return(xdata,ydata)
 
-    def getrangedata(self,llim,hlim,chan):
+    def getsingle_chan_evnt(self, evtno, chan):
+        if self.mdata is not None:
+            ydata = self.mdata[evtno, chan]
+            xdata = self.timebinwidth * np.arange(len(ydata))
+            return(xdata, ydata)
+
+    def getrangedata(self, llim, hlim, chan):
         if self.mdata is not None:
             ydata = self.mdata[llim:hlim, chan].flatten()
             xdata = np.arange(len(ydata))
             return(xdata, ydata)
-    
-    def gethistdistribution(self,chan):
+
+    def gethistdistribution(self, chan):
         if self.mdata is not None:
-            tdata = self.mdata[:,chan].flatten()
-            counts, edges = np.histogram(tdata,bins=self.bins)
-            return(edges,counts)
-    
-    def getstackdata(self,llim,hlim,chan):
+            tdata = self.mdata[:, chan].flatten()
+            counts, edges = np.histogram(tdata, bins=self.bins)
+            return(edges, counts)
+
+    def getstackdata(self, llim, hlim, chan):
         if self.mdata is not None:
-            singlechandata = self.mdata[llim:hlim,chan]
+            singlechandata = self.mdata[llim:hlim, chan]
             ydata = singlechandata.flatten()
-            xdata = np.tile(np.arange(0,len(singlechandata[0])), len(singlechandata))
+            xdata = np.tile(
+                np.arange(0, len(singlechandata[0])), len(singlechandata))
             xdata = xdata*self.timebinwidth
-            return(xdata,ydata)
-    
-    def gettimemean(self,llim=0,hlim=-1,chan=0):
+            return(xdata, ydata)
+
+    def gettimemean(self, llim=0, hlim=-1, chan=0):
         if self.mdata is not None:
             if hlim == -1:
                 hlim = len(self.mdata) - 1
-            tmeandata = self.mdata[llim:hlim,chan].mean(axis=0)
-            xdata = np.arange(0,len(tmeandata)) * self.timebinwidth
-            return(xdata,tmeandata)
+            tmeandata = self.mdata[llim:hlim, chan].mean(axis=0)
+            xdata = np.arange(0, len(tmeandata)) * self.timebinwidth
+            return(xdata, tmeandata)
 
     def applyvcut(self, vcutval):
         if self.mdata is not None:
             pass
-            # print(self.mdata.shape)
-            # # self.mdata = self.mdata[self.mdata<vcutval]
-            # tindx = np.any(np.any(self.mdata<vcutval, axis = 2), axis = 1)
-            # self.mdata = self.mdata[~tindx]
-            # # print("indexshape", tindx.shape)
-            # print(~tindx[:20])
-            # # self.mdata = np.where(self.mdata < vcutval, self.mdata, self.mdata)
-            # print(self.mdata.shape)
-
-
-
-
+        # print(self.mdata.shape)
+        # # self.mdata = self.mdata[self.mdata<vcutval]
+        # tindx = np.any(np.any(self.mdata<vcutval, axis = 2), axis = 1)
+        # self.mdata = self.mdata[~tindx]
+        # # print("indexshape", tindx.shape)
+        # print(~tindx[:20])
+        # # self.mdata = np.where(self.mdata < vcutval, self.mdata, self.mdata)
+        # print(self.mdata.shape)
