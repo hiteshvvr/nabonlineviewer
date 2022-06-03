@@ -6,7 +6,7 @@ from mainframe import MainFrame
 class App(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.title = "nab 60 Hz DaTa Viewer"
+        self.title = "Nab Online Monitor and Analsysis"
         self.setWindowTitle(self.title)
         QApplication.setStyle(QStyleFactory.create('Fusion'))
         self.tab_widget = MainFrame(self)
