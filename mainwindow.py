@@ -29,7 +29,7 @@ class MainWindow(QWidget):
         self.r1layout = QHBoxLayout()
         self.r2layout = QHBoxLayout()
         self.button_fname = QPushButton('Select File')
-        self.fname = "/Users/seeker/TNwork/picarddata/2022/01Jan/070122/run-16043data-21"
+        self.fname = "../datas/hdf5files/Run1612_0.h5"
         self.button_fname.clicked.connect(self.dialog)
         self.field_fname = QLineEdit(self.fname)
         self.field_fname.textChanged.connect(self.updatefname)

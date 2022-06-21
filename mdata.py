@@ -1,5 +1,6 @@
 from matplotlib.pyplot import axis
 import numpy as np
+import h5py as hd
 
 
 class MData():
@@ -14,17 +15,24 @@ class MData():
         self.timebinwidth = 320e-6
         self.bins = 100
 
-    def getoffset(self):
-        # -1 is reserved for indication of no header
-        header_index = -1
-        data = np.fromfile(self.fname, dtype=np.uint32)
-        for i in range(0, len(data)):
-            if(data[i] == self.eventsig):
-                header_index = i
-                break
-        if(i == len(data) - 1):
-            header_index = -1
-        return(header_index)
+    def geteventdataframe(self):
+        rawdata = hd.File(self.fname,'r')
+        self.eventsdata = rawdata['events'][()]
+        teventlist = []
+        for i in range(len(self.eventsdata)):
+            evtstr = {
+                    'event_id':mm[i][0],
+                    'event_type':mm[i][1],
+                    'nu_waveforms':mm[i][2],
+                    'wave_len':mm[i][3],
+                    'base_tmstamp':mm[i][4],
+                    'nu_trigs':mm[i][5],
+                    'triggers':mm[i][6][0]
+            }
+            teventlist.append(evtstr)
+        self.eventsdf = pd.DataFrame(teventlist)
+
+        retrun(self.eventsdf)
 
     def getdatafromfile(self):
         """
