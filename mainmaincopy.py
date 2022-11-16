@@ -4,21 +4,6 @@ from PyQt5.QtWidgets import QLineEdit, QFileDialog, QComboBox
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 import numpy as np
-from hexplot import MplCanvas
-
-import nabPy as Nab
-import h5py as hd
-
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
-
-
-class MplCanvas(FigureCanvasQTAgg):
-
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        super(MplCanvas, self).__init__(fig)
 
 
 class MainWindow(QWidget):
@@ -132,35 +117,19 @@ class MainWindow(QWidget):
 
 #       PLOTS
 
-
-        # self.fname = "../datas/hdf5files/run1612_0.h5"
-        self.folname = "../datas/hdf5files/"
-        self.hdfile = Nab.DataRun(self.folname, 1612)
-        print('Triggers: ', self.hdfile.triggers().numtrigs)
-        print('Singles: ', self.hdfile.singleWaves().numWaves)
-
-        self.fileData = self.hdfile.noiseWaves().headers()
-        self.pixdata = np.array(self.fileData.iloc[:,11])
-        self.hy, self.hx = np.histogram(self.pixdata, bins=self.bins)
-
-# print('Coincidences: ', hdfile.coincWaves().numWaves)
-# print('Baseline Traces: ', hdfile.noiseWaves().numWaves)
-# print('Pulsers: ', hdfile.pulsrWaves().numWaves)
-
-        self.pw1 = pg.PlotWidget(title="Histogram of all Events")
-        # self.pw1 = MplCanvas(self, width=5, height=4, dpi=100)
-        # self.pw1.axes.plot([0,1,2,3,4,5,6,7,8,9,10], [0,1,2,3,4,5,6,7,8,9,10])
-
-
-        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
-
-        self.xx = np.arange(-100,100,3)
-        self.yy = self.xx ** 3
-
-        # self.sc.axes.plot([0,1,2,3,4,5,6,7,8,9,10], [0,1,2,3,4,5,6,7,8,9,10])
-        self.sc.axes.plot(self.xx, self.yy)
+        self.pw1 = pg.PlotWidget(title="Single Event")
+        self.pen1 = pg.mkPen(
+            color=(000, 0, 0), style=QtCore.Qt.DotLine, width=2)
+        self.p1 = self.pw1.plot(pen=self.pen1)
+        self.pw1.title = "adf"
+        # self.p1.setPen(color = (0,0,0), width = 2)
+        self.pw1.setLabel('left', 'Value', units='V')
+        self.pw1.setLabel('bottom', 'Time', units='s')
+        self.p1.setData(x=self.x, y=self.y)
+        self.pw1.showGrid(x=True, y=True)
 
         self.pw2 = pg.PlotWidget(title="Histogram of all Events")
+
         self.p2 = self.pw2.plot(stepMode="center")
         #  fillLevel=0, fillOutline=True,brush=(100,0,0))
         self.p2.setPen(color=(0, 0, 0), width=2)
@@ -177,20 +146,14 @@ class MainWindow(QWidget):
         self.p3.setData(x=self.x, y=self.y)
         self.pw3.showGrid(x=True, y=True)
 
-        self.x = np.arange(1000)
-        self.y = np.random.random(1000)
         self.pw4 = pg.PlotWidget(title="Stacked Events")
         self.p4 = pg.ScatterPlotItem(size=2, brush=pg.mkBrush(0, 0, 0, 200))
-        # self.p4.addPoints(x=self.x, y=self.y)
-        self.p4.addPoints(x= np.arange(len(self.pixdata)),y=self.pixdata)
-        # self.pixdata = np.array(self.fileData.iloc[:,11])
+        self.p4.addPoints(x=self.x, y=self.y)
 
         self.p5 = self.pw4.plot()
         #  fillLevel=0, fillOutline=True,brush=(100,0,0))
         self.p5.setPen(color=(0, 0, 0), width=2)
         self.p5.setData(self.x, self.y)
-
-
 
         self.pw4.addItem(self.p4)
         self.pw4.setLabel('left', 'Value', units='V')
@@ -200,10 +163,9 @@ class MainWindow(QWidget):
 
         self.timer = QtCore.QTimer()
 
-        # self.r1layout.addWidget(self.pw1)
-        self.r1layout.addWidget(self.sc)
+        self.r1layout.addWidget(self.pw1)
         self.r1layout.addWidget(self.pw2)
-        # self.r2layout.addWidget(self.pw3)
+        self.r2layout.addWidget(self.pw3)
         self.r2layout.addWidget(self.pw4)
 
         # self.alayout.addWidget(self.setallVolt)
