@@ -141,6 +141,10 @@ class MainWindow(QWidget):
 
         self.fileData = self.hdfile.noiseWaves().headers()
         self.pixdata = np.array(self.fileData.iloc[:,11])
+
+
+        self.noisedata = self.hdfile.noiseWaves().waves()[0].compute()
+
         self.hy, self.hx = np.histogram(self.pixdata, bins=self.bins)
 
 # print('Coincidences: ', hdfile.coincWaves().numWaves)
@@ -160,12 +164,12 @@ class MainWindow(QWidget):
         # self.sc.axes.plot([0,1,2,3,4,5,6,7,8,9,10], [0,1,2,3,4,5,6,7,8,9,10])
         self.sc.axes.plot(self.xx, self.yy)
 
-        self.pw2 = pg.PlotWidget(title="Histogram of all Events")
+        self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
         self.p2 = self.pw2.plot(stepMode="center")
         #  fillLevel=0, fillOutline=True,brush=(100,0,0))
         self.p2.setPen(color=(0, 0, 0), width=2)
         self.pw2.setLabel('left', 'Counts', units='arb')
-        self.pw2.setLabel('bottom', 'Volts', units='V')
+        self.pw2.setLabel('bottom', 'Pixel', units='arb')
         self.p2.setData(self.hx, self.hy)
         self.pw2.showGrid(x=True, y=True)
 
@@ -174,27 +178,29 @@ class MainWindow(QWidget):
         self.p3.setPen(color=(0, 0, 0), width=5)
         self.pw3.setLabel('left', 'Value', units='V')
         self.pw3.setLabel('bottom', 'Time', units='s')
-        self.p3.setData(x=self.x, y=self.y)
+        self.tx = np.arange(len(self.noisedata))
+        self.p3.setData(x=self.tx, y=self.noisedata)
         self.pw3.showGrid(x=True, y=True)
 
         self.x = np.arange(1000)
         self.y = np.random.random(1000)
-        self.pw4 = pg.PlotWidget(title="Stacked Events")
+        self.pw4 = pg.PlotWidget(title="Single Noise Hit")
         self.p4 = pg.ScatterPlotItem(size=2, brush=pg.mkBrush(0, 0, 0, 200))
         # self.p4.addPoints(x=self.x, y=self.y)
-        self.p4.addPoints(x= np.arange(len(self.pixdata)),y=self.pixdata)
+        # self.p4.addPoints(x= np.arange(len(self.pixdata)),y=self.pixdata)
+        self.p4.addPoints(x= self.tx, y=self.noisedata)
         # self.pixdata = np.array(self.fileData.iloc[:,11])
 
         self.p5 = self.pw4.plot()
         #  fillLevel=0, fillOutline=True,brush=(100,0,0))
         self.p5.setPen(color=(0, 0, 0), width=2)
-        self.p5.setData(self.x, self.y)
+        # self.p5.setData(self.x, self.y)
 
 
 
         self.pw4.addItem(self.p4)
-        self.pw4.setLabel('left', 'Value', units='V')
-        self.pw4.setLabel('bottom', 'Time', units='s')
+        self.pw4.setLabel('left', 'Value', units='arb')
+        self.pw4.setLabel('bottom', 'Time', units='arb')
         # self.p4.setData(x=self.x, y = self.y)
         # self.pw4.showGrid(x=True, y=True)
 
