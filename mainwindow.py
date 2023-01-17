@@ -170,6 +170,9 @@ class MainWindow(QWidget):
         self.p2.setPen(color=(0, 0, 0), width=2)
         self.pw2.setLabel('left', 'Counts', units='arb')
         self.pw2.setLabel('bottom', 'Pixel', units='arb')
+        self.hx,self.hy = self.data.getpixhistogram()
+
+
         self.p2.setData(self.hx, self.hy)
         self.pw2.showGrid(x=True, y=True)
 

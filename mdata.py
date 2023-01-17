@@ -17,7 +17,7 @@ class MData():
         self.bins = 100
 
     def geteventdataframe(self):
-        rawdata = hd.File(self.fname,'r')
+        self.rawdata = hd.File(self.fname,'r')
         self.eventsdata = rawdata['events'][()]
         teventlist = []
         for i in range(len(self.eventsdata)):
@@ -46,3 +46,10 @@ class MData():
         """
         Get dataframe for singles data
         """
+
+
+    def getpixelhistogram(self):
+        self.pixdata = self.rawdata.pixdata()
+
+        self.hx,self.hy = np.histogram(pixdata)
+        return(self.hx,self.hy)
