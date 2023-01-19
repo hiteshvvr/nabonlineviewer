@@ -16,9 +16,9 @@ from matplotlib.figure import Figure
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        super(MplCanvas, self).__init__(fig)
+        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = self.fig.add_subplot(111)
+        super(MplCanvas, self).__init__(self.fig)
 
 
 class MainWindow(QWidget):
@@ -136,20 +136,7 @@ class MainWindow(QWidget):
 
 #       PLOTS
 
-
-        # self.fname = "../datas/hdf5files/run1612_0.h5"
-        self.folname = "../datas/hdf5files/"
-        self.hdfile = Nab.DataRun(self.folname, 1612)
-        print('Triggers: ', self.hdfile.triggers().numtrigs)
-        print('Singles: ', self.hdfile.singleWaves().numWaves)
-
-        self.fileData = self.hdfile.noiseWaves().headers()
-        self.pixdata = np.array(self.fileData.iloc[:,11])
-
-
-        self.noisedata = self.hdfile.noiseWaves().waves()[0].compute()
-
-        #self.hy, self.hx = np.histogram(self.pixdata, bins=self.bins) #Do we really need this line here if it is already defined in mdata.py? SRW
+        self.data.getdatafromfile()
 
 # print('Coincidences: ', hdfile.coincWaves().numWaves)
 # print('Baseline Traces: ', hdfile.noiseWaves().numWaves)
@@ -160,7 +147,13 @@ class MainWindow(QWidget):
         # self.pw1.axes.plot([0,1,2,3,4,5,6,7,8,9,10], [0,1,2,3,4,5,6,7,8,9,10])
 
 
-        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+        self.sc = MplCanvas(self, width=6, height=4, dpi=100)
+        # self.sc.axes.set_title('My Title', fontdict={'fontsize': 8, 'fontweight': 'medium'})
+        self.sc.axes.set_title('Random Data for Debugging')
+        # , fontdict={'fontsize': 8, 'fontweight': 'medium'})
+        self.sc.axes.xaxis.set_label_text("X-Data")
+        self.sc.axes.yaxis.set_label_text("arb")
+
 
         self.xx = np.arange(-100,100,3)
         self.yy = self.xx ** 3
@@ -168,35 +161,38 @@ class MainWindow(QWidget):
         # self.sc.axes.plot([0,1,2,3,4,5,6,7,8,9,10], [0,1,2,3,4,5,6,7,8,9,10])
         self.sc.axes.plot(self.xx, self.yy)
 
-        self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
+        # self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
+        self.pw2 = pg.PlotWidget(title='<span style="color: #000; font-size: 16pt;">Hit Pixel Data</span>')
         self.p2 = self.pw2.plot(stepMode="center")
         #  fillLevel=0, fillOutline=True,brush=(100,0,0))
         self.p2.setPen(color=(0, 0, 0), width=2)
         self.pw2.setLabel('left', 'Counts', units='arb')
         self.pw2.setLabel('bottom', 'Pixel', units='arb')
-        self.hx,self.hy = self.data.getpixelhistogram() #commenting in for now SRW #original line 
+        self.hy,self.hx = self.data.getpixelhistogram() #commenting in for now SRW #original line 
+        print(self.hx, self.hy)
         #self.hx,self.hy = self.getpixelhistogram() #SRW newly written line 
 
-
+        print(len(self.hx), len(self.hy))
         self.p2.setData(self.hx, self.hy)
         self.pw2.showGrid(x=True, y=True)
+
+        self.timeax, self.noisedata = self.data.getnoisedata()
 
         self.pw3 = pg.PlotWidget(title="Many Events One after other")
         self.p3 = self.pw3.plot()
         self.p3.setPen(color=(0, 0, 0), width=5)
         self.pw3.setLabel('left', 'Value', units='V')
         self.pw3.setLabel('bottom', 'Time', units='s')
-        self.tx = np.arange(len(self.noisedata))
-        self.p3.setData(x=self.tx, y=self.noisedata)
+        self.p3.setData(x=self.timeax, y=self.noisedata)
         self.pw3.showGrid(x=True, y=True)
 
         self.x = np.arange(1000)
         self.y = np.random.random(1000)
-        self.pw4 = pg.PlotWidget(title="Single Noise Hit")
+        self.pw4 = pg.PlotWidget(title='<span style="color: #000; font-size: 16pt;">Singles</span>')
         self.p4 = pg.ScatterPlotItem(size=2, brush=pg.mkBrush(0, 0, 0, 200))
-        # self.p4.addPoints(x=self.x, y=self.y)
+        self.p4.addPoints(x=self.timeax, y=self.noisedata)
         # self.p4.addPoints(x= np.arange(len(self.pixdata)),y=self.pixdata)
-        self.p4.addPoints(x= self.tx, y=self.noisedata)
+        # self.p4.addPoints(x= self.tx, y=self.noisedata)
         # self.pixdata = np.array(self.fileData.iloc[:,11])
 
         self.p5 = self.pw4.plot()

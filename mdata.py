@@ -40,8 +40,12 @@ class MData():
         """
         Load various datas in the current viewer 
         """
-        self.geteventdataframe()
-    
+        self.filePath = "../datas/hdf5files/"
+        self.hdFile = Nab.DataRun(self.filePath, 1612) #We will have to chnage this later so user can input the run number 
+        self.fileData = self.hdFile.noiseWaves().headers()
+        print("this ran successfully")
+
+   
     def getsinglesdata(self):
         """
         Get dataframe for singles data
@@ -49,12 +53,17 @@ class MData():
 
 
     def getpixelhistogram(self): #Commenting this block of code in for now SRW
-        self.filePath = "/Users/scarlettwilson/Online_Analysis/datas/hdf5files/"
-        self.hdFile = Nab.DataRun(self.filePath, 1612) #We will have to chnage this later so user can input the run number 
-
-        self.fileData = self.hdFile.noiseWaves().headers()
-
         self.pixdata = np.array(self.fileData.iloc[:,11]) #This is code from SRW jupyter notebook
+        print(len(self.pixdata))
+        self.hy,self.hx = np.histogram(self.pixdata)
+        print(self.hx, self.hy)
+        return(self.hy,self.hx)
 
-        self.hx,self.hy = np.histogram(self.pixdata)
-        return(self.hx,self.hy)
+    def getnoisedata(self): #Commenting this block of code in for now SRW
+        self.noisedata = self.hdFile.noiseWaves().waves()[0].compute()
+        self.timeaxis = np.arange(len(self.noisedata)) * 4e-9
+        self.noisedata = np.array(self.noisedata)
+        print(len(self.noisedata),len(self.timeaxis))
+        print(self.noisedata[:2],self.timeaxis[:2])
+
+        return(self.timeaxis,self.noisedata)
