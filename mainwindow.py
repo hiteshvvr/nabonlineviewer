@@ -124,11 +124,15 @@ class MainWindow(QWidget):
         # self.count = 0
         # self.curve.setData(self.data)
 
+
+#******************************************
+#We want to stop using random data! I think we want to add the defined function from mdata.py here. SRW
 #       INITIAL RANDOM DATA
-        self.x = np.arange(100)
-        self.y = np.random.random(100)
-        self.bins = 40
-        self.hy, self.hx = np.histogram(self.y, bins=self.bins)
+        #self.x = np.arange(100)
+        #self.y = np.random.random(100)
+        #self.bins = 40
+        #self.hy, self.hx = np.histogram(self.y, bins=self.bins)
+#*****************************************
 
 #       PLOTS
 
@@ -145,7 +149,7 @@ class MainWindow(QWidget):
 
         self.noisedata = self.hdfile.noiseWaves().waves()[0].compute()
 
-        self.hy, self.hx = np.histogram(self.pixdata, bins=self.bins)
+        #self.hy, self.hx = np.histogram(self.pixdata, bins=self.bins) #Do we really need this line here if it is already defined in mdata.py? SRW
 
 # print('Coincidences: ', hdfile.coincWaves().numWaves)
 # print('Baseline Traces: ', hdfile.noiseWaves().numWaves)
@@ -170,7 +174,8 @@ class MainWindow(QWidget):
         self.p2.setPen(color=(0, 0, 0), width=2)
         self.pw2.setLabel('left', 'Counts', units='arb')
         self.pw2.setLabel('bottom', 'Pixel', units='arb')
-        self.hx,self.hy = self.data.getpixhistogram()
+        self.hx,self.hy = self.data.getpixelhistogram() #commenting in for now SRW #original line 
+        #self.hx,self.hy = self.getpixelhistogram() #SRW newly written line 
 
 
         self.p2.setData(self.hx, self.hy)

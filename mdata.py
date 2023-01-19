@@ -2,7 +2,7 @@ from matplotlib.pyplot import axis
 import numpy as np
 import h5py as hd
 import pandas as pd
-
+import nabPy as Nab
 
 class MData():
     def __init__(self) -> None:
@@ -48,8 +48,13 @@ class MData():
         """
 
 
-    def getpixelhistogram(self):
-        self.pixdata = self.rawdata.pixdata()
+    def getpixelhistogram(self): #Commenting this block of code in for now SRW
+        self.filePath = "/Users/scarlettwilson/Online_Analysis/datas/hdf5files/"
+        self.hdFile = Nab.DataRun(self.filePath, 1612) #We will have to chnage this later so user can input the run number 
 
-        self.hx,self.hy = np.histogram(pixdata)
+        self.fileData = self.hdFile.noiseWaves().headers()
+
+        self.pixdata = np.array(self.fileData.iloc[:,11]) #This is code from SRW jupyter notebook
+
+        self.hx,self.hy = np.histogram(self.pixdata)
         return(self.hx,self.hy)
