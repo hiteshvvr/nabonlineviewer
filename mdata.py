@@ -45,11 +45,19 @@ class MData():
         self.fileData = self.hdFile.noiseWaves().headers()
         print("this ran successfully")
 
-   
+    def getDetPixData(self):
+        self.filePath = "../datas/hdf5files/"
+        self.hdFile = Nab.DataRun(self.filePath, 1612) #We will have to chnage this later so user can input the run number 
+        self.pixHits = self.hdFile.plotHitLocations('noise', size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
+        return(self.pixHits)
+
+    
+
     def getsinglesdata(self):
         """
         Get dataframe for singles data
         """
+        print("did we get here?")
 
 
     def getpixelhistogram(self): #Commenting this block of code in for now SRW
@@ -57,6 +65,7 @@ class MData():
         print(len(self.pixdata))
         self.hy,self.hx = np.histogram(self.pixdata)
         print(self.hx, self.hy)
+        print("getpixelhistogram ran successfully")
         return(self.hy,self.hx)
 
     def getnoisedata(self): #Commenting this block of code in for now SRW

@@ -20,6 +20,12 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes = self.fig.add_subplot(111)
         super(MplCanvas, self).__init__(self.fig)
 
+#**********************************************
+#We want to replace MplCanvas with nabPy code for pixelated detector plotting 
+#Below is the original code from SRW Jupyter notebook to plot pixelated detector 
+# hdfile = Nab.DataRun(hdfilePath, 1612)
+# hdfile.plotHitLocations('noise', size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
+
 
 class MainWindow(QWidget):
     # def __init__(self, parent) -> None:
@@ -147,19 +153,45 @@ class MainWindow(QWidget):
         # self.pw1.axes.plot([0,1,2,3,4,5,6,7,8,9,10], [0,1,2,3,4,5,6,7,8,9,10])
 
 
-        self.sc = MplCanvas(self, width=6, height=4, dpi=100)
+        #self.sc = MplCanvas(self, width=6, height=4, dpi=100) #PixDec
+        #self.scfile = self.data.getdatafromfile()
+        #self.scdata = self.scfile.plotHitLocations('noise', size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
         # self.sc.axes.set_title('My Title', fontdict={'fontsize': 8, 'fontweight': 'medium'})
-        self.sc.axes.set_title('Random Data for Debugging')
+        #self.sc.axes.set_title('Pixelated Detector Hits') #PixDec
         # , fontdict={'fontsize': 8, 'fontweight': 'medium'})
-        self.sc.axes.xaxis.set_label_text("X-Data")
-        self.sc.axes.yaxis.set_label_text("arb")
+        #self.sc.axes.xaxis.set_label_text("Detector Pixel #") #PixDec
+        #self.sc.axes.yaxis.set_label_text("Density of Hits") #PixDec
 
 
-        self.xx = np.arange(-100,100,3)
-        self.yy = self.xx ** 3
+        #self.xx = np.arange(-100,100,3)
+        #self.yy = self.xx ** 3
 
         # self.sc.axes.plot([0,1,2,3,4,5,6,7,8,9,10], [0,1,2,3,4,5,6,7,8,9,10])
-        self.sc.axes.plot(self.xx, self.yy)
+        #self.sc.axes.plot(self.xx, self.yy) #PixDec
+        print("did we get here???")
+        #self.sc = self.sc.plot(self.scdata) #CHANGE THIS
+
+#************ My version of top left scatter plot code ***************
+        #self.sc = MplCanvas(self, width=6, height=4, dpi=100) #PixDec
+        self.sc1 = pg.PlotWidget(title='<span style="color: #000; font-size: 16pt;">Pixelated Detector Hits</span>')
+        self.s1 = self.sc1.plot(stepMode="center")
+        self.s1.setPen(color=(0, 0, 0), width=2)
+        self.sc1.setLabel('left', 'Density of Hits', units='arb')
+        self.sc1.setLabel('bottom', 'Detector Pixel #', units='arb')
+        self.scdata = self.data.getDetPixData() 
+        print("scarlett got here", type(self.scdata))
+
+        #self.s1.setData(self.scdata)
+        #self.sc1.showGrid(x=True, y=True)
+
+        #self.sc.axes.set_title("Pixelated Detector Hits") #PixDec
+        #self.sc.axes.xaxis.set_label_text("Detector Pixel #") #PixDec
+        #self.sc.axes.yaxis.set_label_text("Density of Hits") #PixDec
+        #self.scdata = self.data.getdatafromfile.pixHits()
+        #self.sc.axes.plot(self.pixHits)
+        print("did we get to the new plot code???")
+
+        
 
         # self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
         self.pw2 = pg.PlotWidget(title='<span style="color: #000; font-size: 16pt;">Hit Pixel Data</span>')
@@ -211,7 +243,7 @@ class MainWindow(QWidget):
         self.timer = QtCore.QTimer()
 
         # self.r1layout.addWidget(self.pw1)
-        self.r1layout.addWidget(self.sc)
+        self.r1layout.addWidget(self.sc1) #PixDec
         self.r1layout.addWidget(self.pw2)
         # self.r2layout.addWidget(self.pw3)
         self.r2layout.addWidget(self.pw4)
