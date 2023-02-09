@@ -40,16 +40,14 @@ class MData():
         """
         Load various datas in the current viewer 
         """
-        self.filePath = "../datas/hdf5files/"
+        self.filePath = "../datafiles/hdf5files/"
         self.hdFile = Nab.DataRun(self.filePath, 1612) #We will have to chnage this later so user can input the run number 
         self.fileData = self.hdFile.noiseWaves().headers()
         print("this ran successfully")
 
     def getDetPixData(self):
-        self.filePath = "../datas/hdf5files/"
-        self.hdFile = Nab.DataRun(self.filePath, 1612) #We will have to chnage this later so user can input the run number 
-        self.pixHits = self.hdFile.plotHitLocations('noise', size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
-        return(self.pixHits)
+        self.pixhist = self.hdFile.plotHitLocations('noise', size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
+        return(self.pixhist)
 
     
 

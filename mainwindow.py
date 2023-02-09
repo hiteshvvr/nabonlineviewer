@@ -11,25 +11,30 @@ import h5py as hd
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import matplotlib.colors as colors
+import matplotlib.cm as cmx
 
 
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
-        self.fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = self.fig.add_subplot(111)
+        self.fig = Figure(figsize=(width, height),
+                          dpi=dpi, constrained_layout=True)
+        self.ax = self.fig.add_subplot(111)
         super(MplCanvas, self).__init__(self.fig)
 
-#**********************************************
-#We want to replace MplCanvas with nabPy code for pixelated detector plotting 
-#Below is the original code from SRW Jupyter notebook to plot pixelated detector 
+# **********************************************
+# We want to replace MplCanvas with nabPy code for pixelated detector plotting
+# Below is the original code from SRW Jupyter notebook to plot pixelated detector
 # hdfile = Nab.DataRun(hdfilePath, 1612)
 # hdfile.plotHitLocations('noise', size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
 
 
 class MainWindow(QWidget):
     # def __init__(self, parent) -> None:
-    def __init__(self,data):
+    def __init__(self, data):
         super(QWidget, self).__init__()
         self.layout = QVBoxLayout(self)
         pg.setConfigOption('background', 'w')
@@ -131,85 +136,52 @@ class MainWindow(QWidget):
         # self.curve.setData(self.data)
 
 
-#******************************************
-#We want to stop using random data! I think we want to add the defined function from mdata.py here. SRW
+# ******************************************
+# We want to stop using random data! I think we want to add the defined function from mdata.py here. SRW
 #       INITIAL RANDOM DATA
-        #self.x = np.arange(100)
-        #self.y = np.random.random(100)
-        #self.bins = 40
-        #self.hy, self.hx = np.histogram(self.y, bins=self.bins)
-#*****************************************
+        # self.x = np.arange(100)
+        # self.y = np.random.random(100)
+        # self.bins = 40
+        # self.hy, self.hx = np.histogram(self.y, bins=self.bins)
+# *****************************************
 
 #       PLOTS
+# I removed lot of commented out code. HVR
 
-        self.data.getdatafromfile()
-
-# print('Coincidences: ', hdfile.coincWaves().numWaves)
-# print('Baseline Traces: ', hdfile.noiseWaves().numWaves)
-# print('Pulsers: ', hdfile.pulsrWaves().numWaves)
-
-        self.pw1 = pg.PlotWidget(title="Histogram of all Events")
-        # self.pw1 = MplCanvas(self, width=5, height=4, dpi=100)
-        # self.pw1.axes.plot([0,1,2,3,4,5,6,7,8,9,10], [0,1,2,3,4,5,6,7,8,9,10])
-
-
-        #self.sc = MplCanvas(self, width=6, height=4, dpi=100) #PixDec
-        #self.scfile = self.data.getdatafromfile()
-        #self.scdata = self.scfile.plotHitLocations('noise', size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
-        # self.sc.axes.set_title('My Title', fontdict={'fontsize': 8, 'fontweight': 'medium'})
-        #self.sc.axes.set_title('Pixelated Detector Hits') #PixDec
-        # , fontdict={'fontsize': 8, 'fontweight': 'medium'})
-        #self.sc.axes.xaxis.set_label_text("Detector Pixel #") #PixDec
-        #self.sc.axes.yaxis.set_label_text("Density of Hits") #PixDec
-
-
-        #self.xx = np.arange(-100,100,3)
-        #self.yy = self.xx ** 3
-
-        # self.sc.axes.plot([0,1,2,3,4,5,6,7,8,9,10], [0,1,2,3,4,5,6,7,8,9,10])
-        #self.sc.axes.plot(self.xx, self.yy) #PixDec
-        print("did we get here???")
-        #self.sc = self.sc.plot(self.scdata) #CHANGE THIS
-
-#************ My version of top left scatter plot code ***************
-        #self.sc = MplCanvas(self, width=6, height=4, dpi=100) #PixDec
-        self.sc1 = pg.PlotWidget(title='<span style="color: #000; font-size: 16pt;">Pixelated Detector Hits</span>')
-        self.s1 = self.sc1.plot(stepMode="center")
-        self.s1.setPen(color=(0, 0, 0), width=2)
-        self.sc1.setLabel('left', 'Density of Hits', units='arb')
-        self.sc1.setLabel('bottom', 'Detector Pixel #', units='arb')
-        self.scdata = self.data.getDetPixData() 
-        print("scarlett got here", type(self.scdata))
-
-        #self.s1.setData(self.scdata)
-        #self.sc1.showGrid(x=True, y=True)
-
-        #self.sc.axes.set_title("Pixelated Detector Hits") #PixDec
-        #self.sc.axes.xaxis.set_label_text("Detector Pixel #") #PixDec
-        #self.sc.axes.yaxis.set_label_text("Density of Hits") #PixDec
-        #self.scdata = self.data.getdatafromfile.pixHits()
-        #self.sc.axes.plot(self.pixHits)
-        print("did we get to the new plot code???")
-
+        self.data.getdatafromfile()                                                   # this line is temporary and once we enable loadfile fucntion this should go.
         
-
+        
+#******************** Get PixHits (With random data)   **********************       
+        self.size = 2
+        self.sc1 = MplCanvas(self, width=4*self.size, height=3.5*self.size, dpi=100)  # PixDec
+        randompixhist = np.random.random(127)                                         # Random pix hit without loading data
+        print(randompixhist)
+        self.customcmap = self.getmycmap(basemap='cividis')                                    # To get better colormaps that in nabpy
+        self.scalarMap = self.plotOneDetector(randompixhist, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
+        # scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=self.customcmap)
+        self.sc1.fig.colorbar(self.scalarMap, ax=self.sc1.ax)
+        self.tmp = 1
+#********************* Get Second histogram with pix hist(with random data ***********)
         # self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
-        self.pw2 = pg.PlotWidget(title='<span style="color: #000; font-size: 16pt;">Hit Pixel Data</span>')
+        self.pw2 = pg.PlotWidget(
+            title='<span style="color: #000; font-size: 16pt;">Hit Pixel Data</span>')
         self.p2 = self.pw2.plot(stepMode="center")
         #  fillLevel=0, fillOutline=True,brush=(100,0,0))
         self.p2.setPen(color=(0, 0, 0), width=2)
         self.pw2.setLabel('left', 'Counts', units='arb')
         self.pw2.setLabel('bottom', 'Pixel', units='arb')
-        self.hy,self.hx = self.data.getpixelhistogram() #commenting in for now SRW #original line 
+        # commenting in for now SRW #original line
+        self.hy, self.hx = self.data.getpixelhistogram()
         print(self.hx, self.hy)
-        #self.hx,self.hy = self.getpixelhistogram() #SRW newly written line 
+        # self.hx,self.hy = self.getpixelhistogram() #SRW newly written line
 
         print(len(self.hx), len(self.hy))
         self.p2.setData(self.hx, self.hy)
         self.pw2.showGrid(x=True, y=True)
 
-        self.timeax, self.noisedata = self.data.getnoisedata()
+#********************* Get Third histogram with pix hist(with random data ***********)
 
+        self.timeax, self.noisedata = self.data.getnoisedata()
         self.pw3 = pg.PlotWidget(title="Many Events One after other")
         self.p3 = self.pw3.plot()
         self.p3.setPen(color=(0, 0, 0), width=5)
@@ -220,7 +192,8 @@ class MainWindow(QWidget):
 
         self.x = np.arange(1000)
         self.y = np.random.random(1000)
-        self.pw4 = pg.PlotWidget(title='<span style="color: #000; font-size: 16pt;">Singles</span>')
+        self.pw4 = pg.PlotWidget(
+        title='<span style="color: #000; font-size: 16pt;">Singles</span>')
         self.p4 = pg.ScatterPlotItem(size=2, brush=pg.mkBrush(0, 0, 0, 200))
         self.p4.addPoints(x=self.timeax, y=self.noisedata)
         # self.p4.addPoints(x= np.arange(len(self.pixdata)),y=self.pixdata)
@@ -232,8 +205,6 @@ class MainWindow(QWidget):
         self.p5.setPen(color=(0, 0, 0), width=2)
         # self.p5.setData(self.x, self.y)
 
-
-
         self.pw4.addItem(self.p4)
         self.pw4.setLabel('left', 'Value', units='arb')
         self.pw4.setLabel('bottom', 'Time', units='arb')
@@ -243,7 +214,7 @@ class MainWindow(QWidget):
         self.timer = QtCore.QTimer()
 
         # self.r1layout.addWidget(self.pw1)
-        self.r1layout.addWidget(self.sc1) #PixDec
+        self.r1layout.addWidget(self.sc1)  # PixDec
         self.r1layout.addWidget(self.pw2)
         # self.r2layout.addWidget(self.pw3)
         self.r2layout.addWidget(self.pw4)
@@ -290,44 +261,62 @@ class MainWindow(QWidget):
     def updateevent(self):
         self.getevntno()
         self.updatexy()
+        # self.sc1.draw()
 
     def loaddata(self):
         """
         Get the data in the form of array of 48x40 (2d array)(48 channel column, and 40 rows which are samples)
         """
-        # GET OFFSET
-        self.field_fname.setStyleSheet( "color: black;  background-color: white")
-        self.data.fname = self.fname
-        tfname = self.fname
-        if(self.data.getdatafromfile() == 0):
-            self.field_fname.setText("WARNING: ThIs FiLe Do NoT CoNtAiN PrOpEr HeAdEr")
-            self.field_fname.setStyleSheet("color: black;  background-color: red")
-            self.fname = tfname
-        del tfname
-        self.value_totevt.setText(str((self.data.totalevents)))
-        self.value_totarea.setText(str(self.data.getarea(self.chan)))
-
+        # Load data File
+        # self.field_fname.setStyleSheet(
+        #     "color: black;  background-color: white")
+        # self.data.fname = self.fname
+        # # tfname = self.fname
+        # if (self.data.getdatafromfile() == 0):
+        #     self.field_fname.setText(
+        #         "WARNING: ThIs FiLe Do NoT CoNtAiN PrOpEr HeAdEr")
+        #     self.field_fname.setStyleSheet(
+        #         "color: black;  background-color: red")
+        #     self.fname = tfname
+        # del tfname
+        # self.data.getdatafromfile()
+        # self.value_totevt.setText(str((self.data.totalevents)))
+        # self.value_totarea.setText(str(self.data.getarea(self.chan)))
 
         self.updateall()
-        return(self.data)
+        return (self.data)
 
     def updateall(self):
         if self.data is not None:
-            self.updatexy()
-            self.updaterangeplot()
-            self.updatedistribution()
-            self.updatestackplot()
+            self.updatepixhits()
+            # self.updaterangeplot()
+            # self.updatedistribution()
+            # self.updatestackplot()
+    
+#**************** Function to update pixel hits *******************************#
+    def updatepixhits(self):
+        # self.sc1.fig.clear(keep_observers=True)
+        self.tmp = self.tmp * 10
+        self.pixhits= self.data.getDetPixData()
+        # self.pixhits= self.tmp * np.random.random(127)                                         # Random pix hit without loading data
+        print(self.pixhits)
+        # self.sc1.ax.cla()
+        self.scalarMap = self.plotOneDetector(self.pixhits, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
+        self.sc1.draw()
+        # self.sc1.fig.colorbar(scalarMap, ax=self.sc1.ax)
+#***********************************************#*******************************#
+
 
     def updatexy(self):
         if self.data is not None:
-            x,y = self.data.getsingle_chan_evnt(self.evtno, self.chan)
-            self.p1.setData(x=x,y=y)
+            x, y = self.data.getsingle_chan_evnt(self.evtno, self.chan)
+            self.p1.setData(x=x, y=y)
 
     def updaterangeplot(self):
         self.getlims()
         self.lims[0] = 0
         self.lims[1] = 20
-        x,y = self.data.getrangedata(self.lims[0], self.lims[1],self.chan)
+        x, y = self.data.getrangedata(self.lims[0], self.lims[1], self.chan)
         self.p3.setData(x=x, y=y)
 
     def updatedistribution(self):
@@ -339,21 +328,21 @@ class MainWindow(QWidget):
 
     def getlims(self):
         templims = self.value_lims.text().split(sep=",")
-        if(len(templims) == 2):
+        if (len(templims) == 2):
             self.lims = [int(float(i)) for i in templims]
-            if(self.lims[1] > self.data.totalevents):
+            if (self.lims[1] > self.data.totalevents):
                 self.lims[1] = self.data.totalevents - 2
-        if(len(self.lims) == 2):
+        if (len(self.lims) == 2):
             self.evtno = self.lims[0]
             self.value_evtno.setText(str(self.evtno))
             self.updatexy()
 
     def updatestackplot(self):
         self.getlims()
-        sx,sy = self.data.getstackdata(self.lims[0],self.lims[1],self.chan)
-        mx,my = self.data.gettimemean(self.lims[0],self.lims[1],self.chan)
+        sx, sy = self.data.getstackdata(self.lims[0], self.lims[1], self.chan)
+        mx, my = self.data.gettimemean(self.lims[0], self.lims[1], self.chan)
         self.p4.setData(x=sx, y=sy)
-        self.p5.setData(x=mx , y=my)
+        self.p5.setData(x=mx, y=my)
 
     def runfreerun(self):
         if self.button_freerun.isChecked():
@@ -372,4 +361,96 @@ class MainWindow(QWidget):
     def shownextevent(self):
         self.evtno = self.evtno + 1
         self.value_evtno.setText(str(self.evtno))
+        # self.sc1.draw()
         self.updatexy()
+
+    # this is a simple function that plots values over each pixel
+    def plotOneDetector(self, values, fig=None, ax=None, numDet=1, cmap='cividis', size=2, showNum=True, showVal=True, alpha=1, rounding=None, title=None, norm=None, forceMin=None, forceMax=None, labels=None, filename=None, saveDontShow=False):
+        # if fig is None or ax is None:
+        #     fig, ax = plt.subplots(1, figsize=(
+        #         size * 7 + size, size * 7), constrained_layout=True)
+        # ax.cla()
+
+        # try:
+            # fig.delaxes(fig.axes[1])
+        # except:
+            # pass
+ 
+        print("figure:", fig)
+        print("axis:", ax)
+        ax.set_xlim(-size * 13, size * 13)
+        ax.set_ylim(-size * 13, size * 13)
+        # cm = plt.get_cmap(cmap)
+        cm = cmap
+        cNorm = None
+        minval = np.min(values)
+        maxval = np.max(values)
+        if forceMin is not None:
+            minval = forceMin
+        elif norm == 'log':
+            if minval <= 0:
+                minval = 0.01
+        if forceMax is not None:
+            maxval = forceMax
+        if norm is None:
+            cNorm = colors.Normalize(minval, maxval)
+        elif norm == 'log':
+            cNorm = colors.LogNorm(minval, maxval)
+        else:
+            print('unrecognized normalization option: needs to be log or not set')
+            return (fig, ax)
+        scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cm)
+        vertOffset = size * np.sqrt(3)
+        horOffset = size * 1.5
+        colEnd = [7, 15, 24, 34, 45, 57, 70, 82, 93, 103, 112, 120, 127]
+        colStart = [1, 8, 16, 25, 35, 46, 58, 71, 83, 94, 104, 113, 121]
+        colLen = list(np.array(colEnd) - np.array(colStart) + 1)
+        numCol = len(colEnd)
+        for pixel in range(1, len(values)+1):
+            col = 0
+            for j in range(len(colEnd)):
+                if pixel >= colStart[j] and pixel <= colEnd[j]:
+                    col = j
+            # number in the column from the top of the column
+            numInCol = pixel - colStart[col]
+            horPosition = (col - numCol/2)*horOffset
+            topOfCol = colLen[col]/2*vertOffset - vertOffset/2
+            verPosition = topOfCol - vertOffset*numInCol
+            hex = patches.RegularPolygon((horPosition, verPosition), numVertices=6, radius=size, facecolor=scalarMap.to_rgba(
+                values[pixel-1]), orientation=np.pi/2, alpha=alpha, edgecolor='black')
+            ax.add_patch(hex)
+            txt = ''
+            if showNum == True:
+                txt += str(pixel)
+            if labels is not None:
+                if txt != '':
+                    txt += '\n'
+                txt += str(labels[pixel-1])
+            if showVal:
+                if txt != '':
+                    txt += '\n'
+                if rounding is not None:
+                    if rounding == 'int':
+                        txt += str(int(values[pixel-1]))
+                    else:
+                        txt += str(round(values[pixel-1], rounding))
+            if txt != '':
+                ax.text(horPosition-size/2, verPosition,
+                        txt, ma='center', va='center')
+        # axColor = plt.axes([size*6, size*-6, size, size*])
+        # plt.colorbar(scalarMap, cax = axColor, orientation="vertical")
+        # try:
+            # fig.delaxes(fig.axes[1])
+        # except:
+            # pass
+        # fig.colorbar(scalarMap, ax=ax)
+        # fig.colorbar(scalarMap, ax=ax)
+        # plt.axis('off')
+        return scalarMap
+
+    def getmycmap(self, basemap='viridis'):
+        ocmap = plt.get_cmap(basemap)
+        ocmap = ocmap(np.linspace(0, 1, 256))
+        ocmap[:1, :] = ([0.95, 0.95, 0.95, 1])
+        ncmap = colors.ListedColormap(ocmap)
+        return (ncmap)
