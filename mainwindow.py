@@ -54,12 +54,21 @@ class MainWindow(QWidget):
         self.in2layout = QHBoxLayout()
         self.r1layout = QHBoxLayout()
         self.r2layout = QHBoxLayout()
-        self.button_fname = QPushButton('Select File')
-        self.fname = "../datas/hdf5files/Run1612_0.h5"
-        self.button_fname.clicked.connect(self.dialog)
-        self.field_fname = QLineEdit(self.fname)
-        self.field_fname.textChanged.connect(self.updatefname)
-        self.data.fname = self.fname
+        
+        self.foldname = "../datafiles/hdf5files/"
+        self.runno = 1612
+        
+        self.button_foldname = QPushButton('Select Folder')
+        self.button_foldname.clicked.connect(self.dialog)
+        self.field_foldname = QLineEdit(self.foldname)
+        self.field_runno = QLineEdit(str(self.runno))
+        
+        # self.field_foldname.textChanged.connect(self.updatefoldname)
+        # self.field_runno.textChanged.connect(self.updaterunno)
+        
+        self.data.foldname = self.foldname
+        self.data.runno = self.runno
+        
         self.button_load = QPushButton('LoadData')
         self.button_load.clicked.connect(self.loaddata)
 
@@ -104,8 +113,9 @@ class MainWindow(QWidget):
         # self.field_fname.setMaximumWidth(self.width)
         # self.space = QSpacerItem(10,5)
 
-        self.inlayout.addWidget(self.button_fname)
-        self.inlayout.addWidget(self.field_fname)
+        self.inlayout.addWidget(self.button_foldname)
+        self.inlayout.addWidget(self.field_foldname)
+        self.inlayout.addWidget(self.field_runno)
         self.inlayout.addWidget(self.button_load)
         self.inlayout.addWidget(self.sel_channo)
 
@@ -148,71 +158,72 @@ class MainWindow(QWidget):
 #       PLOTS
 # I removed lot of commented out code. HVR
 
-        self.data.getdatafromfile()                                                   # this line is temporary and once we enable loadfile fucntion this should go.
         
         
 #******************** Get PixHits (With random data)   **********************       
         self.size = 2
         self.sc1 = MplCanvas(self, width=4*self.size, height=3.5*self.size, dpi=100)  # PixDec
         randompixhist = np.random.random(127)                                         # Random pix hit without loading data
-        print(randompixhist)
-        self.customcmap = self.getmycmap(basemap='cividis')                                    # To get better colormaps that in nabpy
+        self.customcmap = self.getmycmap(basemap='cividis')                           # To get better colormaps that in nabpy
         self.scalarMap = self.plotOneDetector(randompixhist, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
         # scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=self.customcmap)
         self.sc1.fig.colorbar(self.scalarMap, ax=self.sc1.ax)
         self.tmp = 1
-#********************* Get Second histogram with pix hist(with random data ***********)
+#********************* Get Second histogram with pix hist(with random data ***********) *******************
+
         # self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
-        self.pw2 = pg.PlotWidget(
-            title='<span style="color: #000; font-size: 16pt;">Hit Pixel Data</span>')
-        self.p2 = self.pw2.plot(stepMode="center")
-        #  fillLevel=0, fillOutline=True,brush=(100,0,0))
+        self.pw2 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Hit Pixel Data</span>')
+        self.p2 = self.pw2.plot(stepMode="center",fillLevel=0)#, fillOutline=True,brush=(100,0,0))
         self.p2.setPen(color=(0, 0, 0), width=2)
         self.pw2.setLabel('left', 'Counts', units='arb')
         self.pw2.setLabel('bottom', 'Pixel', units='arb')
-        # commenting in for now SRW #original line
-        self.hy, self.hx = self.data.getpixelhistogram()
-        print(self.hx, self.hy)
-        # self.hx,self.hy = self.getpixelhistogram() #SRW newly written line
-
-        print(len(self.hx), len(self.hy))
-        self.p2.setData(self.hx, self.hy)
         self.pw2.showGrid(x=True, y=True)
+        
+        self.hy, self.hx = np.histogram(np.random.random(100),bins=20)
+        self.p2.setData(self.hx, self.hy)
+        
+        # self.hy,self.hx = self.data.getpixelhistogram() #SRW newly written line
+        # print("printing hx, hy", self.hx, self.hy)
+        # print(len(self.hx), len(self.hy))
 
-#********************* Get Third histogram with pix hist(with random data ***********)
+#********************* Third histogram Not used now ************************************ 
 
-        self.timeax, self.noisedata = self.data.getnoisedata()
         self.pw3 = pg.PlotWidget(title="Many Events One after other")
         self.p3 = self.pw3.plot()
         self.p3.setPen(color=(0, 0, 0), width=5)
         self.pw3.setLabel('left', 'Value', units='V')
         self.pw3.setLabel('bottom', 'Time', units='s')
-        self.p3.setData(x=self.timeax, y=self.noisedata)
         self.pw3.showGrid(x=True, y=True)
 
-        self.x = np.arange(1000)
-        self.y = np.random.random(1000)
-        self.pw4 = pg.PlotWidget(
-        title='<span style="color: #000; font-size: 16pt;">Singles</span>')
-        self.p4 = pg.ScatterPlotItem(size=2, brush=pg.mkBrush(0, 0, 0, 200))
-        self.p4.addPoints(x=self.timeax, y=self.noisedata)
-        # self.p4.addPoints(x= np.arange(len(self.pixdata)),y=self.pixdata)
-        # self.p4.addPoints(x= self.tx, y=self.noisedata)
-        # self.pixdata = np.array(self.fileData.iloc[:,11])
-
-        self.p5 = self.pw4.plot()
-        #  fillLevel=0, fillOutline=True,brush=(100,0,0))
-        self.p5.setPen(color=(0, 0, 0), width=2)
-        # self.p5.setData(self.x, self.y)
-
-        self.pw4.addItem(self.p4)
+        # self.timeax, self.noisedata = self.data.getnoisedata(9)
+        
+        self.noisedata = np.random.random(10)
+        self.timeax = np.arange(10)
+        print("printing pw3", len(self.noisedata), len(self.timeax))
+        self.p3.setData(x=self.timeax, y=self.noisedata)
+        
+        
+        # self.x = np.arange(1000)
+        # self.y = np.random.random(1000)
+        
+#********************* Example of scatter plot if needed ***********  #
+        self.pw4 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Single Event Plot(can be noise)</span>')
+        self.pw4.showGrid(x=True, y=True)
         self.pw4.setLabel('left', 'Value', units='arb')
         self.pw4.setLabel('bottom', 'Time', units='arb')
-        # self.p4.setData(x=self.x, y = self.y)
-        # self.pw4.showGrid(x=True, y=True)
-
+        
+        self.p4 = pg.ScatterPlotItem(size=2, brush=pg.mkBrush(0, 0, 0, 200))
+        self.pw4.addItem(self.p4)
+       
+        
+        self.noisedata = np.random.random(1000)
+        self.timeax = np.arange(1000)
+        self.p4.addPoints(x=self.timeax, y=self.noisedata)
+        
+# #********************* Timer if needed ***********  #
         self.timer = QtCore.QTimer()
 
+#********************* Layouts ***********  #
         # self.r1layout.addWidget(self.pw1)
         self.r1layout.addWidget(self.sc1)  # PixDec
         self.r1layout.addWidget(self.pw2)
@@ -236,6 +247,10 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.maintab)
         self.setLayout(self.layout)
 
+#************************************************************************** FUNCTIONS ****************************************************************************************  #
+
+#***************Functions for loading Data *****************************************************#
+   
     def dialog(self):
         # file , check = QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()", "", "All Files (*);;Python Files (*.py);;Text Files (*.txt)")
         tempfile, self.check = QFileDialog.getOpenFileName(
@@ -247,11 +262,34 @@ class MainWindow(QWidget):
         else:
             self.file = "file not found!!"
 
+    def updatefoldname(self):
+        self.foldname = self.field_foldname.text()
+        self.data.foldname = self.foldname
+
+    def updaterunno(self):
+        try:
+            self.runno = int(self.field_runno.text())
+            # print("what is runno:", self.runno)
+            self.data.runno = self.runno
+        except:
+            self.field_runno.setText("Inter the integer") 
+ 
+    def loaddata(self):
+        """
+        Get the data in the data class
+        """
+        self.updatefoldname()
+        self.updaterunno()
+        self.data.getdatafromfile()
+        self.updateall()
+        return (self.data)
+
+#*************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
     def selectchannel(self):
         tchan = int(self.sel_channo.currentText()) - 1
         # print(tchan, type(tchan))
         self.chan = tchan
-        self.value_totarea.setText(str(self.data.getarea(self.chan)))
+        # self.value_totarea.setText(str(self.data.getarea(self.chan)))
         self.updateall()
 
     def getevntno(self):
@@ -260,49 +298,42 @@ class MainWindow(QWidget):
 
     def updateevent(self):
         self.getevntno()
-        self.updatexy()
+        # self.updatexy()
         # self.sc1.draw()
-
-    def loaddata(self):
-        """
-        Get the data in the form of array of 48x40 (2d array)(48 channel column, and 40 rows which are samples)
-        """
-        # Load data File
-        # self.field_fname.setStyleSheet(
-        #     "color: black;  background-color: white")
-        # self.data.fname = self.fname
-        # # tfname = self.fname
-        # if (self.data.getdatafromfile() == 0):
-        #     self.field_fname.setText(
-        #         "WARNING: ThIs FiLe Do NoT CoNtAiN PrOpEr HeAdEr")
-        #     self.field_fname.setStyleSheet(
-        #         "color: black;  background-color: red")
-        #     self.fname = tfname
-        # del tfname
-        # self.data.getdatafromfile()
-        # self.value_totevt.setText(str((self.data.totalevents)))
-        # self.value_totarea.setText(str(self.data.getarea(self.chan)))
-
-        self.updateall()
-        return (self.data)
-
+        
+#*************** Functions for Updating the plots *****************************************************#
+   
+#**************** Function to update all plots *******************************#
     def updateall(self):
         if self.data is not None:
             self.updatepixhits()
+            self.updateenergyhistogram()
+            self.updatesingleevent()
             # self.updaterangeplot()
             # self.updatedistribution()
             # self.updatestackplot()
+
+#**************** Function to update Energy histogram *******************************#
+    def updateenergyhistogram(self):
+        self.edges, self.counts = self.data.getenergyhistogram(bins = 10)
+        self.p2.setData(self.edges, self.counts)
+ 
+#**************** Function to update Single Event *******************************#
+    def updatesingleevent(self):
+        self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
+        self.p4.setData(self.timeax,self.noisedata)
     
 #**************** Function to update pixel hits *******************************#
     def updatepixhits(self):
         # self.sc1.fig.clear(keep_observers=True)
-        self.tmp = self.tmp * 10
-        self.pixhits= self.data.getDetPixData()
-        # self.pixhits= self.tmp * np.random.random(127)                                         # Random pix hit without loading data
-        print(self.pixhits)
+        if self.data is not None:
+            self.pixhits= self.data.getDetPixData()
+            self.scalarMap = self.plotOneDetector(self.pixhits, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
+            self.sc1.draw()
+        # print(self.pixhits)
         # self.sc1.ax.cla()
-        self.scalarMap = self.plotOneDetector(self.pixhits, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
-        self.sc1.draw()
+        # self.pixhits= self.tmp * np.random.random(127)                                         # Random pix hit without loading data
+        # self.tmp = self.tmp * 10
         # self.sc1.fig.colorbar(scalarMap, ax=self.sc1.ax)
 #***********************************************#*******************************#
 
@@ -323,9 +354,8 @@ class MainWindow(QWidget):
         hx, hy = self.data.gethistdistribution(self.chan)
         self.p2.setData(hx, hy)
 
-    def updatefname(self):
-        self.fname = self.field_fname.text()
-
+           
+#*************** Other Functions not used now *****************************************************#
     def getlims(self):
         templims = self.value_lims.text().split(sep=",")
         if (len(templims) == 2):
@@ -361,9 +391,14 @@ class MainWindow(QWidget):
     def shownextevent(self):
         self.evtno = self.evtno + 1
         self.value_evtno.setText(str(self.evtno))
-        # self.sc1.draw()
-        self.updatexy()
-
+        self.updatesingleevent()
+        
+        # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
+        # print(self.timeax, self.noisedata)
+        # self.p4.setData(self.timeax,self.noisedata)
+    
+    
+#*************** Function to plot detetor hits*****************************************************#
     # this is a simple function that plots values over each pixel
     def plotOneDetector(self, values, fig=None, ax=None, numDet=1, cmap='cividis', size=2, showNum=True, showVal=True, alpha=1, rounding=None, title=None, norm=None, forceMin=None, forceMax=None, labels=None, filename=None, saveDontShow=False):
         # if fig is None or ax is None:
