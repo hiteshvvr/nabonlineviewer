@@ -195,16 +195,10 @@ class MainWindow(QWidget):
         self.pw3.setLabel('bottom', 'Time', units='s')
         self.pw3.showGrid(x=True, y=True)
 
-        # self.timeax, self.noisedata = self.data.getnoisedata(9)
-        
         self.noisedata = np.random.random(10)
         self.timeax = np.arange(10)
-        print("printing pw3", len(self.noisedata), len(self.timeax))
+        
         self.p3.setData(x=self.timeax, y=self.noisedata)
-        
-        
-        # self.x = np.arange(1000)
-        # self.y = np.random.random(1000)
         
 #********************* Example of scatter plot if needed ***********  #
         self.pw4 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Single Event Plot(can be noise)</span>')
