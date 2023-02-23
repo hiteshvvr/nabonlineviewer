@@ -40,8 +40,8 @@ class Monitor(QWidget):
         self.label_channo = QLabel("Channel")
         self.label_channo.setFixedWidth(60)
         self.sel_channo = QComboBox()
-        self.sel_channo.currentIndexChanged.connect(self.selectchannel)
         self.sel_channo.addItems([str(i+1) for i in np.arange(24)])
+        self.sel_channo.currentIndexChanged.connect(self.selectchannel)
         self.chan = 0
 
         self.evtno = 42
