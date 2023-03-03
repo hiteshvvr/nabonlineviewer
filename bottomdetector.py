@@ -32,7 +32,7 @@ class MplCanvas(FigureCanvasQTAgg):
 # hdfile.plotHitLocations('noise', size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
 
 
-class MainWindow(QWidget):
+class BottomDetector(QWidget): #SRW
     # def __init__(self, parent) -> None:
     def __init__(self, data):
         super(QWidget, self).__init__()
@@ -301,17 +301,16 @@ class MainWindow(QWidget):
     def updateall(self):
         if self.data is not None:
             self.updatepixhits()
-            #self.updateenergyhistogram() #Commenting this out to push because there is an error associated with it.
+            self.updateenergyhistogram()
             self.updatesingleevent()
             # self.updaterangeplot()
             # self.updatedistribution()
             # self.updatestackplot()
 
 #**************** Function to update Energy histogram *******************************#
-#Commenting this out to push because there is an error associated with it. 
-    #def updateenergyhistogram(self):
-        #self.edges, self.counts = self.data.getenergyhistogram(bins = 10)
-        #self.p2.setData(self.edges, self.counts)
+    def updateenergyhistogram(self):
+        self.edges, self.counts = self.data.getenergyhistogram(bins = 10)
+        self.p2.setData(self.edges, self.counts)
  
 #**************** Function to update Single Event *******************************#
     def updatesingleevent(self):

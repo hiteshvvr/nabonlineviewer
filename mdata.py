@@ -79,7 +79,25 @@ class MData():
 
         return(self.timeaxis,self.noisedata)
 
-    def getenergyhistogram(self,bins=100):
+    #*******************Attempt 1 extracting energies*********************
+    
+    #We need to instead try using nabpy to extract energies! 
+
+    #Commenting this out to push because there is an error associated with it.
+    
+    #def getenergyhistogram(self,bins=100):
         """For now it is giving random data, update it accordingly"""
-        self.counts, self.edges = np.histogram(np.random.random(200), bins = bins)
-        return(self.edges, self.counts)
+        #self.evdata = np.array(self.hdFile['events'])
+        #print("ENERGY CODE STEP 2")
+        #self.nested_data = np.array([i[6] for i in (self.evdata)])
+        #print("ENERGY CODE STEP 3")
+        #self.energy_list = []
+        #for j in range (len(self.nested_data)):
+            #self.energy_list.append([x[2] for x in self.nested_data[j]])
+        #print(self.energy_list)
+        #return(self.energy_list)
+        #print("energy CODE RAN SUCCESSFULLY")
+        
+        
+        #self.counts, self.edges = np.histogram(np.random.random(200), bins = bins)
+        #return(self.edges, self.counts)
