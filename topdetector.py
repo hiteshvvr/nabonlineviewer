@@ -55,19 +55,19 @@ class TopDetector(QWidget): #SRW
         self.r1layout = QHBoxLayout()
         self.r2layout = QHBoxLayout()
         
-        self.foldname = "../datafiles/hdf5files/"
-        self.runno = 1612
+        #self.foldname = "../datafiles/hdf5files/"
+        #self.runno = 1612
         
-        self.button_foldname = QPushButton('Select Folder')
-        self.button_foldname.clicked.connect(self.dialog)
-        self.field_foldname = QLineEdit(self.foldname)
-        self.field_runno = QLineEdit(str(self.runno))
+        #self.button_foldname = QPushButton('Select Folder')
+        #self.button_foldname.clicked.connect(self.dialog)
+        #self.field_foldname = QLineEdit(self.foldname)
+        #self.field_runno = QLineEdit(str(self.runno))
         
         # self.field_foldname.textChanged.connect(self.updatefoldname)
         # self.field_runno.textChanged.connect(self.updaterunno)
         
-        self.data.foldname = self.foldname
-        self.data.runno = self.runno
+        #self.data.foldname = self.foldname
+        #self.data.runno = self.runno
         
         self.button_load = QPushButton('LoadData')
         self.button_load.clicked.connect(self.loaddata)
@@ -113,9 +113,9 @@ class TopDetector(QWidget): #SRW
         # self.field_fname.setMaximumWidth(self.width)
         # self.space = QSpacerItem(10,5)
 
-        self.inlayout.addWidget(self.button_foldname)
-        self.inlayout.addWidget(self.field_foldname)
-        self.inlayout.addWidget(self.field_runno)
+        #self.inlayout.addWidget(self.button_foldname)
+        #self.inlayout.addWidget(self.field_foldname)
+        #self.inlayout.addWidget(self.field_runno)
         self.inlayout.addWidget(self.button_load)
         self.inlayout.addWidget(self.sel_channo)
 
@@ -256,17 +256,17 @@ class TopDetector(QWidget): #SRW
         else:
             self.file = "file not found!!"
 
-    def updatefoldname(self):
-        self.foldname = self.field_foldname.text()
-        self.data.foldname = self.foldname
+    #def updatefoldname(self):
+        #self.foldname = self.field_foldname.text()
+        #self.data.foldname = self.foldname
 
-    def updaterunno(self):
-        try:
-            self.runno = int(self.field_runno.text())
+    #def updaterunno(self):
+        #try:
+            #self.runno = int(self.field_runno.text())
             # print("what is runno:", self.runno)
-            self.data.runno = self.runno
-        except:
-            self.field_runno.setText("Inter the integer") 
+            #self.data.runno = self.runno
+        #except:
+            #self.field_runno.setText("Inter the integer") 
  
     def loaddata(self):
         """
@@ -301,16 +301,16 @@ class TopDetector(QWidget): #SRW
     def updateall(self):
         if self.data is not None:
             self.updatepixhits()
-            self.updateenergyhistogram()
+            #self.updateenergyhistogram() #SRW commenting out for now to remove errors
             self.updatesingleevent()
             # self.updaterangeplot()
             # self.updatedistribution()
             # self.updatestackplot()
 
 #**************** Function to update Energy histogram *******************************#
-    def updateenergyhistogram(self):
-        self.edges, self.counts = self.data.getenergyhistogram(bins = 10)
-        self.p2.setData(self.edges, self.counts)
+    #def updateenergyhistogram(self): #SRW commenting out for now to remove errors
+        #self.edges, self.counts = self.data.getenergyhistogram(bins = 10)
+        #self.p2.setData(self.edges, self.counts)
  
 #**************** Function to update Single Event *******************************#
     def updatesingleevent(self):
