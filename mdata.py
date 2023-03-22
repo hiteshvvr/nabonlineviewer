@@ -62,7 +62,7 @@ class MData():
         print("did we get here?")
 
 
-    def getpixelhistogram(self): #Commenting this block of code in for now SRW
+    def getpixelhistogram(self): 
         self.pixdata = np.array(self.fileData.iloc[:,11]) #This is code from SRW jupyter notebook
         # print(len(self.pixdata))
         self.hy,self.hx = np.histogram(self.pixdata)
@@ -70,7 +70,7 @@ class MData():
         # print("getpixelhistogram ran successfully")
         return(self.hy,self.hx)
 
-    def getnoisedata(self,eventno=0): #Commenting this block of code in for now SRW
+    def getnoisedata(self,eventno=0): 
         self.noisedata = self.hdFile.noiseWaves().waves()[eventno].compute()
         self.timeaxis = np.arange(len(self.noisedata)) * 4e-9
         self.noisedata = np.array(self.noisedata)
@@ -79,25 +79,35 @@ class MData():
 
         return(self.timeaxis,self.noisedata)
 
-    #*******************Attempt 1 extracting energies*********************
-    
-    #We need to instead try using nabpy to extract energies! 
+    #*******************Attempt 2 extracting energies*********************
+    ##Generating a list of all energies for each event 
+    #def getenergyhistogram(self): 
+        ##Extracting nested array
+        #self.newhdFile = hd.File("../datafiles/hdf5files/Run1612_0.h5", "r")
+        #self.evdata = np.array(self.newhdFile['events']) #Not sure if this line will work... might need to chnage data read-in
+        #self.energyExtract = np.array([i[6] for i in self.evdata])
+        ##Isolating energies
+        #self.energy_list = []  
+        #self.energyList = []
+        #for j in range (len(self.energyExtract)):
+            #self.energy_list.append([x[2] for x in self.energyExtract[j]])
+        #for i in range (len(self.energy_list)):
+            #self.energyList.append(float(self.energy_list[:][i][0]))
+        #self.updateEnList = np.asarray(self.energyList)
+        #print(self.updateEnList.dtype)
+        #print(self.updateEnList)
+        #self.hy,self.hx = np.histogram(self.updateEnList)
+        #self.hyNew=float(self.hy)
+        #self.hxNew=float(self.hx)
+        #return(self.hyNew, self.hxNew) 
 
-    #Commenting this out to push because there is an error associated with it.
-    
-    #def getenergyhistogram(self,bins=100):
-        """For now it is giving random data, update it accordingly"""
-        #self.evdata = np.array(self.hdFile['events'])
-        #print("ENERGY CODE STEP 2")
-        #self.nested_data = np.array([i[6] for i in (self.evdata)])
-        #print("ENERGY CODE STEP 3")
-        #self.energy_list = []
-        #for j in range (len(self.nested_data)):
-            #self.energy_list.append([x[2] for x in self.nested_data[j]])
-        #print(self.energy_list)
-        #return(self.energy_list)
-        #print("energy CODE RAN SUCCESSFULLY")
+    #*******************Attempt 2 extracting energies*********************
+    ##Generating a list of all energies for each event 
+    def getenergyhistogram(self):
+        self.enerG = self.hdFile.triggers().triggers()
+        #self.energyList = self.enerG.energy.to_numpy()
+        return(self.enerG) #maybe instead do self.enerG?? So we can do query in top/bottom detector??
+
         
-        
-        #self.counts, self.edges = np.histogram(np.random.random(200), bins = bins)
-        #return(self.edges, self.counts)
+
+

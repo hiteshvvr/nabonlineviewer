@@ -186,7 +186,7 @@ class MainWindow(QWidget):
         # print("printing hx, hy", self.hx, self.hy)
         # print(len(self.hx), len(self.hy))
 
-#********************* Third histogram Not used now ************************************ 
+#********************* Third histogram Not used now ************************************      
 
         self.pw3 = pg.PlotWidget(title="Many Events One after other")
         self.p3 = self.pw3.plot()
@@ -221,7 +221,7 @@ class MainWindow(QWidget):
         # self.r1layout.addWidget(self.pw1)
         self.r1layout.addWidget(self.sc1)  # PixDec
         self.r1layout.addWidget(self.pw2)
-        # self.r2layout.addWidget(self.pw3)
+        # self.r2layout.addWidget(self.pw3) #Originally commented out SRW
         self.r2layout.addWidget(self.pw4)
 
         # self.alayout.addWidget(self.setallVolt)
@@ -301,17 +301,17 @@ class MainWindow(QWidget):
     def updateall(self):
         if self.data is not None:
             self.updatepixhits()
-            #self.updateenergyhistogram() #Commenting this out to push because there is an error associated with it.
+            self.updateenergyhistogram() #Should I comment this out SRW?
             self.updatesingleevent()
             # self.updaterangeplot()
             # self.updatedistribution()
             # self.updatestackplot()
 
 #**************** Function to update Energy histogram *******************************#
-#Commenting this out to push because there is an error associated with it. 
-    #def updateenergyhistogram(self):
-        #self.edges, self.counts = self.data.getenergyhistogram(bins = 10)
-        #self.p2.setData(self.edges, self.counts)
+#Commenting this IN because now we have this function in MData class SRW 
+    def updateenergyhistogram(self):
+        self.edges, self.counts = self.data.getenergyhistogram(bins = 10)
+        self.p2.setData(self.edges, self.counts)
  
 #**************** Function to update Single Event *******************************#
     def updatesingleevent(self):
@@ -345,9 +345,9 @@ class MainWindow(QWidget):
         x, y = self.data.getrangedata(self.lims[0], self.lims[1], self.chan)
         self.p3.setData(x=x, y=y)
 
-    def updatedistribution(self):
-        hx, hy = self.data.gethistdistribution(self.chan)
-        self.p2.setData(hx, hy)
+    #def updatedistribution(self):
+        #hx, hy = self.data.gethistdistribution(self.chan)
+        #self.p2.setData(hx, hy)
 
            
 #*************** Other Functions not used now *****************************************************#

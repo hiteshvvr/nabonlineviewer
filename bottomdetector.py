@@ -72,10 +72,18 @@ class BottomDetector(QWidget): #SRW
         self.button_load = QPushButton('LoadData')
         self.button_load.clicked.connect(self.loaddata)
 
+        #SRW attempt at creating conditionals dropdown menu for energy histogram
+        self.label_conditional = QLabel("Conditionals")
+        self.label_conditional.setFixedWidth(60)
+        self.sel_conditional = QComboBox()
+        self.sel_conditional.addItems([str('>'), str('>='), str('<'), str('<='), str('='), str('!='), str('or')]) #These are the conditional symbols outlined in basicCuts from nabpy code 
+        self.sel_conditional.currentIndexChanged.connect(self.selectconditional) #This was selectchannel???
+        self.cond = 0
+
         self.label_channo = QLabel("Channel")
         self.label_channo.setFixedWidth(60)
         self.sel_channo = QComboBox()
-        self.sel_channo.addItems([str(i+1) for i in np.arange(24)])
+        self.sel_channo.addItems([str(i+1) for i in np.arange(127,254)]) #The channel numbers for bottom detector are 128-254
         self.sel_channo.currentIndexChanged.connect(self.selectchannel)
         self.chan = 0
 
@@ -117,6 +125,7 @@ class BottomDetector(QWidget): #SRW
         #self.inlayout.addWidget(self.field_foldname)
         #self.inlayout.addWidget(self.field_runno)
         self.inlayout.addWidget(self.button_load)
+        self.inlayout.addWidget(self.sel_conditional)
         self.inlayout.addWidget(self.sel_channo)
 
         self.in2layout.addWidget(self.button_freerun)
@@ -283,6 +292,13 @@ class BottomDetector(QWidget): #SRW
         tchan = int(self.sel_channo.currentText()) - 1
         # print(tchan, type(tchan))
         self.chan = tchan
+        # self.value_totarea.setText(str(self.data.getarea(self.chan)))
+        self.updateall()
+
+    def selectconditional(self): #SRW conditionals requirement????
+        tcond = int(self.sel_conditional.currentText()) - 1
+        # print(tchan, type(tchan))
+        self.cond = tcond
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
         self.updateall()
 
