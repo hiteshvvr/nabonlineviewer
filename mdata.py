@@ -72,18 +72,19 @@ class MData():
         return(self.hy,self.hx)
 
     def getsingleeventdata(self,eventType='noise',channel='0',eventno=0):
-        self.data = np.random.random(10)
+        self.pulsedata= np.random.random(10)
         self.timeaxis = np.arange(10)
 
         if eventType == 'noise':
-            self.data = self.hdFile.noiseWaves().waves()[eventno].compute()
+            self.pulsedata = self.hdFile.noiseWaves().waves()[eventno].compute()
         
-        self.timeaxis = np.arange(len(self.data)) * 4e-9
-        self.noisedata = np.array(self.data)
+        self.timeaxis = np.arange(len(self.pulsedata)) * 4e-9
+        print(len(self.pulsedata))
+        # self.noisedata = np.array(self.singledata)
         # print(len(self.noisedata),len(self.timeaxis))
         # print(self.noisedata[:2],self.timeaxis[:2])
 
-        return(self.timeaxis,self.noisedata)
+        return(self.timeaxis,self.pulsedata)
 
     #*******************Attempt 2 extracting energies*********************
     ##Generating a list of all energies for each event 
@@ -109,11 +110,20 @@ class MData():
 
     #*******************Attempt 2 extracting energies*********************
     ##Generating a list of all energies for each event 
-    def getenergyhistogram(self):
-        self.hdFile = Nab.DataRun(self.foldname, 2442) #Having to redefine for now because it is initially returning null array and wont execute energy histogram code 
-        self.enerG = self.hdFile.triggers().triggers()
-        #self.energyList = self.enerG.energy.to_numpy()
-        return(self.enerG) #maybe instead do self.enerG?? So we can do query in top/bottom detector??
+    def getenergyhistogram(self,bins=10,channel=27182):
+        self.bins = bins
+        self.trigs = self.hdFile.triggers().triggers()
+        if channel == 27182:                               # this number is natural log, chosed to represent all pixels in lower detector
+            self.energy = self.trigs.query("pixel<128").energy.to_numpy()
+        elif channel == 31415:                               # this number is pi, chosed to represent all pixels in upper detector
+            self.energy = self.trigs.query("pixel>128").energy.to_numpy()
+        else:
+            self.energy = self.trigs.query("pixel == @channel").energy.to_numpy()
+        
+            
+        self.counts ,self.bins = np.histogram(self.energy, self.bins)
+        
+        return(self.counts, self.bins) #maybe instead do self.enerG?? So we can do query in top/bottom detector??
 
         
 

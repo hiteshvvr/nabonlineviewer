@@ -78,7 +78,7 @@ class TopDetector(QWidget): #SRW
         self.sel_eventType = QComboBox() 
         self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsrWaves'), str('noiseWaves')]) #These are the only event types nabpy can take as an argument  
         self.sel_eventType.currentIndexChanged.connect(self.selecteventType)
-        self.eventType = 0
+        self.eventType = 'noise'
 
         #Creating conditionals dropdown menu for energy histogram
         self.label_conditional = QLabel("Conditionals")
@@ -97,7 +97,6 @@ class TopDetector(QWidget): #SRW
         self.chan = 0
 
         self.evtno = 42
-        self.eventType = 'noise'
 
 
         self.lims = [2, 10]
@@ -313,10 +312,8 @@ class TopDetector(QWidget): #SRW
 
 #*************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
     def selectchannel(self):
-        tchan = int(self.sel_channo.currentText()) - 1
+        self.chan = int(self.sel_channo.currentText()) - 1
         # print(tchan, type(tchan))
-        self.chan = tchan
-        # self.value_totarea.setText(str(self.data.getarea(self.chan)))
         self.updateenergyhistogram()
         self.updatesingleevent() #Changed from updateall(); not sure if it's right
 
@@ -338,6 +335,7 @@ class TopDetector(QWidget): #SRW
         print(self.eventType)
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
         self.updatesingleevent() #Idk if this one is right; maybe add energy histogram if we can figure out later how to add event type 
+        self.updatepixhits()
 
     def getevntno(self):
         tempevnt = self.value_evtno.text().split(sep=",")
@@ -362,14 +360,14 @@ class TopDetector(QWidget): #SRW
 
 #**************** Function to update Energy histogram *******************************#
     def updateenergyhistogram(self): #SRW commenting out for now to remove errors
-        self.edges, self.counts = self.data.getenergyhistogram(bins = 10)
+        self.counts, self.edges = self.data.getenergyhistogram(bins = 200,channel=27182)
         self.p2.setData(self.edges, self.counts)
  
 #**************** Function to update Single Event *******************************#
     def updatesingleevent(self):
-        self.timeax, self.data = self.data.getsingleeventdata(self.eventType,'0',eventno=0)
+        self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,'0',eventno=self.evtno)
         # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
-        self.p4.setData(self.timeax,self.noisedata)
+        self.p4.setData(self.timeax,self.pulsedata)
     
 #**************** Function to update pixel hits *******************************#
     def updatepixhits(self):

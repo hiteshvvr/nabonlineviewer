@@ -56,7 +56,7 @@ class MainWindow(QWidget):
         self.r2layout = QHBoxLayout()
         
         self.foldname = "../datafiles/hdf5files/"
-        self.runno = 2442
+        self.runno = 2447
         
         self.button_foldname = QPushButton('Select Folder')
         self.button_foldname.clicked.connect(self.dialog)
@@ -300,9 +300,10 @@ class MainWindow(QWidget):
 #**************** Function to update all plots *******************************#
     def updateall(self):
         if self.data is not None:
-            self.updatepixhits()
-            self.updateenergyhistogram() #Should I comment this out SRW?
-            self.updatesingleevent()
+            print("Mainwindow do not update anything, all plotting is in Topdetector now")
+            # self.updatepixhits()
+            # self.updateenergyhistogram() #Should I comment this out SRW?
+            # self.updatesingleevent()
             # self.updaterangeplot()
             # self.updatedistribution()
             # self.updatestackplot()
@@ -323,7 +324,7 @@ class MainWindow(QWidget):
     def updatepixhits(self):
         # self.sc1.fig.clear(keep_observers=True)
         if self.data is not None:
-            self.pixhits= self.data.getDetPixData()
+            self.pixhits= self.data.getDetPixData(self.eventType)
             self.scalarMap = self.plotOneDetector(self.pixhits, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
             self.sc1.draw()
         # print(self.pixhits)
