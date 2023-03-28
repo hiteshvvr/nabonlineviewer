@@ -72,7 +72,15 @@ class TopDetector(QWidget): #SRW
         self.button_load = QPushButton('LoadData')
         self.button_load.clicked.connect(self.loaddata)
 
-        #SRW attempt at creating conditionals dropdown menu for energy histogram
+        #Creating dropdown menu to select event type 
+        self.label_eventType = QLabel("Event Type")
+        self.label_eventType.setFixedWidth(60)
+        self.sel_eventType = QComboBox() 
+        self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsrWaves'), str('noiseWaves')]) #These are the only event types nabpy can take as an argument  
+        self.sel_eventType.currentIndexChanged.connect(self.selecteventType)
+        self.eventType = 0
+
+        #Creating conditionals dropdown menu for energy histogram
         self.label_conditional = QLabel("Conditionals")
         self.label_conditional.setFixedWidth(60)
         self.sel_conditional = QComboBox()
@@ -80,6 +88,7 @@ class TopDetector(QWidget): #SRW
         self.sel_conditional.currentIndexChanged.connect(self.selectconditional)
         self.cond = 0
 
+        #Creating dropdown menu to select the channel number 
         self.label_channo = QLabel("Channel")
         self.label_channo.setFixedWidth(60)
         self.sel_channo = QComboBox()
@@ -88,6 +97,9 @@ class TopDetector(QWidget): #SRW
         self.chan = 0
 
         self.evtno = 42
+        self.eventType = 'noise'
+
+
         self.lims = [2, 10]
         self.totevnt = 0
         self.totarea = 0
@@ -125,7 +137,8 @@ class TopDetector(QWidget): #SRW
         #self.inlayout.addWidget(self.field_foldname)
         #self.inlayout.addWidget(self.field_runno)
         self.inlayout.addWidget(self.button_load)
-        self.inlayout.addWidget(self.sel_conditional)
+        self.inlayout.addWidget(self.sel_eventType) #Dropdown menu that allows user to select the event type 
+        self.inlayout.addWidget(self.sel_conditional) #Dropdown menu that allows user to select a conditional symbol
         self.inlayout.addWidget(self.sel_channo)
     
 
@@ -185,13 +198,23 @@ class TopDetector(QWidget): #SRW
         self.pw2 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Hit Pixel Data</span>')
         self.p2 = self.pw2.plot(stepMode="center",fillLevel=0)#, fillOutline=True,brush=(100,0,0))
         self.p2.setPen(color=(0, 0, 0), width=2)
-        self.pw2.setLabel('left', 'Counts', units='arb')
-        self.pw2.setLabel('bottom', 'Pixel', units='arb')
+        self.pw2.setLabel('left', 'Energy', units='arb')
+        self.pw2.setLabel('bottom', 'Bin', units='arb')
         self.pw2.showGrid(x=True, y=True)
         
-        self.hy, self.hx = np.histogram(np.random.random(100),bins=20)
-        self.p2.setData(self.hx, self.hy)
+        #This is the new energy histgram stuff 3/27/2023
+        #self.energies = self.data.getenergyhistogram()
+        #self.energies.defineCut('energy', '>', 100)
+        #self.energiesNew = self.energies.hist('energy', bins = Nab.np.arange(0, 200))
+        #self.energiesNew = self.energies.hist('energy')
+        #self.enerGNew = np.reshape(self.energiesNew, (1,))    
+        #self.enerG.show()
+        #self.p2.setData(self.energiesNew)
         
+        
+        #This is all the old stuff 
+        #self.hy, self.hx = np.histogram(np.random.random(100),bins=20)
+        #self.p2.setData(self.hx, self.hy)
         # self.hy,self.hx = self.data.getpixelhistogram() #SRW newly written line
         # print("printing hx, hy", self.hx, self.hy)
         # print(len(self.hx), len(self.hy))
@@ -294,14 +317,27 @@ class TopDetector(QWidget): #SRW
         # print(tchan, type(tchan))
         self.chan = tchan
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
-        self.updateall()
+        self.updateenergyhistogram()
+        self.updatesingleevent() #Changed from updateall(); not sure if it's right
 
-    def selectconditional(self): #SRW conditionals requirement????
+    #Connecting conditional selection to energy histogram code
+    def selectconditional(self): 
         tcond = int(self.sel_conditional.currentText()) - 1
         # print(tchan, type(tchan))
         self.cond = tcond
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
-        self.updateall()
+        self.updateenergyhistogram() #changed from self.updateall()
+    
+    #Connecting event type selection to energy histogram and scatter plot 
+    def selecteventType(self): 
+        # teventType = int(self.sel_eventType.currentText()) - 1
+        teventType = self.sel_eventType.currentText()
+
+        # print(tchan, type(tchan))
+        self.eventType = teventType
+        print(self.eventType)
+        # self.value_totarea.setText(str(self.data.getarea(self.chan)))
+        self.updatesingleevent() #Idk if this one is right; maybe add energy histogram if we can figure out later how to add event type 
 
     def getevntno(self):
         tempevnt = self.value_evtno.text().split(sep=",")
@@ -318,27 +354,28 @@ class TopDetector(QWidget): #SRW
     def updateall(self):
         if self.data is not None:
             self.updatepixhits()
-            #self.updateenergyhistogram() #SRW commenting out for now to remove errors
+            self.updateenergyhistogram() #SRW commenting out for now to remove errors
             self.updatesingleevent()
             # self.updaterangeplot()
             # self.updatedistribution()
             # self.updatestackplot()
 
 #**************** Function to update Energy histogram *******************************#
-    #def updateenergyhistogram(self): #SRW commenting out for now to remove errors
-        #self.edges, self.counts = self.data.getenergyhistogram(bins = 10)
-        #self.p2.setData(self.edges, self.counts)
+    def updateenergyhistogram(self): #SRW commenting out for now to remove errors
+        self.edges, self.counts = self.data.getenergyhistogram(bins = 10)
+        self.p2.setData(self.edges, self.counts)
  
 #**************** Function to update Single Event *******************************#
     def updatesingleevent(self):
-        self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
+        self.timeax, self.data = self.data.getsingleeventdata(self.eventType,'0',eventno=0)
+        # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
         self.p4.setData(self.timeax,self.noisedata)
     
 #**************** Function to update pixel hits *******************************#
     def updatepixhits(self):
         # self.sc1.fig.clear(keep_observers=True)
         if self.data is not None:
-            self.pixhits= self.data.getDetPixData()
+            self.pixhits= self.data.getDetPixData(self.eventType)
             self.scalarMap = self.plotOneDetector(self.pixhits, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
             self.sc1.draw()
         # print(self.pixhits)

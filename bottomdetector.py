@@ -72,6 +72,14 @@ class BottomDetector(QWidget): #SRW
         self.button_load = QPushButton('LoadData')
         self.button_load.clicked.connect(self.loaddata)
 
+        #Creating dropdown menu to select event type 
+        self.label_eventType = QLabel("Event Type")
+        self.label_eventType.setFixedWidth(60)
+        self.sel_eventType = QComboBox() 
+        self.sel_eventType.addItems([str('singleWaves'), str('coincWaves'), str('pulsrWaves'), str('noiseWaves')]) #These are the only event types nabpy can take as an argument  
+        self.sel_eventType.currentIndexChanged.connect(self.selecteventType)
+        self.eventType = 0
+
         #SRW attempt at creating conditionals dropdown menu for energy histogram
         self.label_conditional = QLabel("Conditionals")
         self.label_conditional.setFixedWidth(60)
@@ -125,6 +133,7 @@ class BottomDetector(QWidget): #SRW
         #self.inlayout.addWidget(self.field_foldname)
         #self.inlayout.addWidget(self.field_runno)
         self.inlayout.addWidget(self.button_load)
+        self.inlayout.addWidget(self.sel_eventType)
         self.inlayout.addWidget(self.sel_conditional)
         self.inlayout.addWidget(self.sel_channo)
 
@@ -295,10 +304,18 @@ class BottomDetector(QWidget): #SRW
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
         self.updateall()
 
-    def selectconditional(self): #SRW conditionals requirement????
+    def selectconditional(self): 
         tcond = int(self.sel_conditional.currentText()) - 1
         # print(tchan, type(tchan))
         self.cond = tcond
+        # self.value_totarea.setText(str(self.data.getarea(self.chan)))
+        self.updateall()
+    
+    #Connecting event type selection to energy histogram and scatter plot 
+    def selecteventType(self): 
+        teventType = int(self.sel_eventType.currentText()) - 1
+        # print(tchan, type(tchan))
+        self.eventType = teventType
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
         self.updateall()
 

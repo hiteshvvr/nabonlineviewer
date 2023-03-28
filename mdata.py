@@ -49,8 +49,9 @@ class MData():
         self.fileData = self.hdFile.noiseWaves().headers()
         # print("this ran successfully")
 
-    def getDetPixData(self):
-        self.pixhist = self.hdFile.plotHitLocations('noise', size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
+    def getDetPixData(self,eventType):
+        self.eventType = eventType
+        self.pixhist = self.hdFile.plotHitLocations(self.eventType, size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
         return(self.pixhist)
 
     
@@ -70,10 +71,15 @@ class MData():
         # print("getpixelhistogram ran successfully")
         return(self.hy,self.hx)
 
-    def getnoisedata(self,eventno=0): 
-        self.noisedata = self.hdFile.noiseWaves().waves()[eventno].compute()
-        self.timeaxis = np.arange(len(self.noisedata)) * 4e-9
-        self.noisedata = np.array(self.noisedata)
+    def getsingleeventdata(self,eventType='noise',channel='0',eventno=0):
+        self.data = np.random.random(10)
+        self.timeaxis = np.arange(10)
+
+        if eventType == 'noise':
+            self.data = self.hdFile.noiseWaves().waves()[eventno].compute()
+        
+        self.timeaxis = np.arange(len(self.data)) * 4e-9
+        self.noisedata = np.array(self.data)
         # print(len(self.noisedata),len(self.timeaxis))
         # print(self.noisedata[:2],self.timeaxis[:2])
 
@@ -104,6 +110,7 @@ class MData():
     #*******************Attempt 2 extracting energies*********************
     ##Generating a list of all energies for each event 
     def getenergyhistogram(self):
+        self.hdFile = Nab.DataRun(self.foldname, 2442) #Having to redefine for now because it is initially returning null array and wont execute energy histogram code 
         self.enerG = self.hdFile.triggers().triggers()
         #self.energyList = self.enerG.energy.to_numpy()
         return(self.enerG) #maybe instead do self.enerG?? So we can do query in top/bottom detector??

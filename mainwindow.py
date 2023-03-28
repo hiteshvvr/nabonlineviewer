@@ -56,7 +56,7 @@ class MainWindow(QWidget):
         self.r2layout = QHBoxLayout()
         
         self.foldname = "../datafiles/hdf5files/"
-        self.runno = 1612
+        self.runno = 2442
         
         self.button_foldname = QPushButton('Select Folder')
         self.button_foldname.clicked.connect(self.dialog)
@@ -315,7 +315,8 @@ class MainWindow(QWidget):
  
 #**************** Function to update Single Event *******************************#
     def updatesingleevent(self):
-        self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
+        self.timeax, self.data = self.data.getsingleeventdata(self.eventType,'0',eventno=0)
+        # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
         self.p4.setData(self.timeax,self.noisedata)
     
 #**************** Function to update pixel hits *******************************#
