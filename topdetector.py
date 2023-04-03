@@ -145,13 +145,13 @@ class TopDetector(QWidget): #SRW
         self.in2layout.addWidget(self.button_nextevt)
         self.in2layout.addWidget(self.label_evtno)
         self.in2layout.addWidget(self.value_evtno)
-        self.in2layout.addWidget(self.label_lims)
-        self.in2layout.addWidget(self.value_lims)
+        #self.in2layout.addWidget(self.label_lims)
+        #self.in2layout.addWidget(self.value_lims)
 
-        self.in2layout.addWidget(self.label_totevt)
-        self.in2layout.addWidget(self.value_totevt)
-        self.in2layout.addWidget(self.label_totarea)
-        self.in2layout.addWidget(self.value_totarea)
+        #self.in2layout.addWidget(self.label_totevt)
+        #self.in2layout.addWidget(self.value_totevt)
+        #self.in2layout.addWidget(self.label_totarea)
+        #self.in2layout.addWidget(self.value_totarea)
 
         # self.gwin = pg.GraphicsWindow()
         # self.rplt = self.gwin.addPlot()
@@ -194,7 +194,7 @@ class TopDetector(QWidget): #SRW
 #********************* Get Second histogram with pix hist(with random data ***********) *******************
 
         # self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
-        self.pw2 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Hit Pixel Data</span>')
+        self.pw2 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Energy Histogram</span>')
         self.p2 = self.pw2.plot(stepMode="center",fillLevel=0)#, fillOutline=True,brush=(100,0,0))
         self.p2.setPen(color=(0, 0, 0), width=2)
         self.pw2.setLabel('left', 'Energy', units='arb')
@@ -233,7 +233,7 @@ class TopDetector(QWidget): #SRW
         self.p3.setData(x=self.timeax, y=self.noisedata)
         
 #********************* Example of scatter plot if needed ***********  #
-        self.pw4 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Single Event Plot(can be noise)</span>')
+        self.pw4 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Single Event Plot</span>')
         self.pw4.showGrid(x=True, y=True)
         self.pw4.setLabel('left', 'Value', units='arb')
         self.pw4.setLabel('bottom', 'Time', units='arb')
@@ -422,7 +422,7 @@ class TopDetector(QWidget): #SRW
 
     def runfreerun(self):
         if self.button_freerun.isChecked():
-            self.timer.timeout.connect(self.randxy)
+            self.timer.timeout.connect(self.shownextevent)
             self.timer.start(2000)
         else:
             self.timer.stop()

@@ -117,7 +117,7 @@ class MainWindow(QWidget):
         self.inlayout.addWidget(self.field_foldname)
         self.inlayout.addWidget(self.field_runno)
         self.inlayout.addWidget(self.button_load)
-        self.inlayout.addWidget(self.sel_channo)
+        #self.inlayout.addWidget(self.sel_channo)
 
         self.in2layout.addWidget(self.button_freerun)
         self.in2layout.addWidget(self.button_nextevt)
@@ -161,14 +161,25 @@ class MainWindow(QWidget):
         
         
 #******************** Get PixHits (With random data)   **********************       
-        self.size = 2
-        self.sc1 = MplCanvas(self, width=4*self.size, height=3.5*self.size, dpi=100)  # PixDec
-        randompixhist = np.random.random(127)                                         # Random pix hit without loading data
-        self.customcmap = self.getmycmap(basemap='cividis')                           # To get better colormaps that in nabpy
-        self.scalarMap = self.plotOneDetector(randompixhist, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
+        #self.size = 2
+        #self.sc1 = MplCanvas(self, width=4*self.size, height=3.5*self.size, dpi=100)  # PixDec
+        #randompixhist = np.random.random(127)                                         # Random pix hit without loading data
+        #self.customcmap = self.getmycmap(basemap='cividis')                           # To get better colormaps that in nabpy
+        #self.scalarMap = self.plotOneDetector(randompixhist, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
         # scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=self.customcmap)
-        self.sc1.fig.colorbar(self.scalarMap, ax=self.sc1.ax)
-        self.tmp = 1
+        #self.sc1.fig.colorbar(self.scalarMap, ax=self.sc1.ax)
+        #self.tmp = 1
+
+#******************** Get Run Data Summary   ********************** 
+        #self.pw1 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Run Data Summary</span>')
+        #self.p1 = self.pw1.plot(stepMode="center",fillLevel=0)#, fillOutline=True,brush=(100,0,0))
+        #self.p1.setPen(color=(0, 0, 0), width=2)
+        #self.pw1.setLabel('left', 'Counts', units='arb')
+        #self.pw1.setLabel('bottom', 'Pixel', units='arb')
+        #self.pw1.showGrid(x=True, y=True)
+        
+        #self.dataSummary = self.data.getDataSummary() #This is the line giving errors
+        #self.p2.setData(self.dataSummary)
 #********************* Get Second histogram with pix hist(with random data ***********) *******************
 
         # self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
@@ -201,7 +212,7 @@ class MainWindow(QWidget):
         self.p3.setData(x=self.timeax, y=self.noisedata)
         
 #********************* Example of scatter plot if needed ***********  #
-        self.pw4 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Single Event Plot(can be noise)</span>')
+        self.pw4 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Single Event Plot</span>')
         self.pw4.showGrid(x=True, y=True)
         self.pw4.setLabel('left', 'Value', units='arb')
         self.pw4.setLabel('bottom', 'Time', units='arb')
@@ -218,8 +229,8 @@ class MainWindow(QWidget):
         self.timer = QtCore.QTimer()
 
 #********************* Layouts ***********  #
-        # self.r1layout.addWidget(self.pw1)
-        self.r1layout.addWidget(self.sc1)  # PixDec
+        #self.r1layout.addWidget(self.pw1)
+        #self.r1layout.addWidget(self.sc1)  # PixDec
         self.r1layout.addWidget(self.pw2)
         # self.r2layout.addWidget(self.pw3) #Originally commented out SRW
         self.r2layout.addWidget(self.pw4)
@@ -228,7 +239,7 @@ class MainWindow(QWidget):
         # self.alayout.addWidget(self.gwin)
         # self.alayout.addLayout(self.inlayout)
         self.mainlayout.addLayout(self.inlayout)
-        self.mainlayout.addLayout(self.in2layout)
+        #self.mainlayout.addLayout(self.in2layout)
         self.mainlayout.addLayout(self.r1layout)
         self.mainlayout.addLayout(self.r2layout)
         # self.alayout.addWidget(self.pw1)
@@ -321,12 +332,12 @@ class MainWindow(QWidget):
         self.p4.setData(self.timeax,self.noisedata)
     
 #**************** Function to update pixel hits *******************************#
-    def updatepixhits(self):
+    #def updatepixhits(self):
         # self.sc1.fig.clear(keep_observers=True)
-        if self.data is not None:
-            self.pixhits= self.data.getDetPixData(self.eventType)
-            self.scalarMap = self.plotOneDetector(self.pixhits, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
-            self.sc1.draw()
+        #if self.data is not None:
+            #self.pixhits= self.data.getDetPixData(self.eventType)
+            #self.scalarMap = self.plotOneDetector(self.pixhits, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
+            #self.sc1.draw()
         # print(self.pixhits)
         # self.sc1.ax.cla()
         # self.pixhits= self.tmp * np.random.random(127)                                         # Random pix hit without loading data
@@ -335,10 +346,10 @@ class MainWindow(QWidget):
 #***********************************************#*******************************#
 
 
-    def updatexy(self):
-        if self.data is not None:
-            x, y = self.data.getsingle_chan_evnt(self.evtno, self.chan)
-            self.p1.setData(x=x, y=y)
+    #def updatexy(self):
+        #if self.data is not None:
+            #x, y = self.data.getsingle_chan_evnt(self.evtno, self.chan)
+            #self.p1.setData(x=x, y=y)
 
     def updaterangeplot(self):
         self.getlims()

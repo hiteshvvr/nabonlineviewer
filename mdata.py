@@ -54,6 +54,27 @@ class MData():
         self.pixhist = self.hdFile.plotHitLocations(self.eventType, size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
         return(self.pixhist)
 
+    #YOU NEED TO FIGURE THIS OUT :,)
+    def getDataSummary(self):
+        self.trigger = self.hdFile.triggers().numtrigs()
+        self.strTrig = f"Triggers: {self.trigger}"
+        self.singles = self.hdFile.singleWaves().numWaves
+        self.strSingles = f"Singles: {self.singles}"
+        self.coincs = self.hdFile.coincWaves().numWaves
+        self.strCoincs = f"Coincidences: {self.coincs}"
+        self.noise = self.hdFile.noiseWaves().numWaves
+        self.strNoise = f"Baseline Traces: {self.noise}"
+        self.pulse = self.hdFile.pulsrWaves().numWaves
+        self.strPulse = f"Pulsers: {self.pulse}"
+        return(self.strTrig, self.strSingles, self.strCoincs, self.strNoise, self.strPulse) 
+        #print(type(self.strTrig))
+
+
+        #print('Triggers: ', self.hdFile.triggers().numtrigs)
+        #print('Singles: ', self.hdFile.singleWaves().numWaves)
+        #print('Coincidences: ', self.hdFile.coincWaves().numWaves)
+        #print('Baseline Traces: ', self.hdFile.noiseWaves().numWaves)
+        #print('Pulsers: ', self.hdFile.pulsrWaves().numWaves)
     
 
     def getsinglesdata(self):
