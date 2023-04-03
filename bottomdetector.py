@@ -87,8 +87,7 @@ class BottomDetector(QWidget):  # SRW
         self.sel_conditional = QComboBox()
         self.sel_conditional.addItems([str('>'), str('>='), str('<'), str('<='), str('='), str(
             '!='), str('or')])  # These are the conditional symbols outlined in basicCuts from nabpy code
-        self.sel_conditional.currentIndexChanged.connect(
-            self.selectconditional)
+        self.sel_conditional.currentIndexChanged.connect(self.selectconditional)
         self.cond = 0
 
         # Creating dropdown menu to select the channel number
@@ -149,13 +148,13 @@ class BottomDetector(QWidget):  # SRW
         self.in2layout.addWidget(self.button_nextevt)
         self.in2layout.addWidget(self.label_evtno)
         self.in2layout.addWidget(self.value_evtno)
-        self.in2layout.addWidget(self.label_lims)
-        self.in2layout.addWidget(self.value_lims)
+        #self.in2layout.addWidget(self.label_lims)
+        #self.in2layout.addWidget(self.value_lims)
 
-        self.in2layout.addWidget(self.label_totevt)
-        self.in2layout.addWidget(self.value_totevt)
-        self.in2layout.addWidget(self.label_totarea)
-        self.in2layout.addWidget(self.value_totarea)
+        #self.in2layout.addWidget(self.label_totevt)
+        #self.in2layout.addWidget(self.value_totevt)
+        #self.in2layout.addWidget(self.label_totarea)
+        #self.in2layout.addWidget(self.value_totarea)
 
         # self.gwin = pg.GraphicsWindow()
         # self.rplt = self.gwin.addPlot()
@@ -202,7 +201,7 @@ class BottomDetector(QWidget):  # SRW
 
         # self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
         self.pw2 = pg.PlotWidget(
-            title='<span style="color: #000; font-size: 16pt;">Hit Pixel Data</span>')
+            title='<span style="color: #000; font-size: 16pt;">Energy Histogram</span>')
         # , fillOutline=True,brush=(100,0,0))
         self.p2 = self.pw2.plot(stepMode="center", fillLevel=0)
         self.p2.setPen(color=(0, 0, 0), width=2)
@@ -242,7 +241,7 @@ class BottomDetector(QWidget):  # SRW
 
 # ********************* Example of scatter plot if needed ***********  #
         self.pw4 = pg.PlotWidget(
-            title='<span style="color: #000; font-size: 16pt;">Single Event Plot(can be noise)</span>')
+            title='<span style="color: #000; font-size: 16pt;">Single Event Plot</span>')
         self.pw4.showGrid(x=True, y=True)
         self.pw4.setLabel('left', 'Value', units='arb')
         self.pw4.setLabel('bottom', 'Time', units='arb')
@@ -436,7 +435,7 @@ class BottomDetector(QWidget):  # SRW
 
     def runfreerun(self):
         if self.button_freerun.isChecked():
-            self.timer.timeout.connect(self.randxy)
+            self.timer.timeout.connect(self.shownextevent)
             self.timer.start(2000)
         else:
             self.timer.stop()
