@@ -162,7 +162,7 @@ class Flipper(QWidget):
         # self.value_totevt = QLineEdit(str(self.totevnt))
 
         # self.label_totarea = QLabel("Area")
-        # # self.label_totarea.setFixedWidth(60)
+        # # self.label_totarea.setFixedWidth(60) # test
         # self.value_totarea = QLineEdit(str(self.totarea))
 
         # self.value_evtno.textChanged.connect(self.updateevent)

@@ -32,7 +32,7 @@ class MplCanvas(FigureCanvasQTAgg):
 # hdfile.plotHitLocations('noise', size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
 
 
-class MainWindow(QWidget):
+class TopDetector(QWidget): #SRW
     # def __init__(self, parent) -> None:
     def __init__(self, data):
         super(QWidget, self).__init__()
@@ -55,31 +55,50 @@ class MainWindow(QWidget):
         self.r1layout = QHBoxLayout()
         self.r2layout = QHBoxLayout()
         
-        self.foldname = "../datafiles/hdf5files/"
-        self.runno = 2447
+        #self.foldname = "../datafiles/hdf5files/"
+        #self.runno = 1612
         
-        self.button_foldname = QPushButton('Select Folder')
-        self.button_foldname.clicked.connect(self.dialog)
-        self.field_foldname = QLineEdit(self.foldname)
-        self.field_runno = QLineEdit(str(self.runno))
+        #self.button_foldname = QPushButton('Select Folder')
+        #self.button_foldname.clicked.connect(self.dialog)
+        #self.field_foldname = QLineEdit(self.foldname)
+        #self.field_runno = QLineEdit(str(self.runno))
         
         # self.field_foldname.textChanged.connect(self.updatefoldname)
         # self.field_runno.textChanged.connect(self.updaterunno)
         
-        self.data.foldname = self.foldname
-        self.data.runno = self.runno
+        #self.data.foldname = self.foldname
+        #self.data.runno = self.runno
         
         self.button_load = QPushButton('LoadData')
         self.button_load.clicked.connect(self.loaddata)
 
+        #Creating dropdown menu to select event type 
+        self.label_eventType = QLabel("Event Type")
+        self.label_eventType.setFixedWidth(60)
+        self.sel_eventType = QComboBox() 
+        self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsrWaves'), str('noiseWaves')]) #These are the only event types nabpy can take as an argument  
+        self.sel_eventType.currentIndexChanged.connect(self.selecteventType)
+        self.eventType = 'noise'
+
+        #Creating conditionals dropdown menu for energy histogram
+        self.label_conditional = QLabel("Conditionals")
+        self.label_conditional.setFixedWidth(60)
+        self.sel_conditional = QComboBox()
+        self.sel_conditional.addItems([str('>'), str('>='), str('<'), str('<='), str('='), str('!='), str('or')]) #These are the conditional symbols outlined in basicCuts from nabpy code 
+        self.sel_conditional.currentIndexChanged.connect(self.selectconditional)
+        self.cond = 0
+
+        #Creating dropdown menu to select the channel number 
         self.label_channo = QLabel("Channel")
         self.label_channo.setFixedWidth(60)
         self.sel_channo = QComboBox()
-        self.sel_channo.addItems([str(i+1) for i in np.arange(24)])
+        self.sel_channo.addItems([str(i+1) for i in np.arange(127)]) #The channel numbers for top detector are 1-127 
         self.sel_channo.currentIndexChanged.connect(self.selectchannel)
         self.chan = 0
 
         self.evtno = 42
+
+
         self.lims = [2, 10]
         self.totevnt = 0
         self.totarea = 0
@@ -113,11 +132,14 @@ class MainWindow(QWidget):
         # self.field_fname.setMaximumWidth(self.width)
         # self.space = QSpacerItem(10,5)
 
-        self.inlayout.addWidget(self.button_foldname)
-        self.inlayout.addWidget(self.field_foldname)
-        self.inlayout.addWidget(self.field_runno)
+        #self.inlayout.addWidget(self.button_foldname)
+        #self.inlayout.addWidget(self.field_foldname)
+        #self.inlayout.addWidget(self.field_runno)
         self.inlayout.addWidget(self.button_load)
+        self.inlayout.addWidget(self.sel_eventType) #Dropdown menu that allows user to select the event type 
+        self.inlayout.addWidget(self.sel_conditional) #Dropdown menu that allows user to select a conditional symbol
         self.inlayout.addWidget(self.sel_channo)
+    
 
         self.in2layout.addWidget(self.button_freerun)
         self.in2layout.addWidget(self.button_nextevt)
@@ -175,18 +197,28 @@ class MainWindow(QWidget):
         self.pw2 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Hit Pixel Data</span>')
         self.p2 = self.pw2.plot(stepMode="center",fillLevel=0)#, fillOutline=True,brush=(100,0,0))
         self.p2.setPen(color=(0, 0, 0), width=2)
-        self.pw2.setLabel('left', 'Counts', units='arb')
-        self.pw2.setLabel('bottom', 'Pixel', units='arb')
+        self.pw2.setLabel('left', 'Energy', units='arb')
+        self.pw2.setLabel('bottom', 'Bin', units='arb')
         self.pw2.showGrid(x=True, y=True)
         
-        self.hy, self.hx = np.histogram(np.random.random(100),bins=20)
-        self.p2.setData(self.hx, self.hy)
+        #This is the new energy histgram stuff 3/27/2023
+        #self.energies = self.data.getenergyhistogram()
+        #self.energies.defineCut('energy', '>', 100)
+        #self.energiesNew = self.energies.hist('energy', bins = Nab.np.arange(0, 200))
+        #self.energiesNew = self.energies.hist('energy')
+        #self.enerGNew = np.reshape(self.energiesNew, (1,))    
+        #self.enerG.show()
+        #self.p2.setData(self.energiesNew)
         
+        
+        #This is all the old stuff 
+        #self.hy, self.hx = np.histogram(np.random.random(100),bins=20)
+        #self.p2.setData(self.hx, self.hy)
         # self.hy,self.hx = self.data.getpixelhistogram() #SRW newly written line
         # print("printing hx, hy", self.hx, self.hy)
         # print(len(self.hx), len(self.hy))
 
-#********************* Third histogram Not used now ************************************      
+#********************* Third histogram Not used now ************************************ 
 
         self.pw3 = pg.PlotWidget(title="Many Events One after other")
         self.p3 = self.pw3.plot()
@@ -221,7 +253,7 @@ class MainWindow(QWidget):
         # self.r1layout.addWidget(self.pw1)
         self.r1layout.addWidget(self.sc1)  # PixDec
         self.r1layout.addWidget(self.pw2)
-        # self.r2layout.addWidget(self.pw3) #Originally commented out SRW
+        # self.r2layout.addWidget(self.pw3)
         self.r2layout.addWidget(self.pw4)
 
         # self.alayout.addWidget(self.setallVolt)
@@ -256,35 +288,54 @@ class MainWindow(QWidget):
         else:
             self.file = "file not found!!"
 
-    def updatefoldname(self):
-        self.foldname = self.field_foldname.text()
-        self.data.foldname = self.foldname
+    #def updatefoldname(self):
+        #self.foldname = self.field_foldname.text()
+        #self.data.foldname = self.foldname
 
-    def updaterunno(self):
-        try:
-            self.runno = int(self.field_runno.text())
+    #def updaterunno(self):
+        #try:
+            #self.runno = int(self.field_runno.text())
             # print("what is runno:", self.runno)
-            self.data.runno = self.runno
-        except:
-            self.field_runno.setText("Inter the integer") 
+            #self.data.runno = self.runno
+        #except:
+            #self.field_runno.setText("Inter the integer") 
  
     def loaddata(self):
         """
         Get the data in the data class
         """
-        self.updatefoldname()
-        self.updaterunno()
-        self.data.getdatafromfile()
+        #self.updatefoldname()
+        #self.updaterunno()
+        #self.data.getdatafromfile()
         self.updateall()
-        return(self.data)
+        #return(self.data)
 
 #*************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
     def selectchannel(self):
-        tchan = int(self.sel_channo.currentText()) - 1
+        self.chan = int(self.sel_channo.currentText()) - 1
         # print(tchan, type(tchan))
-        self.chan = tchan
+        self.updateenergyhistogram()
+        self.updatesingleevent() #Changed from updateall(); not sure if it's right
+
+    #Connecting conditional selection to energy histogram code
+    def selectconditional(self): 
+        tcond = int(self.sel_conditional.currentText()) - 1
+        # print(tchan, type(tchan))
+        self.cond = tcond
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
-        self.updateall()
+        self.updateenergyhistogram() #changed from self.updateall()
+    
+    #Connecting event type selection to energy histogram and scatter plot 
+    def selecteventType(self): 
+        # teventType = int(self.sel_eventType.currentText()) - 1
+        teventType = self.sel_eventType.currentText()
+
+        # print(tchan, type(tchan))
+        self.eventType = teventType
+        print(self.eventType)
+        # self.value_totarea.setText(str(self.data.getarea(self.chan)))
+        self.updatesingleevent() #Idk if this one is right; maybe add energy histogram if we can figure out later how to add event type 
+        self.updatepixhits()
 
     def getevntno(self):
         tempevnt = self.value_evtno.text().split(sep=",")
@@ -300,25 +351,23 @@ class MainWindow(QWidget):
 #**************** Function to update all plots *******************************#
     def updateall(self):
         if self.data is not None:
-            print("Mainwindow do not update anything, all plotting is in Topdetector now")
-            # self.updatepixhits()
-            # self.updateenergyhistogram() #Should I comment this out SRW?
-            # self.updatesingleevent()
+            self.updatepixhits()
+            self.updateenergyhistogram() #SRW commenting out for now to remove errors
+            self.updatesingleevent()
             # self.updaterangeplot()
             # self.updatedistribution()
             # self.updatestackplot()
 
 #**************** Function to update Energy histogram *******************************#
-#Commenting this IN because now we have this function in MData class SRW 
-    def updateenergyhistogram(self):
-        self.edges, self.counts = self.data.getenergyhistogram(bins = 10)
+    def updateenergyhistogram(self): #SRW commenting out for now to remove errors
+        self.counts, self.edges = self.data.getenergyhistogram(bins = 200,channel=27182)
         self.p2.setData(self.edges, self.counts)
  
 #**************** Function to update Single Event *******************************#
     def updatesingleevent(self):
-        self.timeax, self.data = self.data.getsingleeventdata(self.eventType,'0',eventno=0)
+        self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,'0',eventno=self.evtno)
         # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
-        self.p4.setData(self.timeax,self.noisedata)
+        self.p4.setData(self.timeax,self.pulsedata)
     
 #**************** Function to update pixel hits *******************************#
     def updatepixhits(self):
@@ -347,9 +396,9 @@ class MainWindow(QWidget):
         x, y = self.data.getrangedata(self.lims[0], self.lims[1], self.chan)
         self.p3.setData(x=x, y=y)
 
-    #def updatedistribution(self):
-        #hx, hy = self.data.gethistdistribution(self.chan)
-        #self.p2.setData(hx, hy)
+    def updatedistribution(self):
+        hx, hy = self.data.gethistdistribution(self.chan)
+        self.p2.setData(hx, hy)
 
            
 #*************** Other Functions not used now *****************************************************#
