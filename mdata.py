@@ -93,11 +93,16 @@ class MData():
         return(self.hy,self.hx)
 
     def getsingleeventdata(self,eventType='noise',channel='0',eventno=0):
+    #def getsingleeventdata(self,channel='0',eventno=0):
         self.pulsedata= np.random.random(10)
         self.timeaxis = np.arange(10)
 
         if eventType == 'noise':
             self.pulsedata = self.hdFile.noiseWaves().waves()[eventno].compute()
+        elif eventType == 'singles':
+            self.pulsedata = self.hdFile.singleWaves().waves()[eventno].compute()
+        else:
+            self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno].compute()
         
         self.timeaxis = np.arange(len(self.pulsedata)) * 4e-9
         print(len(self.pulsedata))

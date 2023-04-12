@@ -76,8 +76,7 @@ class BottomDetector(QWidget):  # SRW
         self.label_eventType = QLabel("Event Type")
         self.label_eventType.setFixedWidth(60)
         self.sel_eventType = QComboBox()
-        self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsrWaves'), str(
-            'noiseWaves')])  # These are the only event types nabpy can take as an argument
+        self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsers')])  # These are the only event types nabpy can take as an argument
         self.sel_eventType.currentIndexChanged.connect(self.selecteventType)
         self.eventType = 'noise'
 

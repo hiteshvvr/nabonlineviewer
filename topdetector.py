@@ -76,7 +76,7 @@ class TopDetector(QWidget): #SRW
         self.label_eventType = QLabel("Event Type")
         self.label_eventType.setFixedWidth(60)
         self.sel_eventType = QComboBox() 
-        self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsrWaves'), str('noiseWaves')]) #These are the only event types nabpy can take as an argument  
+        self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsers')]) #These are the only event types nabpy can take as an argument  
         self.sel_eventType.currentIndexChanged.connect(self.selecteventType)
         self.eventType = 'noise'
 
@@ -108,6 +108,9 @@ class TopDetector(QWidget): #SRW
         self.button_freerun = QPushButton('FreeRun')
         self.button_freerun.setCheckable(True)
         self.button_freerun.clicked.connect(self.runfreerun)
+
+        self.button_previousevt = QPushButton('Back') #SRW
+        self.button_previousevt.clicked.connect(self.showpreviousevent) #SRW
 
         self.button_nextevt = QPushButton('Next')
         self.button_nextevt.clicked.connect(self.shownextevent)
@@ -142,6 +145,7 @@ class TopDetector(QWidget): #SRW
     
 
         self.in2layout.addWidget(self.button_freerun)
+        self.in2layout.addWidget(self.button_previousevt) #SRW
         self.in2layout.addWidget(self.button_nextevt)
         self.in2layout.addWidget(self.label_evtno)
         self.in2layout.addWidget(self.value_evtno)
@@ -316,6 +320,7 @@ class TopDetector(QWidget): #SRW
         # print(tchan, type(tchan))
         self.updateenergyhistogram()
         self.updatesingleevent() #Changed from updateall(); not sure if it's right
+        print(self.chan)
 
     #Connecting conditional selection to energy histogram code
     def selectconditional(self): 
@@ -360,7 +365,7 @@ class TopDetector(QWidget): #SRW
 
 #**************** Function to update Energy histogram *******************************#
     def updateenergyhistogram(self): #SRW commenting out for now to remove errors
-        self.counts, self.edges = self.data.getenergyhistogram(bins = 200,channel=27182)
+        self.counts, self.edges = self.data.getenergyhistogram(bins = 200,channel=self.chan)
         self.p2.setData(self.edges, self.counts)
  
 #**************** Function to update Single Event *******************************#
@@ -423,7 +428,7 @@ class TopDetector(QWidget): #SRW
     def runfreerun(self):
         if self.button_freerun.isChecked():
             self.timer.timeout.connect(self.shownextevent)
-            self.timer.start(2000)
+            self.timer.start(1000)
         else:
             self.timer.stop()
 
@@ -436,6 +441,11 @@ class TopDetector(QWidget): #SRW
 
     def shownextevent(self):
         self.evtno = self.evtno + 1
+        self.value_evtno.setText(str(self.evtno))
+        self.updatesingleevent()
+
+    def showpreviousevent(self):
+        self.evtno = self.evtno - 1
         self.value_evtno.setText(str(self.evtno))
         self.updatesingleevent()
         
