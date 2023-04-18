@@ -316,7 +316,7 @@ class TopDetector(QWidget): #SRW
 
 #*************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
     def selectchannel(self):
-        self.chan = int(self.sel_channo.currentText()) - 1
+        self.chan = int(self.sel_channo.currentText())
         # print(tchan, type(tchan))
         self.updateenergyhistogram()
         self.updatesingleevent() #Changed from updateall(); not sure if it's right

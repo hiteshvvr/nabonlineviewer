@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QPushButton, QWidget
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout
 from PyQt5.QtWidgets import QLineEdit, QFileDialog, QComboBox
+from PyQt5.QtWidgets import QPlainTextEdit #SRW
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 import numpy as np
@@ -180,6 +181,13 @@ class MainWindow(QWidget):
         
         #self.dataSummary = self.data.getDataSummary() #This is the line giving errors
         #self.p2.setData(self.dataSummary)
+
+        self.dataSummary = QPlainTextEdit(self)
+        #self.dataSummary.insertPlainText(self.data.getDataSummary()) #To add new lines we add the \n character.
+        
+        self.dataSummary.move(10,300) #(horizontal, vertical)
+        self.dataSummary.resize(400,200)
+        self.dataSummary.setReadOnly(True)
 #********************* Get Second histogram with pix hist(with random data ***********) *******************
 
         # self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
@@ -231,9 +239,9 @@ class MainWindow(QWidget):
 #********************* Layouts ***********  #
         #self.r1layout.addWidget(self.pw1)
         #self.r1layout.addWidget(self.sc1)  # PixDec
-        self.r1layout.addWidget(self.pw2)
+        #self.r1layout.addWidget(self.pw2)
         # self.r2layout.addWidget(self.pw3) #Originally commented out SRW
-        self.r2layout.addWidget(self.pw4)
+        #self.r2layout.addWidget(self.pw4)
 
         # self.alayout.addWidget(self.setallVolt)
         # self.alayout.addWidget(self.gwin)
@@ -287,6 +295,8 @@ class MainWindow(QWidget):
         self.updaterunno()
         self.data.getdatafromfile()
         self.updateall()
+        self.dataSummary.insertPlainText("something")
+        print(self.data.getDataSummary())
         return(self.data)
 
 #*************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
@@ -323,13 +333,13 @@ class MainWindow(QWidget):
 #Commenting this IN because now we have this function in MData class SRW 
     def updateenergyhistogram(self):
         self.edges, self.counts = self.data.getenergyhistogram(bins = 10)
-        self.p2.setData(self.edges, self.counts)
+        #self.p2.setData(self.edges, self.counts)
  
 #**************** Function to update Single Event *******************************#
     def updatesingleevent(self):
         self.timeax, self.data = self.data.getsingleeventdata(self.eventType,'0',eventno=0)
         # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
-        self.p4.setData(self.timeax,self.noisedata)
+        #self.p4.setData(self.timeax,self.noisedata)
     
 #**************** Function to update pixel hits *******************************#
     #def updatepixhits(self):
@@ -379,7 +389,7 @@ class MainWindow(QWidget):
         self.getlims()
         sx, sy = self.data.getstackdata(self.lims[0], self.lims[1], self.chan)
         mx, my = self.data.gettimemean(self.lims[0], self.lims[1], self.chan)
-        self.p4.setData(x=sx, y=sy)
+        #.setData(x=sx, y=sy)
         self.p5.setData(x=mx, y=my)
 
     def runfreerun(self):
