@@ -58,22 +58,20 @@ class MData():
     def getDataSummary(self):
         summary = {}
         self.trigger = self.hdFile.triggers().numtrigs
-        summary["trigger"] = self.trigger
-        #self.strTrig = f"Triggers: {self.hdFile.triggers().numtrigs}"
+        summary["triggers"] = self.trigger
         self.singles = self.hdFile.singleWaves().numWaves
-        #self.strSingles = f"Singles: {self.hdFile.singleWaves().numWaves}"
-        #self.coincs = self.hdFile.coincWaves().numWaves
-        self.strCoincs = f"Coincidences: {self.hdFile.coincWaves().numWaves}"
-        #self.noise = self.hdFile.noiseWaves().numWaves
-        self.strNoise = f"Baseline Traces: {self.hdFile.noiseWaves().numWaves}"
-        #self.pulse = self.hdFile.pulsrWaves().numWaves
-        self.strPulse = f"Pulsers: {self.hdFile.pulsrWaves().numWaves}"
+        summary["singles"] = self.singles
+        self.coincs = self.hdFile.coincWaves().numWaves
+        summary["coincs"] = self.coincs
+        self.noise = self.hdFile.noiseWaves().numWaves
+        summary["noise"] = self.noise
+        self.pulse = self.hdFile.pulsrWaves().numWaves
+        summary["pulse"] = self.pulse
 
-        return summary
+        return(str(summary))
 
         # return(self.strTrig, self.strSingles, self.strCoincs, self.strNoise, self.strPulse) 
         #print(type(self.strTrig))
-
 
         #print('Triggers: ', self.hdFile.triggers().numtrigs)
         #print('Singles: ', self.hdFile.singleWaves().numWaves)
