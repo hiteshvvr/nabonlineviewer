@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QPushButton, QWidget
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout
 from PyQt5.QtWidgets import QLineEdit, QFileDialog, QComboBox
+from PyQt5.QtWidgets import QPlainTextEdit #SRW
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem #SRW
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 import numpy as np
@@ -52,6 +54,9 @@ class MainWindow(QWidget):
         self.mainlayout = QVBoxLayout()
         self.inlayout = QHBoxLayout()
         self.in2layout = QHBoxLayout()
+        self.in3layout = QHBoxLayout()
+        self.in4layout = QHBoxLayout()
+        self.in5layout = QHBoxLayout()
         self.r1layout = QHBoxLayout()
         self.r2layout = QHBoxLayout()
         
@@ -119,17 +124,21 @@ class MainWindow(QWidget):
         self.inlayout.addWidget(self.button_load)
         #self.inlayout.addWidget(self.sel_channo)
 
-        self.in2layout.addWidget(self.button_freerun)
-        self.in2layout.addWidget(self.button_nextevt)
-        self.in2layout.addWidget(self.label_evtno)
-        self.in2layout.addWidget(self.value_evtno)
-        self.in2layout.addWidget(self.label_lims)
-        self.in2layout.addWidget(self.value_lims)
+        #self.in2layout.addWidget(self.dataSummary)
+        #self.in2layout.addWidget(self.getManualBox)
 
-        self.in2layout.addWidget(self.label_totevt)
-        self.in2layout.addWidget(self.value_totevt)
-        self.in2layout.addWidget(self.label_totarea)
-        self.in2layout.addWidget(self.value_totarea)
+        #self.in2layout.addWidget(self.button_freerun)
+        #self.in2layout.addWidget(self.button_nextevt)
+        #self.in2layout.addWidget(self.label_evtno)
+        #self.in2layout.addWidget(self.value_evtno)
+        #self.in2layout.addWidget(self.label_lims)
+        
+        #self.in2layout.addWidget(self.value_lims)
+
+        #self.in2layout.addWidget(self.label_totevt)
+        #self.in2layout.addWidget(self.value_totevt)
+        #self.in2layout.addWidget(self.label_totarea)
+        #self.in2layout.addWidget(self.value_totarea)
 
         # self.gwin = pg.GraphicsWindow()
         # self.rplt = self.gwin.addPlot()
@@ -171,6 +180,7 @@ class MainWindow(QWidget):
         #self.tmp = 1
 
 #******************** Get Run Data Summary   ********************** 
+#Original OnlineAnalysis Code Example 
         #self.pw1 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Run Data Summary</span>')
         #self.p1 = self.pw1.plot(stepMode="center",fillLevel=0)#, fillOutline=True,brush=(100,0,0))
         #self.p1.setPen(color=(0, 0, 0), width=2)
@@ -180,7 +190,83 @@ class MainWindow(QWidget):
         
         #self.dataSummary = self.data.getDataSummary() #This is the line giving errors
         #self.p2.setData(self.dataSummary)
-#********************* Get Second histogram with pix hist(with random data ***********) *******************
+
+#Initiating textbox for Data Summary 
+        self.dataSummary = QPlainTextEdit(self)
+        #self.dataSummary.insertPlainText(self.data.getDataSummary()) #To add new lines we add the \n character.
+        #self.dataSummary.move(10,300) #Setting location of textbox (horizontal, vertical)
+        #self.dataSummary.resize(200,100) #Setting size of textbox, useless if using layout (which is what I switched to lol) 
+        self.dataSummary.setReadOnly(True)
+        self.label_dataSummary = QLabel("Run Data Summary")
+
+#******************** Initializing Textbox for Main Manual *******************************
+        self.getManualBox = QPlainTextEdit(self)
+        self.getManualBox.insertPlainText("""
+            This manual gives basic information for operating the Nab Online Analysis GUI.\n 
+            Before moving to other tabs in the GUI, make sure to start in the Main Window tab. Here you should begin
+            by setting your local path by either manually typing your path into the first textfield, or by selecting
+            the appropriate path using the SelectFolder button. Next, select the desired run number by typing the 
+            number into the second textfield. We have automatically initialized this code with a run number of 2447.
+            The final step in the Main Window tab is to press the LoadData button. Once completed, the Run Data Summary
+            box should be populated with the event types and the number of each event in the selected run number.
+            Now, you are free to move to the next tab!\n
+            We now move to the Top Detector tab. Here, we begin by first pressing the LoadData button. Next, in order 
+            to accurately visualize the data, open the first dropdown menu in the top row and change the event type 
+            from singles to noise. This dropdown menu is currently connected to the Pixelated Detector plot and the
+            Single Event Plot. After this step, you can select any event type desired. The second dropdown menu is
+            a conditionals menu, but it currently is not used in the code. It will not make changes to the plots. The 
+            third dropdown menu is a list of the channels for the top detector. This dropdown menu is currently connected
+            to the Energy Histogram and will later be connected to the Single Event Plot. In the second row of this tab,
+            we have textfields for Energy and Pixel Cuts. See Define Cuts Guide above for more details on what these 
+            textfields accept. If you wish to make cuts based on either of these variables, define the cuts and then press
+            the LoadEnergyCuts and/or the LoadPixelCuts button(s). These cuts will later be connected to the Pixelated
+            Detector plot and the Energy Histogram. Finally, we move to the third row. The FreeRun button, when pressed, 
+            displays different events plotted in the Single Event Plot automatically and continuously until the button is 
+            pressed to stop this continuous display. The Next and Back buttons are also connected to the Single Event plot
+            and allow the user to filter through events in this plot one-by-one. The textfield at the end of the third row
+            is for the manual entry of an event number. Again, this is connected to the Single Event plot only. Two of the
+            plots given in this tab are dynamic. The Energy Histogram and Single Event plot can be manipulated by scrolling
+            up or down with your mouse or by clicking and dragging in any direction.\n
+            The Bottom Detector tab follows the same format as the Top Detector tab. The only difference is the channel numbers
+            listed in the third dropdown menu of the top row. 
+            
+        """)
+        #self.getManualBox.resize(400,200) #Setting size of textbox; useless because I swithed to layouts
+        self.getManualBox.setReadOnly(True)
+        self.label_manualBox = QLabel("GUI User Manual")
+
+        
+#******************* Initializing Textbox for Define Cuts Manual *********************
+        self.defineCutsManual = QPlainTextEdit(self)
+        self.defineCutsManual.insertPlainText("""
+            This manual shows all valid entries for the Energy and Pixel Cuts
+            made in the Top Detector and Bottom Detector tabs. Sample entries 
+            have been included in both textfields. These examples consist of 
+            three components: the variable we wish to cut by, the conditional,
+            and the number. The variable name (given as Energy or Pixel)
+            should never be altered. The only two items in the list that should
+            be changed are the conditional and the number. The conditional 
+            symbols currently available to use are >, <, =, <=, >=, and !=. 
+            The number can be any valid energy in keV or any valid pixel 
+            number based on the detector the user is viewing.\n
+            Examples: \n
+            ('energy', '!=', 180)
+            ('pixel', '>=', 7)
+
+        """)
+        
+        self.label_defineCutsManual = QLabel("Define Cuts User Manual")
+
+#******************** Adding Textboxes to in2layout for structure ********************
+#Do not move this. You have to define the widgets BEFORE using these lines of code. See previous sections. 
+        self.in2layout.addWidget(self.label_dataSummary)
+        self.in2layout.addWidget(self.label_defineCutsManual)
+        self.in3layout.addWidget(self.dataSummary)
+        self.in3layout.addWidget(self.defineCutsManual)
+        self.in4layout.addWidget(self.label_manualBox)
+        self.in5layout.addWidget(self.getManualBox)
+        
+#********************* Get Second histogram with pix hist (with random data) *******************
 
         # self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
         self.pw2 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Hit Pixel Data</span>')
@@ -231,15 +317,18 @@ class MainWindow(QWidget):
 #********************* Layouts ***********  #
         #self.r1layout.addWidget(self.pw1)
         #self.r1layout.addWidget(self.sc1)  # PixDec
-        self.r1layout.addWidget(self.pw2)
+        #self.r1layout.addWidget(self.pw2)
         # self.r2layout.addWidget(self.pw3) #Originally commented out SRW
-        self.r2layout.addWidget(self.pw4)
+        #self.r2layout.addWidget(self.pw4)
 
         # self.alayout.addWidget(self.setallVolt)
         # self.alayout.addWidget(self.gwin)
         # self.alayout.addLayout(self.inlayout)
         self.mainlayout.addLayout(self.inlayout)
-        #self.mainlayout.addLayout(self.in2layout)
+        self.mainlayout.addLayout(self.in2layout)
+        self.mainlayout.addLayout(self.in3layout)
+        self.mainlayout.addLayout(self.in4layout)
+        self.mainlayout.addLayout(self.in5layout)
         self.mainlayout.addLayout(self.r1layout)
         self.mainlayout.addLayout(self.r2layout)
         # self.alayout.addWidget(self.pw1)
@@ -277,8 +366,18 @@ class MainWindow(QWidget):
             # print("what is runno:", self.runno)
             self.data.runno = self.runno
         except:
-            self.field_runno.setText("Inter the integer") 
- 
+            self.field_runno.setText("Enter the integer") 
+    def loadSummary(self):
+        self.xnew = self.data.getDataSummary()
+        return(self.xnew)
+    
+    def updateDataSummary(self):
+        self.dataSum = self.data.getDataSummary()
+        self.dataSummary.setPlainText(self.dataSum)
+        #self.dataSum = self.loadSummary()
+        #return(dataSum)
+
+
     def loaddata(self):
         """
         Get the data in the data class
@@ -287,6 +386,8 @@ class MainWindow(QWidget):
         self.updaterunno()
         self.data.getdatafromfile()
         self.updateall()
+        #self.loadSummary()
+        self.updateDataSummary()
         return(self.data)
 
 #*************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
@@ -323,13 +424,13 @@ class MainWindow(QWidget):
 #Commenting this IN because now we have this function in MData class SRW 
     def updateenergyhistogram(self):
         self.edges, self.counts = self.data.getenergyhistogram(bins = 10)
-        self.p2.setData(self.edges, self.counts)
+        #self.p2.setData(self.edges, self.counts)
  
 #**************** Function to update Single Event *******************************#
     def updatesingleevent(self):
         self.timeax, self.data = self.data.getsingleeventdata(self.eventType,'0',eventno=0)
         # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
-        self.p4.setData(self.timeax,self.noisedata)
+        #self.p4.setData(self.timeax,self.noisedata)
     
 #**************** Function to update pixel hits *******************************#
     #def updatepixhits(self):
@@ -379,7 +480,7 @@ class MainWindow(QWidget):
         self.getlims()
         sx, sy = self.data.getstackdata(self.lims[0], self.lims[1], self.chan)
         mx, my = self.data.gettimemean(self.lims[0], self.lims[1], self.chan)
-        self.p4.setData(x=sx, y=sy)
+        #.setData(x=sx, y=sy)
         self.p5.setData(x=mx, y=my)
 
     def runfreerun(self):

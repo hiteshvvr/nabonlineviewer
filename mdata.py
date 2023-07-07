@@ -56,19 +56,22 @@ class MData():
 
     #YOU NEED TO FIGURE THIS OUT :,)
     def getDataSummary(self):
-        self.trigger = self.hdFile.triggers().numtrigs()
-        self.strTrig = f"Triggers: {self.trigger}"
+        summary = {}
+        self.trigger = self.hdFile.triggers().numtrigs
+        summary["triggers"] = self.trigger
         self.singles = self.hdFile.singleWaves().numWaves
-        self.strSingles = f"Singles: {self.singles}"
+        summary["singles"] = self.singles
         self.coincs = self.hdFile.coincWaves().numWaves
-        self.strCoincs = f"Coincidences: {self.coincs}"
+        summary["coincs"] = self.coincs
         self.noise = self.hdFile.noiseWaves().numWaves
-        self.strNoise = f"Baseline Traces: {self.noise}"
+        summary["noise"] = self.noise
         self.pulse = self.hdFile.pulsrWaves().numWaves
-        self.strPulse = f"Pulsers: {self.pulse}"
-        return(self.strTrig, self.strSingles, self.strCoincs, self.strNoise, self.strPulse) 
-        #print(type(self.strTrig))
+        summary["pulse"] = self.pulse
 
+        return(str(summary))
+
+        # return(self.strTrig, self.strSingles, self.strCoincs, self.strNoise, self.strPulse) 
+        #print(type(self.strTrig))
 
         #print('Triggers: ', self.hdFile.triggers().numtrigs)
         #print('Singles: ', self.hdFile.singleWaves().numWaves)
@@ -93,11 +96,16 @@ class MData():
         return(self.hy,self.hx)
 
     def getsingleeventdata(self,eventType='noise',channel='0',eventno=0):
+    #def getsingleeventdata(self,channel='0',eventno=0):
         self.pulsedata= np.random.random(10)
         self.timeaxis = np.arange(10)
 
         if eventType == 'noise':
             self.pulsedata = self.hdFile.noiseWaves().waves()[eventno].compute()
+        elif eventType == 'singles':
+            self.pulsedata = self.hdFile.singleWaves().waves()[eventno].compute()
+        else:
+            self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno].compute()
         
         self.timeaxis = np.arange(len(self.pulsedata)) * 4e-9
         print(len(self.pulsedata))

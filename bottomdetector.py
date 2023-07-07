@@ -52,6 +52,7 @@ class BottomDetector(QWidget):  # SRW
         self.mainlayout = QVBoxLayout()
         self.inlayout = QHBoxLayout()
         self.in2layout = QHBoxLayout()
+        self.in3layout = QHBoxLayout()
         self.r1layout = QHBoxLayout()
         self.r2layout = QHBoxLayout()
 
@@ -76,8 +77,7 @@ class BottomDetector(QWidget):  # SRW
         self.label_eventType = QLabel("Event Type")
         self.label_eventType.setFixedWidth(60)
         self.sel_eventType = QComboBox()
-        self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsrWaves'), str(
-            'noiseWaves')])  # These are the only event types nabpy can take as an argument
+        self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsers')])  # These are the only event types nabpy can take as an argument
         self.sel_eventType.currentIndexChanged.connect(self.selecteventType)
         self.eventType = 'noise'
 
@@ -85,8 +85,7 @@ class BottomDetector(QWidget):  # SRW
         self.label_conditional = QLabel("Conditionals")
         self.label_conditional.setFixedWidth(60)
         self.sel_conditional = QComboBox()
-        self.sel_conditional.addItems([str('>'), str('>='), str('<'), str('<='), str('='), str(
-            '!='), str('or')])  # These are the conditional symbols outlined in basicCuts from nabpy code
+        self.sel_conditional.addItems([str('>'), str('>='), str('<'), str('<='), str('='), str('!='), str('or')])  # These are the conditional symbols outlined in basicCuts from nabpy code
         self.sel_conditional.currentIndexChanged.connect(self.selectconditional)
         self.cond = 0
 
@@ -99,7 +98,15 @@ class BottomDetector(QWidget):  # SRW
         self.sel_channo.currentIndexChanged.connect(self.selectchannel)
         self.chan = 0
 
+        self.button_loadEnergyCuts = QPushButton('LoadEnergyCuts')
+        self.button_loadEnergyCuts.clicked.connect(self.updateEnergyCut) #Should I use loaddata or define new fucntion specifically for the cuts? 
+        self.button_loadPixelCuts = QPushButton('LoadPixelCuts')
+        self.button_loadPixelCuts.clicked.connect(self.updatePixelCut)
+
+
         self.evtno = 42
+        self.energyCut = 'energy', '>', 0
+        self.pixelCut = 'pixel', '>', 0
 
         self.lims = [2, 10]
         self.totevnt = 0
@@ -107,9 +114,18 @@ class BottomDetector(QWidget):  # SRW
         self.tbinwidth = 320e-6
         self.evtsig = 0xaa55f154
 
+        self.label_Energy = QLabel("Energy Cuts")
+        self.value_energyCut = QLineEdit(str(self.energyCut))
+
+        self.label_Pixel = QLabel("Pixel Cuts")
+        self.value_pixelCut =QLineEdit(str(self.pixelCut))
+
         self.button_freerun = QPushButton('FreeRun')
         self.button_freerun.setCheckable(True)
         self.button_freerun.clicked.connect(self.runfreerun)
+
+        self.button_previousevt = QPushButton('Back') #SRW
+        self.button_previousevt.clicked.connect(self.showpreviousevent) #SRW
 
         self.button_nextevt = QPushButton('Next')
         self.button_nextevt.clicked.connect(self.shownextevent)
@@ -138,16 +154,22 @@ class BottomDetector(QWidget):  # SRW
         # self.inlayout.addWidget(self.field_foldname)
         # self.inlayout.addWidget(self.field_runno)
         self.inlayout.addWidget(self.button_load)
-        # Dropdown menu that allows user to select the event type
-        self.inlayout.addWidget(self.sel_eventType)
-        # Dropdown menu that allows user to select a conditional symbol
-        self.inlayout.addWidget(self.sel_conditional)
+        self.inlayout.addWidget(self.sel_eventType) # Dropdown menu that allows user to select the event type
+        self.inlayout.addWidget(self.sel_conditional) # Dropdown menu that allows user to select a conditional symbol
         self.inlayout.addWidget(self.sel_channo)
 
-        self.in2layout.addWidget(self.button_freerun)
-        self.in2layout.addWidget(self.button_nextevt)
-        self.in2layout.addWidget(self.label_evtno)
-        self.in2layout.addWidget(self.value_evtno)
+        self.in2layout.addWidget(self.label_Energy)
+        self.in2layout.addWidget(self.value_energyCut)
+        self.in2layout.addWidget(self.button_loadEnergyCuts)
+        self.in2layout.addWidget(self.label_Pixel)
+        self.in2layout.addWidget(self.value_pixelCut)
+        self.in2layout.addWidget(self.button_loadPixelCuts)
+
+        self.in3layout.addWidget(self.button_freerun)
+        self.in3layout.addWidget(self.button_previousevt) #SRW
+        self.in3layout.addWidget(self.button_nextevt)
+        self.in3layout.addWidget(self.label_evtno)
+        self.in3layout.addWidget(self.value_evtno)
         #self.in2layout.addWidget(self.label_lims)
         #self.in2layout.addWidget(self.value_lims)
 
@@ -186,24 +208,18 @@ class BottomDetector(QWidget):  # SRW
 
 # ******************** Get PixHits (With random data)   **********************
         self.size = 2
-        self.sc1 = MplCanvas(self, width=4*self.size,
-                             height=3.5*self.size, dpi=100)  # PixDec
-        # Random pix hit without loading data
-        randompixhist = np.random.random(127)
-        # To get better colormaps that in nabpy
-        self.customcmap = self.getmycmap(basemap='cividis')
-        self.scalarMap = self.plotOneDetector(
-            randompixhist, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
+        self.sc1 = MplCanvas(self, width=4*self.size, height=3.5*self.size, dpi=100)  # PixDec
+        randompixhist = np.random.random(127)                                         # Random pix hit without loading data
+        self.customcmap = self.getmycmap(basemap='cividis')                           # To get better colormaps that in nabpy
+        self.scalarMap = self.plotOneDetector(randompixhist, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
         # scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=self.customcmap)
         self.sc1.fig.colorbar(self.scalarMap, ax=self.sc1.ax)
         self.tmp = 1
 # ********************* Get Second histogram with pix hist(with random data ***********) *******************
 
         # self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
-        self.pw2 = pg.PlotWidget(
-            title='<span style="color: #000; font-size: 16pt;">Energy Histogram</span>')
-        # , fillOutline=True,brush=(100,0,0))
-        self.p2 = self.pw2.plot(stepMode="center", fillLevel=0)
+        self.pw2 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Energy Histogram</span>')
+        self.p2 = self.pw2.plot(stepMode="center",fillLevel=0)#, fillOutline=True,brush=(100,0,0))
         self.p2.setPen(color=(0, 0, 0), width=2)
         self.pw2.setLabel('left', 'Energy', units='arb')
         self.pw2.setLabel('bottom', 'Bin', units='arb')
@@ -240,8 +256,7 @@ class BottomDetector(QWidget):  # SRW
         self.p3.setData(x=self.timeax, y=self.noisedata)
 
 # ********************* Example of scatter plot if needed ***********  #
-        self.pw4 = pg.PlotWidget(
-            title='<span style="color: #000; font-size: 16pt;">Single Event Plot</span>')
+        self.pw4 = pg.PlotWidget(title='<span style="color: #000; font-size: 16pt;">Single Event Plot</span>')
         self.pw4.showGrid(x=True, y=True)
         self.pw4.setLabel('left', 'Value', units='arb')
         self.pw4.setLabel('bottom', 'Time', units='arb')
@@ -268,6 +283,7 @@ class BottomDetector(QWidget):  # SRW
         # self.alayout.addLayout(self.inlayout)
         self.mainlayout.addLayout(self.inlayout)
         self.mainlayout.addLayout(self.in2layout)
+        self.mainlayout.addLayout(self.in3layout)
         self.mainlayout.addLayout(self.r1layout)
         self.mainlayout.addLayout(self.r2layout)
         # self.alayout.addWidget(self.pw1)
@@ -319,10 +335,12 @@ class BottomDetector(QWidget):  # SRW
 
 # *************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
     def selectchannel(self):
-        self.chan = int(self.sel_channo.currentText()) - 1
+        self.chan = int(self.sel_channo.currentText())
         # print(tchan, type(tchan))
         self.updateenergyhistogram()
         self.updatesingleevent()  # Changed from updateall(); not sure if it's right
+        #print(self.chan)
+
 
     # Connecting conditional selection to energy histogram code
     def selectconditional(self):
@@ -331,6 +349,7 @@ class BottomDetector(QWidget):  # SRW
         self.cond = tcond
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
         self.updateenergyhistogram()  # changed from self.updateall()
+        self.updatesingleevent()
 
     # Connecting event type selection to energy histogram and scatter plot
     def selecteventType(self):
@@ -354,6 +373,20 @@ class BottomDetector(QWidget):  # SRW
         # self.updatexy()
         # self.sc1.draw()
 
+    def getEnergyCut(self):
+        self.tempEnergy = self.value_energyCut.text().split(sep=",")
+        self.energyCut = int(float(self.tempEnergy[0]))
+
+    def updateEnergyCut(self):
+        self.getEnergyCut()
+
+    def getPixelCut(self):
+        self.tempPixel = self.value_pixelCut.text().split(sep=",")
+        self.pixelCut = int(float(self.tempPixel[0]))
+
+    def updatePixelCut(self):
+        self.getPixelCut()
+
 # *************** Functions for Updating the plots *****************************************************#
 
 # **************** Function to update all plots *******************************#
@@ -366,27 +399,25 @@ class BottomDetector(QWidget):  # SRW
             # self.updatedistribution()
             # self.updatestackplot()
 
-# **************** Function to update Energy histogram *******************************#
-    # SRW commenting out for now to remove errors
+# **************** Function to update Energy histogram *******************************
     def updateenergyhistogram(self):
-        self.counts, self.edges = self.data.getenergyhistogram(
-            bins=200, channel=31415)
+        self.counts, self.edges = self.data.getenergyhistogram(bins = 200,channel=self.chan)
         self.p2.setData(self.edges, self.counts)
+        #Maybe do if/else statement here for Define Cuts?
 
 # **************** Function to update Single Event *******************************#
     def updatesingleevent(self):
-        self.timeax, self.pulsedata = self.data.getsingleeventdata(
-            self.eventType, '0', eventno=self.evtno)
+        self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,channel = self.chan,eventno=self.evtno)
+        #self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,'0',eventno=self.evtno)
         # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
-        self.p4.setData(self.timeax, self.pulsedata)
+        self.p4.setData(self.timeax,self.pulsedata)
 
 # **************** Function to update pixel hits *******************************#
     def updatepixhits(self):
         # self.sc1.fig.clear(keep_observers=True)
         if self.data is not None:
-            self.pixhits = self.data.getDetPixData(self.eventType)
-            self.scalarMap = self.plotOneDetector(
-                self.pixhits, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
+            self.pixhits= self.data.getDetPixData(self.eventType)
+            self.scalarMap = self.plotOneDetector(self.pixhits, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
             self.sc1.draw()
         # print(self.pixhits)
         # self.sc1.ax.cla()
@@ -436,7 +467,7 @@ class BottomDetector(QWidget):  # SRW
     def runfreerun(self):
         if self.button_freerun.isChecked():
             self.timer.timeout.connect(self.shownextevent)
-            self.timer.start(2000)
+            self.timer.start(1000)
         else:
             self.timer.stop()
 
@@ -449,6 +480,11 @@ class BottomDetector(QWidget):  # SRW
 
     def shownextevent(self):
         self.evtno = self.evtno + 1
+        self.value_evtno.setText(str(self.evtno))
+        self.updatesingleevent()
+
+    def showpreviousevent(self):
+        self.evtno = self.evtno - 1
         self.value_evtno.setText(str(self.evtno))
         self.updatesingleevent()
 

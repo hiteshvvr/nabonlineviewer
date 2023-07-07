@@ -52,6 +52,7 @@ class TopDetector(QWidget): #SRW
         self.mainlayout = QVBoxLayout()
         self.inlayout = QHBoxLayout()
         self.in2layout = QHBoxLayout()
+        self.in3layout = QHBoxLayout()
         self.r1layout = QHBoxLayout()
         self.r2layout = QHBoxLayout()
         
@@ -76,7 +77,7 @@ class TopDetector(QWidget): #SRW
         self.label_eventType = QLabel("Event Type")
         self.label_eventType.setFixedWidth(60)
         self.sel_eventType = QComboBox() 
-        self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsrWaves'), str('noiseWaves')]) #These are the only event types nabpy can take as an argument  
+        self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsers')]) #These are the only event types nabpy can take as an argument  
         self.sel_eventType.currentIndexChanged.connect(self.selecteventType)
         self.eventType = 'noise'
 
@@ -96,7 +97,15 @@ class TopDetector(QWidget): #SRW
         self.sel_channo.currentIndexChanged.connect(self.selectchannel)
         self.chan = 0
 
+        self.button_loadEnergyCuts = QPushButton('LoadEnergyCuts')
+        self.button_loadEnergyCuts.clicked.connect(self.updateEnergyCut) #Should I use loaddata or define new fucntion specifically for the cuts? 
+        self.button_loadPixelCuts = QPushButton('LoadPixelCuts')
+        self.button_loadPixelCuts.clicked.connect(self.updatePixelCut)
+
+
         self.evtno = 42
+        self.energyCut = 'energy', '>', 0
+        self.pixelCut = 'pixel', '>', 0
 
 
         self.lims = [2, 10]
@@ -105,9 +114,18 @@ class TopDetector(QWidget): #SRW
         self.tbinwidth = 320e-6
         self.evtsig = 0xaa55f154
 
+        self.label_Energy = QLabel("Energy Cuts")
+        self.value_energyCut = QLineEdit(str(self.energyCut))
+
+        self.label_Pixel = QLabel("Pixel Cuts")
+        self.value_pixelCut =QLineEdit(str(self.pixelCut))
+
         self.button_freerun = QPushButton('FreeRun')
         self.button_freerun.setCheckable(True)
         self.button_freerun.clicked.connect(self.runfreerun)
+
+        self.button_previousevt = QPushButton('Back') #SRW
+        self.button_previousevt.clicked.connect(self.showpreviousevent) #SRW
 
         self.button_nextevt = QPushButton('Next')
         self.button_nextevt.clicked.connect(self.shownextevent)
@@ -125,6 +143,8 @@ class TopDetector(QWidget): #SRW
         self.value_totarea = QLineEdit(str(self.totarea))
 
         self.value_evtno.textChanged.connect(self.updateevent)
+        self.value_energyCut.textChanged.connect(self.updateEnergyCut) 
+        self.value_pixelCut.textChanged.connect(self.updatePixelCut)
         self.label_lims = QLabel("Range")
         self.value_lims = QLineEdit(str(self.lims)[1:-1])
         self.label_lims.setFixedWidth(60)
@@ -139,12 +159,21 @@ class TopDetector(QWidget): #SRW
         self.inlayout.addWidget(self.sel_eventType) #Dropdown menu that allows user to select the event type 
         self.inlayout.addWidget(self.sel_conditional) #Dropdown menu that allows user to select a conditional symbol
         self.inlayout.addWidget(self.sel_channo)
+
+        self.in2layout.addWidget(self.label_Energy)
+        self.in2layout.addWidget(self.value_energyCut)
+        self.in2layout.addWidget(self.button_loadEnergyCuts)
+        self.in2layout.addWidget(self.label_Pixel)
+        self.in2layout.addWidget(self.value_pixelCut)
+        
+        self.in2layout.addWidget(self.button_loadPixelCuts)
     
 
-        self.in2layout.addWidget(self.button_freerun)
-        self.in2layout.addWidget(self.button_nextevt)
-        self.in2layout.addWidget(self.label_evtno)
-        self.in2layout.addWidget(self.value_evtno)
+        self.in3layout.addWidget(self.button_freerun)
+        self.in3layout.addWidget(self.button_previousevt) #SRW
+        self.in3layout.addWidget(self.button_nextevt)
+        self.in3layout.addWidget(self.label_evtno)
+        self.in3layout.addWidget(self.value_evtno)
         #self.in2layout.addWidget(self.label_lims)
         #self.in2layout.addWidget(self.value_lims)
 
@@ -261,6 +290,7 @@ class TopDetector(QWidget): #SRW
         # self.alayout.addLayout(self.inlayout)
         self.mainlayout.addLayout(self.inlayout)
         self.mainlayout.addLayout(self.in2layout)
+        self.mainlayout.addLayout(self.in3layout)
         self.mainlayout.addLayout(self.r1layout)
         self.mainlayout.addLayout(self.r2layout)
         # self.alayout.addWidget(self.pw1)
@@ -312,10 +342,11 @@ class TopDetector(QWidget): #SRW
 
 #*************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
     def selectchannel(self):
-        self.chan = int(self.sel_channo.currentText()) - 1
+        self.chan = int(self.sel_channo.currentText())
         # print(tchan, type(tchan))
         self.updateenergyhistogram()
-        self.updatesingleevent() #Changed from updateall(); not sure if it's right
+        self.updatesingleevent() 
+        #print(self.chan)
 
     #Connecting conditional selection to energy histogram code
     def selectconditional(self): 
@@ -324,6 +355,7 @@ class TopDetector(QWidget): #SRW
         self.cond = tcond
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
         self.updateenergyhistogram() #changed from self.updateall()
+        self.updatesingleevent()
     
     #Connecting event type selection to energy histogram and scatter plot 
     def selecteventType(self): 
@@ -338,13 +370,27 @@ class TopDetector(QWidget): #SRW
         self.updatepixhits()
 
     def getevntno(self):
-        tempevnt = self.value_evtno.text().split(sep=",")
-        self.evtno = int(float(tempevnt[0]))
+        self.tempevnt = self.value_evtno.text().split(sep=",")
+        self.evtno = int(float(self.tempevnt[0]))
 
     def updateevent(self):
         self.getevntno()
         # self.updatexy()
         # self.sc1.draw()
+
+    def getEnergyCut(self):
+        self.tempEnergy = self.value_energyCut.text().split(sep=",")
+        self.energyCut = int(float(self.tempEnergy[0]))
+
+    def updateEnergyCut(self):
+        self.getEnergyCut()
+
+    def getPixelCut(self):
+        self.tempPixel = self.value_pixelCut.text().split(sep=",")
+        self.pixelCut = int(float(self.tempPixel[0]))
+
+    def updatePixelCut(self):
+        self.getPixelCut()
         
 #*************** Functions for Updating the plots *****************************************************#
    
@@ -360,12 +406,14 @@ class TopDetector(QWidget): #SRW
 
 #**************** Function to update Energy histogram *******************************#
     def updateenergyhistogram(self): #SRW commenting out for now to remove errors
-        self.counts, self.edges = self.data.getenergyhistogram(bins = 200,channel=27182)
+        self.counts, self.edges = self.data.getenergyhistogram(bins = 200,channel=self.chan)
         self.p2.setData(self.edges, self.counts)
+        #Maybe do if/else statement here for Define Cuts?
  
 #**************** Function to update Single Event *******************************#
     def updatesingleevent(self):
-        self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,'0',eventno=self.evtno)
+        self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,channel = self.chan,eventno=self.evtno)
+        #self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,'0',eventno=self.evtno)
         # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
         self.p4.setData(self.timeax,self.pulsedata)
     
@@ -423,7 +471,7 @@ class TopDetector(QWidget): #SRW
     def runfreerun(self):
         if self.button_freerun.isChecked():
             self.timer.timeout.connect(self.shownextevent)
-            self.timer.start(2000)
+            self.timer.start(1000)
         else:
             self.timer.stop()
 
@@ -436,6 +484,11 @@ class TopDetector(QWidget): #SRW
 
     def shownextevent(self):
         self.evtno = self.evtno + 1
+        self.value_evtno.setText(str(self.evtno))
+        self.updatesingleevent()
+
+    def showpreviousevent(self):
+        self.evtno = self.evtno - 1
         self.value_evtno.setText(str(self.evtno))
         self.updatesingleevent()
         
