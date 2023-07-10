@@ -3,11 +3,8 @@ from PyQt5.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout
 from PyQt5.QtWidgets import QLineEdit, QFileDialog, QComboBox
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
+from pyqtgraph.widgets.MatplotlibWidget import MatplotlibWidget
 import numpy as np
-from hexplot import MplCanvas
-
-import nabPy as Nab
-import h5py as hd
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -16,14 +13,6 @@ import matplotlib.patches as patches
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
 
-
-class MplCanvas(FigureCanvasQTAgg):
-
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        self.fig = Figure(figsize=(width, height),
-                          dpi=dpi, constrained_layout=True)
-        self.ax = self.fig.add_subplot(111)
-        super(MplCanvas, self).__init__(self.fig)
 
 # **********************************************
 # We want to replace MplCanvas with nabPy code for pixelated detector plotting
@@ -113,6 +102,7 @@ class BottomDetector(QWidget):  # SRW
         self.totarea = 0
         self.tbinwidth = 320e-6
         self.evtsig = 0xaa55f154
+        self.norm = None
 
         self.label_Energy = QLabel("Energy Cuts")
         self.value_energyCut = QLineEdit(str(self.energyCut))
@@ -129,6 +119,10 @@ class BottomDetector(QWidget):  # SRW
 
         self.button_nextevt = QPushButton('Next')
         self.button_nextevt.clicked.connect(self.shownextevent)
+        
+        self.button_norm = QPushButton('logpixhit')
+        self.button_norm.setCheckable(True)
+        self.button_norm.clicked.connect(self.selectnormalization)
 
         self.label_evtno = QLabel("Event")
         # self.label_evtno.setFixedWidth(60)
@@ -168,6 +162,7 @@ class BottomDetector(QWidget):  # SRW
         self.in3layout.addWidget(self.button_freerun)
         self.in3layout.addWidget(self.button_previousevt) #SRW
         self.in3layout.addWidget(self.button_nextevt)
+        self.in3layout.addWidget(self.button_norm)
         self.in3layout.addWidget(self.label_evtno)
         self.in3layout.addWidget(self.value_evtno)
         #self.in2layout.addWidget(self.label_lims)
@@ -208,13 +203,24 @@ class BottomDetector(QWidget):  # SRW
 
 # ******************** Get PixHits (With random data)   **********************
         self.size = 2
-        self.sc1 = MplCanvas(self, width=4*self.size, height=3.5*self.size, dpi=100)  # PixDec
-        randompixhist = np.random.random(127)                                         # Random pix hit without loading data
+        self.pxplwg = MatplotlibWidget((3.5*self.size, 3.5 * self.size), dpi=100)
+        self.pxplwg.vbox.removeWidget(self.pxplwg.toolbar)
+        self.pxplwg.toolbar.setVisible(False)
+        
+        self.pxplfg = self.pxplwg.getFigure()
+        
+        self.pxplax = self.pxplfg.add_subplot(111)
+        
+        randompixhist = 100 * np.random.random(127)                                         # Random pix hit without loading data
         self.customcmap = self.getmycmap(basemap='cividis')                           # To get better colormaps that in nabpy
-        self.scalarMap = self.plotOneDetector(randompixhist, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
+       
+        self.scalarMap = self.plotOneDetector(randompixhist, self.pxplfg, self.pxplax, cmap=self.customcmap)
+        self.clbar = self.pxplfg.colorbar(self.scalarMap, ax=self.pxplax)
+        
+
+        self.pxplfg.set_tight_layout(tight=True)
         # scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=self.customcmap)
-        self.sc1.fig.colorbar(self.scalarMap, ax=self.sc1.ax)
-        self.tmp = 1
+ 
 # ********************* Get Second histogram with pix hist(with random data ***********) *******************
 
         # self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
@@ -273,7 +279,7 @@ class BottomDetector(QWidget):  # SRW
 
 # ********************* Layouts ***********  #
         # self.r1layout.addWidget(self.pw1)
-        self.r1layout.addWidget(self.sc1)  # PixDec
+        self.r1layout.addWidget(self.pxplwg)  # PixDec
         self.r1layout.addWidget(self.pw2)
         # self.r2layout.addWidget(self.pw3)
         self.r2layout.addWidget(self.pw4)
@@ -414,17 +420,23 @@ class BottomDetector(QWidget):  # SRW
 
 # **************** Function to update pixel hits *******************************#
     def updatepixhits(self):
-        # self.sc1.fig.clear(keep_observers=True)
-        if self.data is not None:
+        # a = np.random.choice(3)
+        # self.pixhits = np.random.randint(1,100,127)
+        # self.pixhits = self.pixhits**a
+        self.pxplax.cla()
+        # self.pxplfg.clf()
+        try:
             self.pixhits= self.data.getDetPixData(self.eventType)
-            self.scalarMap = self.plotOneDetector(self.pixhits, self.sc1.fig, self.sc1.ax, cmap=self.customcmap)
-            self.sc1.draw()
-        # print(self.pixhits)
-        # self.sc1.ax.cla()
-        # self.pixhits= self.tmp * np.random.random(127)                                         # Random pix hit without loading data
-        # self.tmp = self.tmp * 10
-        # self.sc1.fig.colorbar(scalarMap, ax=self.sc1.ax)
-# ***********************************************#*******************************#
+        except:
+            self.pixhits = np.zeros(127)
+            self.pxplax.text(-20,20, 'No Data')
+            
+        self.scalarMap = self.plotOneDetector(self.pixhits, self.pxplfg, self.pxplax, norm=self.norm,  cmap=self.customcmap)
+        self.clbar.update_normal(self.scalarMap)
+        self.clbar.update_ticks()
+        self.pxplwg.draw()
+#
+
 
     def updatexy(self):
         if self.data is not None:
@@ -487,6 +499,13 @@ class BottomDetector(QWidget):  # SRW
         self.evtno = self.evtno - 1
         self.value_evtno.setText(str(self.evtno))
         self.updatesingleevent()
+        
+    def selectnormalization(self):
+        if self.button_norm.isChecked():
+            self.norm = 'log'
+        else:
+            self.norm = None
+        self.updatepixhits()
 
         # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
         # print(self.timeax, self.noisedata)
@@ -495,8 +514,6 @@ class BottomDetector(QWidget):  # SRW
 
 # *************** Function to plot detetor hits*****************************************************#
     # this is a simple function that plots values over each pixel
-
-
     def plotOneDetector(self, values, fig=None, ax=None, numDet=1, cmap='cividis', size=2, showNum=True, showVal=True, alpha=1, rounding=None, title=None, norm=None, forceMin=None, forceMax=None, labels=None, filename=None, saveDontShow=False):
         # if fig is None or ax is None:
         #     fig, ax = plt.subplots(1, figsize=(
@@ -504,12 +521,12 @@ class BottomDetector(QWidget):  # SRW
         # ax.cla()
 
         # try:
-        # fig.delaxes(fig.axes[1])
+            # fig.delaxes(fig.axes[1])
         # except:
-        # pass
-
-        print("figure:", fig)
-        print("axis:", ax)
+            # pass
+ 
+        # print("figure:", fig)
+        # print("axis:", ax)
         ax.set_xlim(-size * 13, size * 13)
         ax.set_ylim(-size * 13, size * 13)
         # cm = plt.get_cmap(cmap)
