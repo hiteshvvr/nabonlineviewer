@@ -49,9 +49,9 @@ class MData():
         self.fileData = self.hdFile.noiseWaves().headers()
         # print("this ran successfully")
 
-    def getDetPixData(self,eventType):
+    def getDetPixData(self,eventType, det = 'top'):
         self.eventType = eventType
-        self.pixhist = self.hdFile.plotHitLocations(self.eventType, size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
+        self.pixhist = self.hdFile.plotHitLocations(self.eventType, size = 1.3, det = det, rounding='int', onlineanalysis = True, alpha = 0.6, title='1612 File')
         return(self.pixhist)
 
     #YOU NEED TO FIGURE THIS OUT :,)

@@ -430,12 +430,12 @@ class TopDetector(QWidget): #SRW
         self.pxplax.cla()
         # self.pxplfg.clf()
         try:
-            self.pixhits= self.data.getDetPixData(self.eventType)
+            self.pixhits= self.data.getDetPixData(self.eventType, det = 'top')
         except:
             self.pixhits = np.zeros(127)
             self.pxplax.text(-20,20, 'No Data')
             
-        self.scalarMap = self.plotOneDetector(self.pixhits, self.pxplfg, self.pxplax, norm=self.norm,  cmap=self.customcmap)
+        self.scalarMap = self.plotOneDetector(self.pixhits, self.pxplfg, self.pxplax, norm=self.norm,  cmap=self.customcmap, alpha = 0.47)
         self.clbar.update_normal(self.scalarMap)
         self.clbar.update_ticks()
         self.pxplwg.draw()

@@ -60,7 +60,7 @@ class MainWindow(QWidget):
         self.r1layout = QHBoxLayout()
         self.r2layout = QHBoxLayout()
         
-        self.foldname = "../datafiles/hdf5files/"
+        self.foldname = "../datafiles/hdf5files/Aug2023/"
         self.runno = 2447
         
         self.button_foldname = QPushButton('Select Folder')
