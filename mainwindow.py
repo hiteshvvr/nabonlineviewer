@@ -1,8 +1,9 @@
 from PyQt5.QtWidgets import QPushButton, QWidget
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout
 from PyQt5.QtWidgets import QLineEdit, QFileDialog, QComboBox
-from PyQt5.QtWidgets import QPlainTextEdit #SRW
-from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem #SRW
+from PyQt5.QtWidgets import QPlainTextEdit
+from PyQt5.QtCore import QSettings
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem 
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 import numpy as np
@@ -45,6 +46,14 @@ class MainWindow(QWidget):
         self.data = data
         # Initialize Tab
         self.maintab = QWidget()
+        
+        # Load previously set values
+        self.settings = QSettings("./oldsettings.ini", QSettings.IniFormat)
+        try:
+            self.dirname = self.settings.value('directory')
+            self.runno = self.settings.value('runno')
+        except:
+            self.dirname = "Select folder to record data"
 
         # self.height
         self.width = 100
@@ -60,18 +69,18 @@ class MainWindow(QWidget):
         self.r1layout = QHBoxLayout()
         self.r2layout = QHBoxLayout()
         
-        self.foldname = "../datafiles/hdf5files/Aug2023/"
-        self.runno = 2447
+        # self.dirname = "../datafiles/hdf5files/Aug2023/"
+        # self.runno = 2447
         
-        self.button_foldname = QPushButton('Select Folder')
-        self.button_foldname.clicked.connect(self.dialog)
-        self.field_foldname = QLineEdit(self.foldname)
+        self.buttion_dirname = QPushButton('Select Folder')
+        self.buttion_dirname.clicked.connect(self.dialog)
+        self.field_dirname = QLineEdit(self.dirname)
         self.field_runno = QLineEdit(str(self.runno))
         
-        # self.field_foldname.textChanged.connect(self.updatefoldname)
+        # self.field_dirname.textChanged.connect(self.updatefoldname)
         # self.field_runno.textChanged.connect(self.updaterunno)
         
-        self.data.foldname = self.foldname
+        self.data.dirname = self.dirname
         self.data.runno = self.runno
         
         self.button_load = QPushButton('LoadData')
@@ -115,11 +124,11 @@ class MainWindow(QWidget):
         self.value_lims = QLineEdit(str(self.lims)[1:-1])
         self.label_lims.setFixedWidth(60)
         self.value_lims.textChanged.connect(self.updatestackplot)
-        # self.field_fname.setMaximumWidth(self.width)
+        # self.field_dirname.setMaximumWidth(self.width)
         # self.space = QSpacerItem(10,5)
 
-        self.inlayout.addWidget(self.button_foldname)
-        self.inlayout.addWidget(self.field_foldname)
+        self.inlayout.addWidget(self.buttion_dirname)
+        self.inlayout.addWidget(self.field_dirname)
         self.inlayout.addWidget(self.field_runno)
         self.inlayout.addWidget(self.button_load)
         #self.inlayout.addWidget(self.sel_channo)
@@ -279,7 +288,7 @@ class MainWindow(QWidget):
         self.hy, self.hx = np.histogram(np.random.random(100),bins=20)
         self.p2.setData(self.hx, self.hy)
         
-        # self.hy,self.hx = self.data.getpixelhistogram() #SRW newly written line
+        # self.hy,self.hx = self.data.getpixelhistogram()  newly written line
         # print("printing hx, hy", self.hx, self.hy)
         # print(len(self.hx), len(self.hy))
 
@@ -346,24 +355,22 @@ class MainWindow(QWidget):
 #***************Functions for loading Data *****************************************************#
    
     def dialog(self):
-        # file , check = QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()", "", "All Files (*);;Python Files (*.py);;Text Files (*.txt)")
-        tempfile, self.check = QFileDialog.getOpenFileName(
-            None, "SelectFile", "", "")
-        if self.check:
-            self.fname = tempfile
-            self.field_fname.setText(self.fname)
-            # print(type(tempfile))
+        self.dirname = QFileDialog.getExistingDirectory(
+            caption= "Open Directory with data", directory = self.dirname)
+        if self.dirname:
+            self.field_dirname.setText(self.dirname)
+            self.settings.setValue("directory", self.dirname)
         else:
-            self.file = "file not found!!"
+            self.field_dirname.setText= "folder not found!!"
 
     def updatefoldname(self):
-        self.foldname = self.field_foldname.text()
+        self.foldname = self.field_dirname.text()
         self.data.foldname = self.foldname
 
     def updaterunno(self):
         try:
             self.runno = int(self.field_runno.text())
-            # print("what is runno:", self.runno)
+            self.settings.setValue("runno", str(self.runno))
             self.data.runno = self.runno
         except:
             self.field_runno.setText("Enter the integer") 

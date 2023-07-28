@@ -213,7 +213,7 @@ class TopDetector(QWidget): #SRW
         self.pxplax = self.pxplfg.add_subplot(111)
         
         randompixhist = 100 * np.random.random(127)                                         # Random pix hit without loading data
-        self.customcmap = self.getmycmap(basemap='cividis')                           # To get better colormaps that in nabpy
+        self.customcmap = self.getmycmap(basemap='plasma') # To get better colormaps that in nabpy
        
         self.scalarMap = self.plotOneDetector(randompixhist, self.pxplfg, self.pxplax, cmap=self.customcmap)
         self.clbar = self.pxplfg.colorbar(self.scalarMap, ax=self.pxplax)

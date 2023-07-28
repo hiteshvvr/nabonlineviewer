@@ -7,7 +7,7 @@ import nabPy as Nab
 class MData():
     def __init__(self) -> None:
         self.data = None
-        self.foldname = None
+        self.dirname = None
         self.runno= None
         # self.eventsig = 0xaa55f154
         self.mdata = None
@@ -44,7 +44,10 @@ class MData():
         # self.filePath = "../datafiles/hdf5files/"
         # self.filePath = "/Volumes/T7/Nab_Data/"
         # self.runno = 1612
-        self.hdFile = Nab.DataRun(self.foldname, self.runno) #We will have to chnage this later so user can input the run number 
+        self.runpath = self.dirname+ "/" 
+        print(self.runpath)
+        
+        self.hdFile = Nab.DataRun(self.runpath, self.runno) #We will have to chnage this later so user can input the run number 
         # self.hdFile = Nab.DataRun(self.filePath, 2430) #We will have to chnage this later so user can input the run number 
         self.fileData = self.hdFile.noiseWaves().headers()
         # print("this ran successfully")

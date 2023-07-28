@@ -21,20 +21,20 @@ class MainFrame(QWidget):
         # Define Tabs
         self.tabs = QTabWidget()
         self.tab1 = MainWindow(self.data)
-        self.tab2 = TopDetector(self.data) #SRW
-        self.tab3 = BottomDetector(self.data) #SRW
+        self.tab2 = TopDetector(self.data)
+        self.tab3 = BottomDetector(self.data)
         # self.tab3 = Monitor(self.data)
-        self.tab4 = Flipper()
-        self.tab5 = Monitor(self.data)
-        self.tab6 = MainWindow(self.data) #Creating tab for pixelated detector SRW
+        # self.tab4 = Flipper()
+        # self.tab5 = Monitor(self.data)
+        # self.tab6 = MainWindow(self.data) #Creating tab for pixelated detector SRW
 
         # Add Tabs
         self.tabs.addTab(self.tab1, "Main Window")
         self.tabs.addTab(self.tab2, "Top Detector")
         self.tabs.addTab(self.tab3, "Bottom Detector")
-        self.tabs.addTab(self.tab4, "Slow Control")
-        self.tabs.addTab(self.tab5, "FPGA")
-        self.tabs.addTab(self.tab6, "Pixelated Detector") #Naming tab for pixelated detector 
+        # self.tabs.addTab(self.tab4, "Slow Control")
+        # self.tabs.addTab(self.tab5, "FPGA")
+        # self.tabs.addTab(self.tab6, "Pixelated Detector") #Naming tab for pixelated detector 
 
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
