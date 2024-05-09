@@ -9,6 +9,14 @@ from pyqtgraph.Qt import QtCore
 import numpy as np
 from hexplot import MplCanvas
 
+import sys
+
+nabPath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/pyNab/src"
+deltaRicePath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/deltarice/build/lib.macosx-11.0-arm64-cpython-312/"
+
+sys.path.append(deltaRicePath)
+sys.path.append(nabPath)
+
 import nabPy as Nab
 import h5py as hd
 

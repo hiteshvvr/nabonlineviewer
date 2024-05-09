@@ -2,6 +2,14 @@ from matplotlib.pyplot import axis
 import numpy as np
 import h5py as hd
 import pandas as pd
+import sys
+
+nabPath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/pyNab/src"
+deltaRicePath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/deltarice/build/lib.macosx-11.0-arm64-cpython-312/"
+
+sys.path.append(deltaRicePath)
+sys.path.append(nabPath)
+
 import nabPy as Nab
 
 class MData():
@@ -156,7 +164,3 @@ class MData():
         self.counts ,self.bins = np.histogram(self.energy, self.bins)
         
         return(self.counts, self.bins) #maybe instead do self.enerG?? So we can do query in top/bottom detector??
-
-        
-
-
