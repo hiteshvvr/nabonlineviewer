@@ -55,14 +55,13 @@ class MData():
         self.runpath = self.dirname+ "/" 
         print(self.runpath)
         
-        self.hdFile = Nab.DataRun(self.runpath, self.runno) #We will have to chnage this later so user can input the run number 
+        self.hdFile = Nab.DataRun(self.runpath, self.runno) 
         # self.hdFile = Nab.DataRun(self.filePath, 2430) #We will have to chnage this later so user can input the run number 
         self.fileData = self.hdFile.noiseWaves().headers()
-        # print("this ran successfully")
 
     def getDetPixData(self,eventType, det = 'top'):
         self.eventType = eventType
-        self.pixhist = self.hdFile.plotHitLocations(self.eventType, size = 1.3, det = det, rounding='int', onlineanalysis = True, alpha = 0.6, title='1612 File')
+        self.pixhist = self.hdFile.plotHitLocations(self.eventType, det = det)
         return(self.pixhist)
 
     #YOU NEED TO FIGURE THIS OUT :,)
@@ -96,6 +95,20 @@ class MData():
         Get dataframe for singles data
         """
         print("did we get here?")
+        
+    def updatepixplot(self, pixdata, afig, aaxis, acbar, norm, cmap):
+        detfig = Nab.nplt.detectorFigure()
+        detfig.logNorm = norm
+        detfig.fig = afig
+        detfig.ax = aaxis
+        detfig.cbar = acbar
+        detfig.cmap = cmap
+        
+        afig, aaxis, acbar = detfig.createFigure(pixdata)
+        
+        return(afig, aaxis, acbar)
+        
+        
 
 
     def getpixelhistogram(self): 
@@ -116,6 +129,7 @@ class MData():
         elif eventType == 'singles':
             self.pulsedata = self.hdFile.singleWaves().waves()[eventno].compute()
         else:
+            # self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno].compute()
             self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno].compute()
         
         self.timeaxis = np.arange(len(self.pulsedata)) * 4e-9
@@ -125,6 +139,34 @@ class MData():
         # print(self.noisedata[:2],self.timeaxis[:2])
 
         return(self.timeaxis,self.pulsedata)
+    
+    
+    def getmultipleeventdata(self,eventType='noise',channel='0',eventno=0):
+    #def getsingleeventdata(self,channel='0',eventno=0):
+        self.pulsedata= np.random.random(10)
+        self.timeaxis = np.arange(10)
+
+        if eventType == 'noise':
+            self.pulsedata = self.hdFile.noiseWaves().waves()[eventno:eventno + 500].compute()
+        elif eventType == 'singles':
+            self.pulsedata = self.hdFile.singleWaves().waves()[eventno:eventno + 500].compute()
+        else:
+            # self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno].compute()
+            self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno:eventno + 500].compute()
+        
+        xbins = np.arange(len(self.pulsedata[0])) * 4e-9
+        self.timeaxis = np.tile(xbins, len(self.pulsedata))
+        xbins = len(xbins)
+        self.timeaxis = self.timeaxis.flatten()
+        print(len(self.pulsedata))
+        self.pulsedata = self.pulsedata.flatten()
+        ybins = 100
+        H, xbin, ybin = np.histogram2d(self.timeaxis, self.pulsedata, bins = (xbins, ybins))
+        # self.noisedata = np.array(self.singledata)
+        # print(len(self.noisedata),len(self.timeaxis))
+        # print(self.noisedata[:2],self.timeaxis[:2])
+
+        return(H, xbin, ybin)
 
     #*******************Attempt 2 extracting energies*********************
     ##Generating a list of all energies for each event 
