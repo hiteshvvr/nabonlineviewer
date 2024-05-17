@@ -160,16 +160,14 @@ class MData():
         else:
             # self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno].compute()
             self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno:eventno + 500].compute()
-        acase = np.random.randint(19)
-        acase = 0.0001+acase//10
         xbins = np.arange(len(self.pulsedata[0])) * 4e-9
         self.timeaxis = np.tile(xbins, len(self.pulsedata))
         xbins = len(xbins)
         self.timeaxis = self.timeaxis.flatten()
-        print(acase)
-        self.pulsedata = acase * self.pulsedata.flatten()
+        self.pulsedata = self.pulsedata.flatten()
         ybins = 200
         H, xbin, ybin = np.histogram2d(self.timeaxis, self.pulsedata, bins = (xbins, ybins))
+        print(ybin[:10])
         print(ybin[-10:])
         # self.noisedata = np.array(self.singledata)
         # print(len(self.noisedata),len(self.timeaxis))
