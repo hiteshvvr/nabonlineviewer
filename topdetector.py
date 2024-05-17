@@ -62,7 +62,7 @@ class TopDetector(QWidget): #SRW
         self.sel_eventType = QComboBox() 
         self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsers')]) #These are the only event types nabpy can take as an argument  
         self.sel_eventType.currentIndexChanged.connect(self.selecteventType)
-        self.eventType = 'noise'
+        self.eventType = 'singles'
 
         # Creating conditionals dropdown menu for energy histogram
         self.label_conditional = QLabel("Conditionals")
@@ -260,18 +260,22 @@ class TopDetector(QWidget): #SRW
         self.pw4.showGrid(x=True, y=True)
         self.pw4.setLabel('left', 'Value', units='arb')
         self.pw4.setLabel('bottom', 'Time', units='arb')
-
+        # self.pw
         # self.p4 = pg.ScatterPlotItem(size=2, brush=pg.mkBrush(0, 0, 0, 200))
         self.p4 = pg.ImageItem()#(image=self.noisedata)
-        pg.ImageItem()
+        # pg.ImageItem()
         self.pw4.addItem(self.p4)
 
         # self.noisedata = np.random.random(1000)
         # self.timeax = np.arange(1000)
-        self.noisedata = np.fromfunction(lambda i, j: (1+0.3*np.sin(i)) * (i)**2 + (j)**2, (100, 100))
-        self.noisedata = self.noisedata * (1 + 0.2 * np.random.random(self.noisedata.shape) )
+        # self.noisedata = np.fromfunction(lambda i, j: (1+0.3*np.sin(i)) * (i)**2 + (j)**2, (100, 100))
+        # self.noisedata = self.noisedata * (1 + 0.2 * np.random.random(self.noisedata.shape) )
+        self.xnoise = np.random.random(500)
+        self.ynoise = np.random.random(500)
+        self.noisedata,xas, yas = np.histogram2d(self.xnoise, self.ynoise)
         self.p4.setImage(self.noisedata, log=True)
-        self.pw4.addColorBar(self.p4, colorMap = 'CET-L9', values = (self.noisedata.min(), self.noisedata.max()))
+        # self.pw4.addColorBar(self.p4, colorMap = 'CET-L9', values = (self.noisedata.min(), self.noisedata.max()))
+        self.pw4.addColorBar(self.p4, colorMap = 'CET-L17', values = (self.noisedata.min(), self.noisedata.max()))
         # self.p4.addPoints(x=self.timeax, y=self.noisedata)
         # self.pw4.setFixedHeight(200);
 
@@ -411,7 +415,7 @@ class TopDetector(QWidget): #SRW
         if self.data is not None:
             self.updatepixhits()
             # self.updateenergyhistogram() #SRW commenting out for now to remove errors
-            # self.updatesingleevent()
+            self.updatesingleevent()
             # self.updaterangeplot()
             # self.updatedistribution()
             # self.updatestackplot()
@@ -426,12 +430,31 @@ class TopDetector(QWidget): #SRW
     def updatesingleevent(self):
         # self.timeax, self.pulsedata = self.data.getmultipleeventdata(self.eventType,channel = self.chan,eventno=self.evtno)
         self.pulseimg, self.xbin, self.ybin = self.data.getmultipleeventdata( self.eventType, channel=self.chan, eventno=self.evtno)
+        # x0, x1 = (self.xbin.min(), self.xbin.max())
+        # y0, y1 = (self.ybin.min(), self.ybin.max())
+        # xscale, yscale = (x1-x0) /self.pulseimg.shape[0], (y1-y0) / self.pulseimg.shape[1]
+        # plt = pg.PlotItem(labels={'bottom': ('x axis title', 'm'), 'left': ('y axis title', 'm')})
+        # view = pg.ImageView(view=plt)
+        # view.setImage(img, pos=[x0, y0], scale=[xscale, yscale])
+        # plt.setAspectLocked(False)
+
+        # self.p4.setImage(self.pulseimg, xvals = self.xbin, yvals = self.ybin)
+        # self.pw4.setAspectLocked(False)
+
         # self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,'0',eventno=self.evtno)
         # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
         # self.p4.setData(self.timeax,self.pulsedata)
+        
+        self.p4.clear()
+        if self.norm == 'log':
+            logval = True
+        else:
+            logval = False
+        self.p4.setImage(self.pulseimg, autoLevels=True, log = logval)
+        self.p4.setColorMap('CET-L17')
 
-        self.p4.setImage(self.pulseimg)
-        self.pw4.addColorBar(self.p4, colorMap = 'CET-L9', values = (self.pulseimg.min(), self.pulseimg.max()))
+        # if self.pw4.
+        # self.pw4.addColorBar(self.p4, colorMap = 'CET-L9', values = (self.pulseimg.min(), self.pulseimg.max()))
 
     # **************** Function to update pixel hits *******************************#
     def updatepixhits(self):

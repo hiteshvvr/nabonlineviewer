@@ -145,23 +145,32 @@ class MData():
     #def getsingleeventdata(self,channel='0',eventno=0):
         self.pulsedata= np.random.random(10)
         self.timeaxis = np.arange(10)
+        tt = []
+        for i in range(300):
+            tt.append(np.random.randint(21000))
+        tt = np.array(tt)
+        
 
         if eventType == 'noise':
-            self.pulsedata = self.hdFile.noiseWaves().waves()[eventno:eventno + 500].compute()
+            # self.pulsedata = self.hdFile.noiseWaves().waves()[eventno:eventno + 500].compute()
+            self.pulsedata = self.hdFile.noiseWaves().waves()[tt].compute()
         elif eventType == 'singles':
-            self.pulsedata = self.hdFile.singleWaves().waves()[eventno:eventno + 500].compute()
+            # self.pulsedata = self.hdFile.singleWaves().waves()[eventno:eventno + 500].compute()
+            self.pulsedata = self.hdFile.singleWaves().waves()[tt].compute()
         else:
             # self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno].compute()
             self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno:eventno + 500].compute()
-        
+        acase = np.random.randint(19)
+        acase = 0.0001+acase//10
         xbins = np.arange(len(self.pulsedata[0])) * 4e-9
         self.timeaxis = np.tile(xbins, len(self.pulsedata))
         xbins = len(xbins)
         self.timeaxis = self.timeaxis.flatten()
-        print(len(self.pulsedata))
-        self.pulsedata = self.pulsedata.flatten()
-        ybins = 100
+        print(acase)
+        self.pulsedata = acase * self.pulsedata.flatten()
+        ybins = 200
         H, xbin, ybin = np.histogram2d(self.timeaxis, self.pulsedata, bins = (xbins, ybins))
+        print(ybin[-10:])
         # self.noisedata = np.array(self.singledata)
         # print(len(self.noisedata),len(self.timeaxis))
         # print(self.noisedata[:2],self.timeaxis[:2])
