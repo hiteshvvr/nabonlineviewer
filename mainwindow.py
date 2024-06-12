@@ -403,6 +403,7 @@ class MainWindow(QWidget):
         self.updateall()
         #self.loadSummary()
         self.updateDataSummary()
+        print("Hhikfdjak")
         return(self.data)
 
 #*************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#

@@ -1,6 +1,6 @@
 from matplotlib.pyplot import axis
 import numpy as np
-import h5py as hd
+# import h5py as hd
 import pandas as pd
 import sys
 
@@ -53,9 +53,11 @@ class MData():
         # self.filePath = "/Volumes/T7/Nab_Data/"
         # self.runno = 1612
         self.runpath = self.dirname+ "/" 
+        self.runpath = self.dirname+ "/"  + "Run"+str(self.runno)+"_0.h5"
         print(self.runpath)
         
-        self.hdFile = Nab.DataRun(self.runpath, self.runno) 
+        # self.hdFile = Nab.DataRun(self.runpath, self.runno) 
+        self.hdFile = Nab.File(self.runpath) 
         # self.hdFile = Nab.DataRun(self.filePath, 2430) #We will have to chnage this later so user can input the run number 
         self.fileData = self.hdFile.noiseWaves().headers()
 
@@ -152,14 +154,16 @@ class MData():
         
 
         if eventType == 'noise':
-            # self.pulsedata = self.hdFile.noiseWaves().waves()[eventno:eventno + 500].compute()
-            self.pulsedata = self.hdFile.noiseWaves().waves()[tt].compute()
+            self.pulsedata = self.hdFile.noiseWaves().waves()[eventno:eventno + 500].compute()
+            # self.pulsedata = self.hdFile.noiseWaves().waves()[tt].compute()
         elif eventType == 'singles':
-            # self.pulsedata = self.hdFile.singleWaves().waves()[eventno:eventno + 500].compute()
-            self.pulsedata = self.hdFile.singleWaves().waves()[tt].compute()
+            self.pulsedata = self.hdFile.singleWaves().waves()[eventno:eventno + 500].compute()
+            # self.pulsedata = self.hdFile.singleWaves().waves()[tt].compute()
         else:
             # self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno].compute()
             self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno:eventno + 500].compute()
+            
+            
         xbins = np.arange(len(self.pulsedata[0])) * 4e-9
         self.timeaxis = np.tile(xbins, len(self.pulsedata))
         xbins = len(xbins)
@@ -167,12 +171,10 @@ class MData():
         self.pulsedata = self.pulsedata.flatten()
         ybins = 200
         H, xbin, ybin = np.histogram2d(self.timeaxis, self.pulsedata, bins = (xbins, ybins))
-        print(ybin[:10])
-        print(ybin[-10:])
         # self.noisedata = np.array(self.singledata)
         # print(len(self.noisedata),len(self.timeaxis))
         # print(self.noisedata[:2],self.timeaxis[:2])
-
+        # return(self.timeaxis, self.pulsedata)
         return(H, xbin, ybin)
 
     #*******************Attempt 2 extracting energies*********************

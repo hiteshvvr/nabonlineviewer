@@ -270,23 +270,17 @@ class TopDetector(QWidget): #SRW
         self.pw4.addColorBar(self.p4, colorMap = 'CET-L17')
 
         # self.size = 2
-        # self.pw4 = MatplotlibWidget((3.5*self.size, 3.5 * self.size), dpi=100)
-        # self.pw4.vbox.removeWidget(self.pxplwg.toolbar)
+        # self.pw4 = MatplotlibWidget((8*self.size, 3.5 * self.size), dpi=100)
+        # self.pw4.vbox.removeWidget(self.pw4.toolbar)
         # self.pw4.toolbar.setVisible(False)
 
         # self.pw4fig = self.pw4.getFigure()
-        # self.pwax = self.pw4.add_subplot(111)
-        # self.clbar = None
+        # self.pw4ax = self.pw4fig.add_subplot(111)
+        # self.pw4clbar = None
 
-        # randompixhist = 100 * np.random.random(127)        # Random pix hit without loading data
         # self.customcmap = self.getmycmap(basemap='plasma') # To get better colormaps that in nabpy
-        # # self.pxplfg, self.pxplax, self.clbar = self.data.updatepixplot(randompixhist, self.pxplfg, self.pxplax, self.clbar, self.norm)
-        # self.data.updatepixplot(randompixhist, self.pxplfg, self.pxplax, self.clbar, self.norm, self.customcmap)
-        # self.pwax.hist2d(self.xnoise, self.ynoise)
-        
-
-
-
+        # self.pw4ax.hist2d(self.xnoise, self.ynoise, bins = 100, norm = colors.LogNorm())
+        # self.pw4fig.set_tight_layout(tight = True)
 
         # #********************* Timer if needed ***********  #
         self.timer = QtCore.QTimer()
@@ -322,16 +316,16 @@ class TopDetector(QWidget): #SRW
     def correctscale(self, plotitem, xscale, yscale):
         xs = xscale[1] - xscale[0]
         ys = yscale[1] - yscale[0]
-        
+
         xmin = xscale.min()
         ymin = yscale.min()
-        
+
         print(xs, ys, xmin, ymin)
         tr = QTransform()  
         tr.translate(xmin, ymin) 
         tr.scale(xs,ys)
         plotitem.setTransform(tr) # assign transform
-        
+
     def dialog(self):
         # file , check = QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()", "", "All Files (*);;Python Files (*.py);;Text Files (*.txt)")
         tempfile, self.check = QFileDialog.getOpenFileName(
@@ -377,12 +371,25 @@ class TopDetector(QWidget): #SRW
         self.clbar = None
         self.pxplfg.set_tight_layout(tight=True)
 
+    def getnewpw4fig(self):
+        try:
+            del self.pw4ax
+            del self.pw4fig
+            del self.pw4clbar
+        except:
+            pass
+        self.pw4fig = self.pw4.getFigure()
+        self.pw4ax = self.pw4fig.add_subplot(111)
+        self.pw4clbar = None
+        self.pw4fig.set_tight_layout(tight=True)
+
     # *************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
     def selectchannel(self):
         self.chan = int(self.sel_channo.currentText())
         # print(tchan, type(tchan))
         self.updateenergyhistogram()
-        self.updatesingleevent() 
+        self.updatesingleevent()
+        # self.updatemultipleevent()
         # print(self.chan)
 
     # Connecting conditional selection to energy histogram code
@@ -393,6 +400,7 @@ class TopDetector(QWidget): #SRW
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
         self.updateenergyhistogram() #changed from self.updateall()
         self.updatesingleevent()
+        # self.updatemultipleevent()
 
     # Connecting event type selection to energy histogram and scatter plot
     def selecteventType(self): 
@@ -403,7 +411,7 @@ class TopDetector(QWidget): #SRW
         self.eventType = teventType
         print(self.eventType)
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
-        self.updatesingleevent() #Idk if this one is right; maybe add energy histogram if we can figure out later how to add event type 
+        self.updatesingleevent() #Idk if this one is right; maybe add energy histogram if we can figure out later how to add event type
         self.updatepixhits()
 
     def getevntno(self):
@@ -437,6 +445,7 @@ class TopDetector(QWidget): #SRW
             self.updatepixhits()
             # self.updateenergyhistogram() #SRW commenting out for now to remove errors
             self.updatesingleevent()
+            # self.updatemultipleevent()
             # self.updaterangeplot()
             # self.updatedistribution()
             # self.updatestackplot()
@@ -448,6 +457,25 @@ class TopDetector(QWidget): #SRW
         # Maybe do if/else statement here for Define Cuts?
 
     # **************** Function to update Single Event *******************************#
+    def updatemultipleevent(self):
+        self.pw4ax.cla()
+        self.pw4fig.clf()
+        self.getnewpw4fig()
+
+        self.xdata, self.ydata = self.data.getmultipleeventdata( self.eventType, channel=self.chan, eventno=self.evtno)
+        h = self.pw4ax.hist2d(self.xdata, self.ydata, bins=1000)
+        
+        self.acmap = plt.get_cmap(self.customcmap)
+        
+        self._cNorm = colors.Normalize(h[0].min(), h[0].max())
+        self._scalarMap = cmx.ScalarMappable(norm=self._cNorm, cmap=self.acmap) 
+        
+        self.pw4clbar = self.pw4fig.colorbar(self._scalarMap, ax=self.pw4ax)
+        self.pw4clbar.update_normal(self._scalarMap)
+        
+        self.pw4.draw()
+
+
     def updatesingleevent(self):
         # self.timeax, self.pulsedata = self.data.getmultipleeventdata(self.eventType,channel = self.chan,eventno=self.evtno)
         self.pulseimg, self.xbin, self.ybin = self.data.getmultipleeventdata( self.eventType, channel=self.chan, eventno=self.evtno)
@@ -464,7 +492,7 @@ class TopDetector(QWidget): #SRW
         # self.p4.setColorMap('CET-L17')
         self.correctscale(self.p4, xscale=self.xbin, yscale = self.ybin)
         self.pw4.setAspectLocked(False)
-        
+
         # if self.pw4.
         # self.pw4.addColorBar(self.p4, colorMap = 'CET-L9', values = (self.pulseimg.min(), self.pulseimg.max()))
 
@@ -539,11 +567,13 @@ class TopDetector(QWidget): #SRW
         self.evtno = self.evtno + 1
         self.value_evtno.setText(str(self.evtno))
         self.updatesingleevent()
+        # self.updatemultipleevent()
 
     def showpreviousevent(self):
         self.evtno = self.evtno - 1
         self.value_evtno.setText(str(self.evtno))
         self.updatesingleevent()
+        # self.updatemultipleevent()
 
     def selectnormalization(self):
         if self.button_norm.isChecked():
