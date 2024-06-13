@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QPushButton, QWidget
+from PyQt5.QtWidgets import QPushButton, QWidget, QRadioButton
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout
 from PyQt5.QtWidgets import QLineEdit, QFileDialog, QComboBox
 from PyQt5.QtWidgets import QPlainTextEdit
@@ -74,21 +74,20 @@ class MainWindow(QWidget):
         self.inlayout = QHBoxLayout()
         self.in2layout = QHBoxLayout()
         self.in3layout = QHBoxLayout()
-        self.in4layout = QHBoxLayout()
-        self.in5layout = QHBoxLayout()
-        self.r1layout = QHBoxLayout()
-        self.r2layout = QHBoxLayout()
 
         # self.dirname = "../datafiles/hdf5files/Aug2023/"
         # self.runno = 2447
-
+        
+        
+        # First Row with Folder name etc.
+        
         self.buttion_dirname = QPushButton('Select Folder')
         self.buttion_dirname.clicked.connect(self.dialog)
         self.field_dirname = QLineEdit(self.dirname)
         self.field_runno = QLineEdit(str(self.runno))
-
-        # self.field_dirname.textChanged.connect(self.updatefoldname)
-        # self.field_runno.textChanged.connect(self.updaterunno)
+        
+        self.button_wholedata = QRadioButton("ReadAllSubRun")
+        self.readallsubruns = False
 
         self.data.dirname = self.dirname
         self.data.runno = self.runno
@@ -99,8 +98,11 @@ class MainWindow(QWidget):
         self.inlayout.addWidget(self.buttion_dirname)
         self.inlayout.addWidget(self.field_dirname)
         self.inlayout.addWidget(self.field_runno)
+        self.inlayout.addWidget(self.button_wholedata)
         self.inlayout.addWidget(self.button_load)
         # self.inlayout.addWidget(self.sel_channo)
+
+
 
         self.series = QPieSeries()
 
@@ -115,6 +117,7 @@ class MainWindow(QWidget):
         self.chart.setTitle("Total Triggers : 100")
         self.label_dataSummary = QLabel("Run Data Summary")
         self.chart.legend().setAlignment(Qt.AlignRight)
+        self._chart_view = QChartView(self.chart)
         
         # ******************** Initializing Textbox for Main Manual *******************************
         self.getManualBox = QPlainTextEdit(self)
@@ -126,12 +129,11 @@ class MainWindow(QWidget):
         # self.getManualBox.resize(400,200) #Setting size of textbox; useless because I swithed to layouts
         self.getManualBox.setReadOnly(True)
         self.label_manualBox = QLabel("GUI User Manual")
-        self._chart_view = QChartView(self.chart)
         
-        self.in2layout.addWidget(self.label_dataSummary)
-        self.in3layout.addWidget(self._chart_view)
-        self.in4layout.addWidget(self.label_manualBox)
-        self.in5layout.addWidget(self.getManualBox)
+        # self.in2layout.addWidget(self.label_dataSummary)
+        self.in2layout.addWidget(self._chart_view)
+        # self.in4layout.addWidget(self.label_manualBox)
+        self.in3layout.addWidget(self.getManualBox)
 
         # ********************* Get Second histogram with pix hist (with random data) *******************
 
@@ -142,10 +144,10 @@ class MainWindow(QWidget):
         self.mainlayout.addLayout(self.inlayout)
         self.mainlayout.addLayout(self.in2layout)
         self.mainlayout.addLayout(self.in3layout)
-        self.mainlayout.addLayout(self.in4layout)
-        self.mainlayout.addLayout(self.in5layout)
-        self.mainlayout.addLayout(self.r1layout)
-        self.mainlayout.addLayout(self.r2layout)
+        # self.mainlayout.addLayout(self.in4layout)
+        # self.mainlayout.addLayout(self.in5layout)
+        # self.mainlayout.addLayout(self.r1layout)
+        # self.mainlayout.addLayout(self.r2layout)
 
         self.maintab.setLayout(self.mainlayout)
         # self.tab1.setLayout(self.alayout)
@@ -178,9 +180,6 @@ class MainWindow(QWidget):
             self.data.runno = self.runno
         except:
             self.field_runno.setText("Enter the integer") 
-    # def loadSummary(self):
-    #     self.xnew = self.data.getDataSummary()
-    #     return(self.xnew)
 
     def updateDataSummary(self):
         trigger, self.dataSum = self.data.getDataSummary()
@@ -202,27 +201,7 @@ class MainWindow(QWidget):
         """
         self.updatefoldname()
         self.updaterunno()
-        self.data.getdatafromfile()
-        self.updateall()
+        self.readallsubruns = self.button_wholedata.isChecked()
+        self.data.getdatafromfile(self.readallsubruns)
         self.updateDataSummary()
         return(self.data)
-
-    # *************** Functions for Updating the plots *****************************************************#
-
-    # **************** Function to update all plots *******************************#
-    def updateall(self):
-        if self.data is not None:
-            print("Mainwindow do not update anything, all plotting is in Topdetector now")
-            # self.updatepixhits()
-            # self.updateenergyhistogram() #Should I comment this out SRW?
-            # self.updatesingleevent()
-            # self.updaterangeplot()
-            # self.updatedistribution()
-            # self.updatestackplot()
-
-    def getmycmap(self, basemap='viridis'):
-        ocmap = plt.get_cmap(basemap)
-        ocmap = ocmap(np.linspace(0, 1, 256))
-        ocmap[:1, :] = ([0.95, 0.95, 0.95, 1])
-        ncmap = colors.ListedColormap(ocmap)
-        return (ncmap)

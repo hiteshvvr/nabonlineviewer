@@ -2,7 +2,9 @@ from matplotlib.pyplot import axis
 import numpy as np
 # import h5py as hd
 import pandas as pd
+import glob as gl
 import sys
+import os
 
 nabPath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/pyNab/src"
 deltaRicePath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/deltarice/build/lib.macosx-11.0-arm64-cpython-312/"
@@ -45,7 +47,7 @@ class MData():
 
         return(self.eventsdf)
 
-    def getdatafromfile(self):
+    def getdatafromfile(self, readallsubruns = False):
         """
         Load various datas in the current viewer 
         """
@@ -53,11 +55,30 @@ class MData():
         # self.filePath = "/Volumes/T7/Nab_Data/"
         # self.runno = 1612
         self.runpath = self.dirname+ "/" 
-        self.runpath = self.dirname+ "/"  + "Run"+str(self.runno)+"_0.h5"
-        print(self.runpath)
+        # self.filepath = self.dirname+ "/"  + "Run"+str(self.runno)+"_0.h5"
+        self.filepath = self.dirname+ "/"  + "Run"+str(self.runno)+"*.h5"
+        print(self.filepath)
+        # print(self.filepath)
+        filename = gl.glob(self.filepath)
+        filename.sort(key=os.path.getmtime, reverse=True)
+        print(filename[0])
+        if readallsubruns:
+            self.hdFile = Nab.DataRun(self.runpath, self.runno) 
+        else:
+            self.hdFile = Nab.File(filename[0]) 
+            
+            
+        
+#         files = glob.glob("/home/chrisg/Pictures/*.jpg")
+# files += glob.glob("/home/chrisg/Pictures/*.png")
+# files += glob.glob("/home/chrisg/Pictures/*.gif")
+# files.sort(key=os.path.getmtime, reverse=True)
+
+# for file in files:
+#     print(file)
+#         print(self.runpath)
         
         # self.hdFile = Nab.DataRun(self.runpath, self.runno) 
-        self.hdFile = Nab.File(self.runpath) 
         # self.hdFile = Nab.DataRun(self.filePath, 2430) #We will have to chnage this later so user can input the run number 
         self.fileData = self.hdFile.noiseWaves().headers()
 
@@ -99,6 +120,7 @@ class MData():
         """
         print("did we get here?")
         
+        
     def updatepixplot(self, pixdata, afig, aaxis, acbar, norm, cmap):
         detfig = Nab.nplt.detectorFigure()
         detfig.logNorm = norm
@@ -106,8 +128,12 @@ class MData():
         detfig.ax = aaxis
         detfig.cbar = acbar
         detfig.cmap = cmap
-        
         afig, aaxis, acbar = detfig.createFigure(pixdata)
+        # preampLabels = Nab.nplt.returnPreampLabels(detfig.parameterFile.BoardChannelPixelMap[:128]) # Create the preamp labels
+        # pLabels = [f'{i}\n{j}' for i,j in zip(np.arange(1,128),preampLabels)] # Otherwise, it will default to pixel number and preamp channel.
+        # pLabels = [f'{i}\n{j}' for i,j in zip(np.arange(1,128),preampLabels)] # Otherwise, it will default to pixel number and preamp channel.
+        pLabels = [f'{i}\n{j}' for i,j in zip(np.arange(1,128),pixdata)] # Add the values to the labels
+        detfig.setPixelLabels(aaxis, pLabels) 
         
         return(afig, aaxis, acbar)
         

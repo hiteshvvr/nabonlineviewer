@@ -198,7 +198,7 @@ class TopDetector(QWidget): #SRW
 
         # ******************** Get PixHits (With random data)   **********************
         self.size = 2
-        self.pxplwg = MatplotlibWidget((3.5*self.size, 3.5 * self.size), dpi=100)
+        self.pxplwg = MatplotlibWidget((4.5*self.size, 3.5 * self.size), dpi=100)
         self.pxplwg.vbox.removeWidget(self.pxplwg.toolbar)
         self.pxplwg.toolbar.setVisible(False)
 
@@ -206,8 +206,9 @@ class TopDetector(QWidget): #SRW
         self.pxplax = self.pxplfg.add_subplot(111)
         self.clbar = None
 
-        randompixhist = 100 * np.random.random(127)        # Random pix hit without loading data
-        self.customcmap = self.getmycmap(basemap='plasma') # To get better colormaps that in nabpy
+        randompixhist = 1 * np.random.random(127)        # Random pix hit without loading data
+        # self.customcmap = self.getmycmap(basemap='plasma') # To get better colormaps that in nabpy
+        self.customcmap = self.getmycmap(basemap='cividis') # To get better colormaps that in nabpy
         # self.pxplfg, self.pxplax, self.clbar = self.data.updatepixplot(randompixhist, self.pxplfg, self.pxplax, self.clbar, self.norm)
         self.data.updatepixplot(randompixhist, self.pxplfg, self.pxplax, self.clbar, self.norm, self.customcmap)
 
