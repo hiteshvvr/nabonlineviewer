@@ -1,5 +1,6 @@
 import sys
-from PyQt5.QtWidgets import QMainWindow, QApplication, QStyleFactory
+# from PyQt5.QtWidgets import QMainWindow, QApplication, QStyleFactory
+from PySide6.QtWidgets import QMainWindow, QApplication, QStyleFactory
 from mainframe import MainFrame
 
 

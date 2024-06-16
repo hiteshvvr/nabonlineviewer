@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QTabWidget, QVBoxLayout
+# from PyQt5.QtWidgets import QWidget, QTabWidget, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QTabWidget, QVBoxLayout
 import pyqtgraph as pg
 from mainwindow import MainWindow
 from monitorwindow import Monitor
@@ -11,7 +12,7 @@ from bottomdetector import BottomDetector #SRW
 
 class MainFrame(QWidget):
     def __init__(self, parent) -> None:
-        super(QWidget, self).__init__(parent)
+        super().__init__(parent)
         self.layout = QVBoxLayout(self)
         pg.setConfigOption('background', 'w')
 
@@ -23,7 +24,6 @@ class MainFrame(QWidget):
         self.tab1 = MainWindow(self.data)
         self.tab2 = TopDetector(self.data)
         self.tab3 = BottomDetector(self.data)
-        self.tab4 = BottomDetector(self.data)
         # self.tab3 = Monitor(self.data)
         # self.tab4 = Flipper()
         # self.tab5 = Monitor(self.data)
@@ -33,7 +33,7 @@ class MainFrame(QWidget):
         self.tabs.addTab(self.tab1, "Main Window")
         self.tabs.addTab(self.tab2, "Top Detector")
         self.tabs.addTab(self.tab3, "Bottom Detector")
-        self.tabs.addTab(self.tab4, "Analysis")
+        # self.tabs.addTab(self.tab4, "Slow Control")
         # self.tabs.addTab(self.tab5, "FPGA")
         # self.tabs.addTab(self.tab6, "Pixelated Detector") #Naming tab for pixelated detector 
 

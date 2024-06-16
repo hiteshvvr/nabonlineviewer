@@ -1,8 +1,10 @@
-from PyQt5.QtWidgets import QPushButton, QWidget
-from PyQt5.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout
-from PyQt5.QtWidgets import QLineEdit, QFileDialog, QComboBox
-from PyQt5.QtGui import QTransform
+# from PyQt5.QtWidgets import QPushButton, QWidget
+# from PyQt5.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout
+# from PyQt5.QtWidgets import QLineEdit, QFileDialog, QComboBox
 
+from PySide6.QtWidgets import QPushButton, QWidget
+from PySide6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout
+from PySide6.QtWidgets import QLineEdit, QFileDialog, QComboBox
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 from pyqtgraph.widgets.MatplotlibWidget import MatplotlibWidget
@@ -20,7 +22,8 @@ import matplotlib.cm as cmx
 class TopDetector(QWidget): #SRW
     # def __init__(self, parent) -> None:
     def __init__(self, data):
-        super(QWidget, self).__init__()
+        # super(QWidget, self).__init__()
+        super().__init__()
         self.layout = QVBoxLayout(self)
         pg.setConfigOption('background', 'w')
 
@@ -40,33 +43,33 @@ class TopDetector(QWidget): #SRW
         self.in3layout = QHBoxLayout()
         self.r1layout = QHBoxLayout()
         self.r2layout = QHBoxLayout()
-
-        # self.foldname = "../datafiles/hdf5files/"
-        # self.runno = 1612
-
-        # self.button_foldname = QPushButton('Select Folder')
-        # self.button_foldname.clicked.connect(self.dialog)
-        # self.field_foldname = QLineEdit(self.foldname)
-        # self.field_runno = QLineEdit(str(self.runno))
-
+        
+        #self.foldname = "../datafiles/hdf5files/"
+        #self.runno = 1612
+        
+        #self.button_foldname = QPushButton('Select Folder')
+        #self.button_foldname.clicked.connect(self.dialog)
+        #self.field_foldname = QLineEdit(self.foldname)
+        #self.field_runno = QLineEdit(str(self.runno))
+        
         # self.field_foldname.textChanged.connect(self.updatefoldname)
         # self.field_runno.textChanged.connect(self.updaterunno)
-
-        # self.data.foldname = self.foldname
-        # self.data.runno = self.runno
-
+        
+        #self.data.foldname = self.foldname
+        #self.data.runno = self.runno
+        
         self.button_load = QPushButton('LoadData')
         self.button_load.clicked.connect(self.loaddata)
 
-        # Creating dropdown menu to select event type
+        #Creating dropdown menu to select event type 
         self.label_eventType = QLabel("Event Type")
         self.label_eventType.setFixedWidth(60)
         self.sel_eventType = QComboBox() 
         self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsers')]) #These are the only event types nabpy can take as an argument  
         self.sel_eventType.currentIndexChanged.connect(self.selecteventType)
-        self.eventType = 'singles'
+        self.eventType = 'noise'
 
-        # Creating conditionals dropdown menu for energy histogram
+        #Creating conditionals dropdown menu for energy histogram
         self.label_conditional = QLabel("Conditionals")
         self.label_conditional.setFixedWidth(60)
         self.sel_conditional = QComboBox()
@@ -74,7 +77,7 @@ class TopDetector(QWidget): #SRW
         self.sel_conditional.currentIndexChanged.connect(self.selectconditional)
         self.cond = 0
 
-        # Creating dropdown menu to select the channel number
+        #Creating dropdown menu to select the channel number 
         self.label_channo = QLabel("Channel")
         self.label_channo.setFixedWidth(60)
         self.sel_channo = QComboBox()
@@ -87,9 +90,11 @@ class TopDetector(QWidget): #SRW
         self.button_loadPixelCuts = QPushButton('LoadPixelCuts')
         self.button_loadPixelCuts.clicked.connect(self.updatePixelCut)
 
+
         self.evtno = 42
         self.energyCut = 'energy', '>', 0
         self.pixelCut = 'pixel', '>', 0
+
 
         self.lims = [2, 10]
         self.totevnt = 0
@@ -113,7 +118,7 @@ class TopDetector(QWidget): #SRW
 
         self.button_nextevt = QPushButton('Next')
         self.button_nextevt.clicked.connect(self.shownextevent)
-
+        
         self.button_norm = QPushButton('logpixhit')
         self.button_norm.setCheckable(True)
         self.button_norm.clicked.connect(self.selectnormalization)
@@ -140,9 +145,9 @@ class TopDetector(QWidget): #SRW
         # self.field_fname.setMaximumWidth(self.width)
         # self.space = QSpacerItem(10,5)
 
-        # self.inlayout.addWidget(self.button_foldname)
-        # self.inlayout.addWidget(self.field_foldname)
-        # self.inlayout.addWidget(self.field_runno)
+        #self.inlayout.addWidget(self.button_foldname)
+        #self.inlayout.addWidget(self.field_foldname)
+        #self.inlayout.addWidget(self.field_runno)
         self.inlayout.addWidget(self.button_load)
         self.inlayout.addWidget(self.sel_eventType) #Dropdown menu that allows user to select the event type 
         self.inlayout.addWidget(self.sel_conditional) #Dropdown menu that allows user to select a conditional symbol
@@ -153,8 +158,9 @@ class TopDetector(QWidget): #SRW
         self.in2layout.addWidget(self.button_loadEnergyCuts)
         self.in2layout.addWidget(self.label_Pixel)
         self.in2layout.addWidget(self.value_pixelCut)
-
+        
         self.in2layout.addWidget(self.button_loadPixelCuts)
+    
 
         self.in3layout.addWidget(self.button_freerun)
         self.in3layout.addWidget(self.button_previousevt) #SRW
@@ -162,13 +168,13 @@ class TopDetector(QWidget): #SRW
         self.in3layout.addWidget(self.button_norm)
         self.in3layout.addWidget(self.label_evtno)
         self.in3layout.addWidget(self.value_evtno)
-        # self.in2layout.addWidget(self.label_lims)
-        # self.in2layout.addWidget(self.value_lims)
+        #self.in2layout.addWidget(self.label_lims)
+        #self.in2layout.addWidget(self.value_lims)
 
-        # self.in2layout.addWidget(self.label_totevt)
-        # self.in2layout.addWidget(self.value_totevt)
-        # self.in2layout.addWidget(self.label_totarea)
-        # self.in2layout.addWidget(self.value_totarea)
+        #self.in2layout.addWidget(self.label_totevt)
+        #self.in2layout.addWidget(self.value_totevt)
+        #self.in2layout.addWidget(self.label_totarea)
+        #self.in2layout.addWidget(self.value_totarea)
 
         # self.gwin = pg.GraphicsWindow()
         # self.rplt = self.gwin.addPlot()
@@ -184,41 +190,43 @@ class TopDetector(QWidget): #SRW
         # self.count = 0
         # self.curve.setData(self.data)
 
-        # ******************************************
-        # We want to stop using random data! I think we want to add the defined function from mdata.py here. SRW
-        #       INITIAL RANDOM DATA
+
+# ******************************************
+# We want to stop using random data! I think we want to add the defined function from mdata.py here. SRW
+#       INITIAL RANDOM DATA
         # self.x = np.arange(100)
         # self.y = np.random.random(100)
         # self.bins = 40
         # self.hy, self.hx = np.histogram(self.y, bins=self.bins)
-        # *****************************************
+# *****************************************
 
-        #       PLOTS
-        # I removed lot of commented out code. HVR
+#       PLOTS
+# I removed lot of commented out code. HVR
 
-        # ******************** Get PixHits (With random data)   **********************
+        
+        
+#******************** Get PixHits (With random data)   **********************  
         self.size = 2
-        self.pxplwg = MatplotlibWidget((4.5*self.size, 3.5 * self.size), dpi=100)
+        self.pxplwg = MatplotlibWidget((3.5*self.size, 3.5 * self.size), dpi=100)
         self.pxplwg.vbox.removeWidget(self.pxplwg.toolbar)
         self.pxplwg.toolbar.setVisible(False)
-
+        
         self.pxplfg = self.pxplwg.getFigure()
+        
         self.pxplax = self.pxplfg.add_subplot(111)
-        self.clbar = None
-
-        randompixhist = 1 * np.random.random(127)        # Random pix hit without loading data
-        # self.customcmap = self.getmycmap(basemap='plasma') # To get better colormaps that in nabpy
-        self.customcmap = self.getmycmap(basemap='cividis') # To get better colormaps that in nabpy
-        # self.pxplfg, self.pxplax, self.clbar = self.data.updatepixplot(randompixhist, self.pxplfg, self.pxplax, self.clbar, self.norm)
-        self.data.updatepixplot(randompixhist, self.pxplfg, self.pxplax, self.clbar, self.norm, self.customcmap)
-
-        # self.scalarMap = self.plotOneDetector(randompixhist, self.pxplfg, self.pxplax, cmap=self.customcmap)
-        # self.clbar = self.pxplfg.colorbar(self.scalarMap, ax=self.pxplax)
+        
+        randompixhist = 100 * np.random.random(127)                                         # Random pix hit without loading data
+        self.customcmap = self.getmycmap(basemap='plasma') # To get better colormaps that in nabpy
+       
+        self.scalarMap = self.plotOneDetector(randompixhist, self.pxplfg, self.pxplax, cmap=self.customcmap)
+        self.clbar = self.pxplfg.colorbar(self.scalarMap, ax=self.pxplax)
+        
 
         self.pxplfg.set_tight_layout(tight=True)
         # scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=self.customcmap)
-
-        # ********************* Get Second histogram with pix hist(with random data ***********) *******************
+        
+       
+#********************* Get Second histogram with pix hist(with random data ***********) *******************
 
         # self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
         self.pw2 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Energy Histogram</span>')
@@ -227,24 +235,25 @@ class TopDetector(QWidget): #SRW
         self.pw2.setLabel('left', 'Energy', units='arb')
         self.pw2.setLabel('bottom', 'Bin', units='arb')
         self.pw2.showGrid(x=True, y=True)
-
-        # This is the new energy histgram stuff 3/27/2023
-        # self.energies = self.data.getenergyhistogram()
-        # self.energies.defineCut('energy', '>', 100)
-        # self.energiesNew = self.energies.hist('energy', bins = Nab.np.arange(0, 200))
-        # self.energiesNew = self.energies.hist('energy')
-        # self.enerGNew = np.reshape(self.energiesNew, (1,))
-        # self.enerG.show()
-        # self.p2.setData(self.energiesNew)
-
-        # This is all the old stuff
-        # self.hy, self.hx = np.histogram(np.random.random(100),bins=20)
-        # self.p2.setData(self.hx, self.hy)
+        
+        #This is the new energy histgram stuff 3/27/2023
+        #self.energies = self.data.getenergyhistogram()
+        #self.energies.defineCut('energy', '>', 100)
+        #self.energiesNew = self.energies.hist('energy', bins = Nab.np.arange(0, 200))
+        #self.energiesNew = self.energies.hist('energy')
+        #self.enerGNew = np.reshape(self.energiesNew, (1,))    
+        #self.enerG.show()
+        #self.p2.setData(self.energiesNew)
+        
+        
+        #This is all the old stuff 
+        #self.hy, self.hx = np.histogram(np.random.random(100),bins=20)
+        #self.p2.setData(self.hx, self.hy)
         # self.hy,self.hx = self.data.getpixelhistogram() #SRW newly written line
         # print("printing hx, hy", self.hx, self.hy)
         # print(len(self.hx), len(self.hy))
 
-        # ********************* Third histogram Not used now ************************************
+#********************* Third histogram Not used now ************************************ 
 
         self.pw3 = pg.PlotWidget(title="Many Events One after other")
         self.p3 = self.pw3.plot()
@@ -255,38 +264,28 @@ class TopDetector(QWidget): #SRW
 
         self.noisedata = np.random.random(10)
         self.timeax = np.arange(10)
-
+        
         self.p3.setData(x=self.timeax, y=self.noisedata)
-
-        # ********************* Example of scatter plot if needed ***********  #
+        
+#********************* Example of scatter plot if needed ***********  #
         self.pw4 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Single Event Plot</span>')
-        self.p4 = pg.ImageItem()#(image=self.noisedata)
-        self.xnoise = np.random.random(500)
-        self.ynoise = np.random.random(500)
-        self.noisedata,xas, yas = np.histogram2d(self.xnoise, self.ynoise)
-        self.p4.setImage(self.noisedata)
-        self.correctscale(self.p4, xscale=xas, yscale = yas)
-
+        self.pw4.showGrid(x=True, y=True)
+        self.pw4.setLabel('left', 'Value', units='arb')
+        self.pw4.setLabel('bottom', 'Time', units='arb')
+        
+        self.p4 = pg.ScatterPlotItem(size=2, brush=pg.mkBrush(0, 0, 0, 200))
         self.pw4.addItem(self.p4)
-        self.pw4.addColorBar(self.p4, colorMap = 'CET-L17')
-
-        # self.size = 2
-        # self.pw4 = MatplotlibWidget((8*self.size, 3.5 * self.size), dpi=100)
-        # self.pw4.vbox.removeWidget(self.pw4.toolbar)
-        # self.pw4.toolbar.setVisible(False)
-
-        # self.pw4fig = self.pw4.getFigure()
-        # self.pw4ax = self.pw4fig.add_subplot(111)
-        # self.pw4clbar = None
-
-        # self.customcmap = self.getmycmap(basemap='plasma') # To get better colormaps that in nabpy
-        # self.pw4ax.hist2d(self.xnoise, self.ynoise, bins = 100, norm = colors.LogNorm())
-        # self.pw4fig.set_tight_layout(tight = True)
-
-        # #********************* Timer if needed ***********  #
+       
+        
+        self.noisedata = np.random.random(1000)
+        self.timeax = np.arange(1000)
+        self.p4.addPoints(x=self.timeax, y=self.noisedata)
+        # self.pw4.setFixedHeight(200);
+        
+# #********************* Timer if needed ***********  #
         self.timer = QtCore.QTimer()
 
-        # ********************* Layouts ***********  #
+#********************* Layouts ***********  #
         # self.r1layout.addWidget(self.pw1)
         self.r1layout.addWidget(self.pxplwg)  # PixDec
         self.r1layout.addWidget(self.pw2)
@@ -311,22 +310,10 @@ class TopDetector(QWidget): #SRW
         self.layout.addWidget(self.maintab)
         self.setLayout(self.layout)
 
-    # ************************************************************************** FUNCTIONS ****************************************************************************************  #
+#************************************************************************** FUNCTIONS ****************************************************************************************  #
 
-    # ***************Functions for loading Data *****************************************************#
-    def correctscale(self, plotitem, xscale, yscale):
-        xs = xscale[1] - xscale[0]
-        ys = yscale[1] - yscale[0]
-
-        xmin = xscale.min()
-        ymin = yscale.min()
-
-        print(xs, ys, xmin, ymin)
-        tr = QTransform()  
-        tr.translate(xmin, ymin) 
-        tr.scale(xs,ys)
-        plotitem.setTransform(tr) # assign transform
-
+#***************Functions for loading Data *****************************************************#
+   
     def dialog(self):
         # file , check = QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()", "", "All Files (*);;Python Files (*.py);;Text Files (*.txt)")
         tempfile, self.check = QFileDialog.getOpenFileName(
@@ -338,18 +325,18 @@ class TopDetector(QWidget): #SRW
         else:
             self.file = "file not found!!"
 
-    # def updatefoldname(self):
-    # self.foldname = self.field_foldname.text()
-    # self.data.foldname = self.foldname
+    #def updatefoldname(self):
+        #self.foldname = self.field_foldname.text()
+        #self.data.foldname = self.foldname
 
-    # def updaterunno(self):
-    # try:
-    # self.runno = int(self.field_runno.text())
-    # print("what is runno:", self.runno)
-    # self.data.runno = self.runno
-    # except:
-    # self.field_runno.setText("Inter the integer")
-
+    #def updaterunno(self):
+        #try:
+            #self.runno = int(self.field_runno.text())
+            # print("what is runno:", self.runno)
+            #self.data.runno = self.runno
+        #except:
+            #self.field_runno.setText("Inter the integer") 
+ 
     def loaddata(self):
         """
         Get the data in the data class
@@ -358,42 +345,17 @@ class TopDetector(QWidget): #SRW
         # self.updaterunno()
         # self.data.getdatafromfile()
         self.updateall()
-        # return(self.data)
+        #return(self.data)
 
-    def getnewfig(self):
-        try:
-            del self.pxplax
-            del self.pxplfg
-            del self.clbar
-        except:
-            pass
-        self.pxplfg = self.pxplwg.getFigure()
-        self.pxplax = self.pxplfg.add_subplot(111)
-        self.clbar = None
-        self.pxplfg.set_tight_layout(tight=True)
-
-    def getnewpw4fig(self):
-        try:
-            del self.pw4ax
-            del self.pw4fig
-            del self.pw4clbar
-        except:
-            pass
-        self.pw4fig = self.pw4.getFigure()
-        self.pw4ax = self.pw4fig.add_subplot(111)
-        self.pw4clbar = None
-        self.pw4fig.set_tight_layout(tight=True)
-
-    # *************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
+#*************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
     def selectchannel(self):
         self.chan = int(self.sel_channo.currentText())
         # print(tchan, type(tchan))
         self.updateenergyhistogram()
-        self.updatesingleevent()
-        # self.updatemultipleevent()
-        # print(self.chan)
+        self.updatesingleevent() 
+        #print(self.chan)
 
-    # Connecting conditional selection to energy histogram code
+    #Connecting conditional selection to energy histogram code
     def selectconditional(self): 
         tcond = int(self.sel_conditional.currentText()) - 1
         # print(tchan, type(tchan))
@@ -401,9 +363,8 @@ class TopDetector(QWidget): #SRW
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
         self.updateenergyhistogram() #changed from self.updateall()
         self.updatesingleevent()
-        # self.updatemultipleevent()
-
-    # Connecting event type selection to energy histogram and scatter plot
+    
+    #Connecting event type selection to energy histogram and scatter plot 
     def selecteventType(self): 
         # teventType = int(self.sel_eventType.currentText()) - 1
         teventType = self.sel_eventType.currentText()
@@ -412,7 +373,7 @@ class TopDetector(QWidget): #SRW
         self.eventType = teventType
         print(self.eventType)
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
-        self.updatesingleevent() #Idk if this one is right; maybe add energy histogram if we can figure out later how to add event type
+        self.updatesingleevent() #Idk if this one is right; maybe add energy histogram if we can figure out later how to add event type 
         self.updatepixhits()
 
     def getevntno(self):
@@ -437,83 +398,52 @@ class TopDetector(QWidget): #SRW
 
     def updatePixelCut(self):
         self.getPixelCut()
-
-    # *************** Functions for Updating the plots *****************************************************#
-
-    # **************** Function to update all plots *******************************#
+        
+#*************** Functions for Updating the plots *****************************************************#
+   
+#**************** Function to update all plots *******************************#
     def updateall(self):
         if self.data is not None:
             self.updatepixhits()
             # self.updateenergyhistogram() #SRW commenting out for now to remove errors
-            self.updatesingleevent()
-            # self.updatemultipleevent()
+            # self.updatesingleevent()
             # self.updaterangeplot()
             # self.updatedistribution()
             # self.updatestackplot()
 
-    # **************** Function to update Energy histogram *******************************#
+#**************** Function to update Energy histogram *******************************#
     def updateenergyhistogram(self): #SRW commenting out for now to remove errors
         self.counts, self.edges = self.data.getenergyhistogram(bins = 200,channel=self.chan)
         self.p2.setData(self.edges, self.counts)
-        # Maybe do if/else statement here for Define Cuts?
-
-    # **************** Function to update Single Event *******************************#
-    def updatemultipleevent(self):
-        self.pw4ax.cla()
-        self.pw4fig.clf()
-        self.getnewpw4fig()
-
-        self.xdata, self.ydata = self.data.getmultipleeventdata( self.eventType, channel=self.chan, eventno=self.evtno)
-        h = self.pw4ax.hist2d(self.xdata, self.ydata, bins=1000)
-        
-        self.acmap = plt.get_cmap(self.customcmap)
-        
-        self._cNorm = colors.Normalize(h[0].min(), h[0].max())
-        self._scalarMap = cmx.ScalarMappable(norm=self._cNorm, cmap=self.acmap) 
-        
-        self.pw4clbar = self.pw4fig.colorbar(self._scalarMap, ax=self.pw4ax)
-        self.pw4clbar.update_normal(self._scalarMap)
-        
-        self.pw4.draw()
-
-
+        #Maybe do if/else statement here for Define Cuts?
+ 
+#**************** Function to update Single Event *******************************#
     def updatesingleevent(self):
-        # self.timeax, self.pulsedata = self.data.getmultipleeventdata(self.eventType,channel = self.chan,eventno=self.evtno)
-        self.pulseimg, self.xbin, self.ybin = self.data.getmultipleeventdata( self.eventType, channel=self.chan, eventno=self.evtno)
-        # plt.setAspectLocked(False)
-
-        # self.p4.setImage(self.pulseimg, xvals = self.xbin, yvals = self.ybin)
-
-        # self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,'0',eventno=self.evtno)
+        self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,channel = self.chan,eventno=self.evtno)
+        #self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,'0',eventno=self.evtno)
         # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
-        # self.p4.setData(self.timeax,self.pulsedata)
-
-        self.p4.clear()
-        self.p4.setImage(self.pulseimg, autoLevels=True)#, log = logval)
-        # self.p4.setColorMap('CET-L17')
-        self.correctscale(self.p4, xscale=self.xbin, yscale = self.ybin)
-        self.pw4.setAspectLocked(False)
-
-        # if self.pw4.
-        # self.pw4.addColorBar(self.p4, colorMap = 'CET-L9', values = (self.pulseimg.min(), self.pulseimg.max()))
-
-    # **************** Function to update pixel hits *******************************#
+        self.p4.setData(self.timeax,self.pulsedata)
+    
+    
+#**************** Function to update pixel hits *******************************#
     def updatepixhits(self):
         # a = np.random.choice(3)
         # self.pixhits = np.random.randint(1,100,127)
         # self.pixhits = self.pixhits**a
         self.pxplax.cla()
-        self.pxplfg.clf()
-        self.getnewfig()
-        # try:
-        #     self.pixhits= self.data.getDetPixData(self.eventType, det = 'top')
-        # except:
-        #     self.pixhits = 0.0001*np.zeros(127)
-        #     self.pxplax.text(-10,10, 'No Data')
-        self.pixhits = self.data.getDetPixData(self.eventType, det = 'top')
-        self.data.updatepixplot(self.pixhits, self.pxplfg, self.pxplax, self.clbar, self.norm, self.customcmap)
+        # self.pxplfg.clf()
+        try:
+            self.pixhits= self.data.getDetPixData(self.eventType, det = 'top')
+        except:
+            self.pixhits = np.zeros(127)
+            self.pxplax.text(-20,20, 'No Data')
+            
+        self.scalarMap = self.plotOneDetector(self.pixhits, self.pxplfg, self.pxplax, norm=self.norm,  cmap=self.customcmap, alpha = 0.47)
+        self.clbar.update_normal(self.scalarMap)
+        self.clbar.update_ticks()
         self.pxplwg.draw()
-    # ***********************************************#*******************************#
+#***********************************************#*******************************#
+
 
     def updatexy(self):
         if self.data is not None:
@@ -531,7 +461,8 @@ class TopDetector(QWidget): #SRW
         hx, hy = self.data.gethistdistribution(self.chan)
         self.p2.setData(hx, hy)
 
-    # *************** Other Functions not used now *****************************************************#
+           
+#*************** Other Functions not used now *****************************************************#
     def getlims(self):
         templims = self.value_lims.text().split(sep=",")
         if (len(templims) == 2):
@@ -568,26 +499,25 @@ class TopDetector(QWidget): #SRW
         self.evtno = self.evtno + 1
         self.value_evtno.setText(str(self.evtno))
         self.updatesingleevent()
-        # self.updatemultipleevent()
 
     def showpreviousevent(self):
         self.evtno = self.evtno - 1
         self.value_evtno.setText(str(self.evtno))
         self.updatesingleevent()
-        # self.updatemultipleevent()
-
+        
     def selectnormalization(self):
         if self.button_norm.isChecked():
             self.norm = 'log'
         else:
             self.norm = None
         self.updatepixhits()
-
+        
         # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
         # print(self.timeax, self.noisedata)
         # self.p4.setData(self.timeax,self.noisedata)
-
-    # *************** Function to plot detetor hits*****************************************************#
+    
+    
+#*************** Function to plot detetor hits*****************************************************#
     # this is a simple function that plots values over each pixel
     def plotOneDetector(self, values, fig=None, ax=None, numDet=1, cmap='cividis', size=2, showNum=True, showVal=True, alpha=1, rounding=None, title=None, norm=None, forceMin=None, forceMax=None, labels=None, filename=None, saveDontShow=False):
         # if fig is None or ax is None:
@@ -596,10 +526,10 @@ class TopDetector(QWidget): #SRW
         # ax.cla()
 
         # try:
-        # fig.delaxes(fig.axes[1])
+            # fig.delaxes(fig.axes[1])
         # except:
-        # pass
-
+            # pass
+ 
         # print("figure:", fig)
         # print("axis:", ax)
         ax.set_xlim(-size * 13, size * 13)
@@ -664,9 +594,9 @@ class TopDetector(QWidget): #SRW
         # axColor = plt.axes([size*6, size*-6, size, size*])
         # plt.colorbar(scalarMap, cax = axColor, orientation="vertical")
         # try:
-        # fig.delaxes(fig.axes[1])
+            # fig.delaxes(fig.axes[1])
         # except:
-        # pass
+            # pass
         # fig.colorbar(scalarMap, ax=ax)
         # fig.colorbar(scalarMap, ax=ax)
         # plt.axis('off')

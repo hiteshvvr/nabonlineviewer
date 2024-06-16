@@ -1,6 +1,11 @@
-from PyQt5.QtWidgets import QPushButton, QWidget
-from PyQt5.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout
-from PyQt5.QtWidgets import QLineEdit, QFileDialog, QComboBox
+# from PyQt5.QtWidgets import QPushButton, QWidget
+# from PyQt5.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout
+# from PyQt5.QtWidgets import QLineEdit, QFileDialog, QComboBox
+
+from PySide6.QtWidgets import QPushButton, QWidget
+from PySide6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout
+from PySide6.QtWidgets import QLineEdit, QFileDialog, QComboBox
+
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 from pyqtgraph.widgets.MatplotlibWidget import MatplotlibWidget
@@ -24,7 +29,8 @@ import matplotlib.cm as cmx
 class BottomDetector(QWidget):  # SRW
     # def __init__(self, parent) -> None:
     def __init__(self, data):
-        super(QWidget, self).__init__()
+        # super(QWidget, self).__init__()
+        super().__init__()
         self.layout = QVBoxLayout(self)
         pg.setConfigOption('background', 'w')
 
