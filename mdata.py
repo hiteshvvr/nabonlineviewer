@@ -18,6 +18,7 @@ class MData():
     def __init__(self) -> None:
         self.data = None
         self.dirname = None
+        self.filename = None
         self.runno= None
         # self.eventsig = 0xaa55f154
         self.mdata = None
@@ -51,21 +52,10 @@ class MData():
         """
         Load various datas in the current viewer 
         """
-        # self.filePath = "../datafiles/hdf5files/"
-        # self.filePath = "/Volumes/T7/Nab_Data/"
-        # self.runno = 1612
-        self.runpath = self.dirname+ "/" 
-        # self.filepath = self.dirname+ "/"  + "Run"+str(self.runno)+"_0.h5"
-        self.filepath = self.dirname+ "/"  + "Run"+str(self.runno)+"*.h5"
-        print(self.filepath)
-        # print(self.filepath)
-        filename = gl.glob(self.filepath)
-        filename.sort(key=os.path.getmtime, reverse=True)
-        print(filename[0])
         if readallsubruns:
-            self.hdFile = Nab.DataRun(self.runpath, self.runno) 
+            self.hdFile = Nab.DataRun(self.dirname, self.runno) 
         else:
-            self.hdFile = Nab.File(filename[0]) 
+            self.hdFile = Nab.File(self.filename) 
             
             
         
@@ -90,6 +80,7 @@ class MData():
     #YOU NEED TO FIGURE THIS OUT :,)
     def getDataSummary(self):
         summary = {}
+        self.trigger = 0
         self.trigger = self.hdFile.triggers().numtrigs
         # summary["Triggers"] = self.trigger
         self.singles = self.hdFile.singleWaves().numWaves

@@ -1,15 +1,16 @@
 from PyQt5.QtWidgets import QPushButton, QWidget, QRadioButton
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout
-from PyQt5.QtWidgets import QLineEdit, QFileDialog, QComboBox
+from PyQt5.QtWidgets import QLineEdit, QFileDialog
 from PyQt5.QtWidgets import QPlainTextEdit
 from PyQt5.QtCore import QSettings
-from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem 
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QComboBox
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 from PyQt5.QtChart import QChart, QChartView, QPieSeries
 from PyQt5.QtCore import Qt
-import numpy as np
-from hexplot import MplCanvas
+
+import glob as gl
+import os
 
 import sys
 
@@ -22,38 +23,17 @@ sys.path.append(nabPath)
 import nabPy as Nab
 import h5py as hd
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import matplotlib.colors as colors
-import matplotlib.cm as cmx
-
-
-class MplCanvas(FigureCanvasQTAgg):
-
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        self.fig = Figure(figsize=(width, height),
-                          dpi=dpi, constrained_layout=True)
-        self.ax = self.fig.add_subplot(111)
-        super(MplCanvas, self).__init__(self.fig)
-
-# **********************************************
-# We want to replace MplCanvas with nabPy code for pixelated detector plotting
-# Below is the original code from SRW Jupyter notebook to plot pixelated detector
-# hdfile = Nab.DataRun(hdfilePath, 1612)
-# hdfile.plotHitLocations('noise', size = 1.3, rounding='int', alpha = 0.6, title='1612 File')
-
-
 class MainWindow(QWidget):
     # def __init__(self, parent) -> None:
     def __init__(self, data):
         super(QWidget, self).__init__()
         self.layout = QVBoxLayout(self)
-        pg.setConfigOption('background', 'w')
+        # pg.setConfigOption('background', 'w')
 
         # Initialize DATA
         self.data = data
+        self.ii = 0
+        self.numfile = 0
         # Initialize Tab
         self.maintab = QWidget()
 
@@ -77,16 +57,15 @@ class MainWindow(QWidget):
 
         # self.dirname = "../datafiles/hdf5files/Aug2023/"
         # self.runno = 2447
-        
-        
+
         # First Row with Folder name etc.
-        
+
         self.buttion_dirname = QPushButton('Select Folder')
         self.buttion_dirname.clicked.connect(self.dialog)
         self.field_dirname = QLineEdit(self.dirname)
         self.field_runno = QLineEdit(str(self.runno))
-        
-        self.button_wholedata = QRadioButton("ReadAllSubRun")
+
+        self.button_wholedata = QRadioButton("ReadAllSubRuns")
         self.readallsubruns = False
 
         self.data.dirname = self.dirname
@@ -102,8 +81,6 @@ class MainWindow(QWidget):
         self.inlayout.addWidget(self.button_load)
         # self.inlayout.addWidget(self.sel_channo)
 
-
-
         self.series = QPieSeries()
 
         self.series.append("Trigger", 20)
@@ -111,25 +88,25 @@ class MainWindow(QWidget):
         self.series.append("Coincidence", 20)
         self.series.append("Noise", 20)
         self.series.append("Pulser", 20)
-        
+
         self.chart = QChart()
         self.chart.addSeries(self.series)
         self.chart.setTitle("Total Triggers : 100")
         self.label_dataSummary = QLabel("Run Data Summary")
         self.chart.legend().setAlignment(Qt.AlignRight)
         self._chart_view = QChartView(self.chart)
-        
+
         # ******************** Initializing Textbox for Main Manual *******************************
         self.getManualBox = QPlainTextEdit(self)
         manual = " "
         for line in open("./manual.txt"):
             manual = manual + line
         self.getManualBox.insertPlainText(manual)
-            
+
         # self.getManualBox.resize(400,200) #Setting size of textbox; useless because I swithed to layouts
         self.getManualBox.setReadOnly(True)
         self.label_manualBox = QLabel("GUI User Manual")
-        
+
         # self.in2layout.addWidget(self.label_dataSummary)
         self.in2layout.addWidget(self._chart_view)
         # self.in4layout.addWidget(self.label_manualBox)
@@ -139,15 +116,13 @@ class MainWindow(QWidget):
 
         # #********************* Timer if needed ***********  #
         self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.havenewsubrun)
+        self.timer.start(2000)
 
         # ********************* Layouts ***********  #
         self.mainlayout.addLayout(self.inlayout)
         self.mainlayout.addLayout(self.in2layout)
         self.mainlayout.addLayout(self.in3layout)
-        # self.mainlayout.addLayout(self.in4layout)
-        # self.mainlayout.addLayout(self.in5layout)
-        # self.mainlayout.addLayout(self.r1layout)
-        # self.mainlayout.addLayout(self.r2layout)
 
         self.maintab.setLayout(self.mainlayout)
         # self.tab1.setLayout(self.alayout)
@@ -170,16 +145,17 @@ class MainWindow(QWidget):
             self.field_dirname.setText= "folder not found!!"
 
     def updatefoldname(self):
-        self.foldname = self.field_dirname.text()
-        self.data.foldname = self.foldname
+        self.dirname = self.field_dirname.text()
+        self.data.dirname = self.dirname + "/"
 
     def updaterunno(self):
         try:
             self.runno = int(self.field_runno.text())
             self.settings.setValue("runno", str(self.runno))
             self.data.runno = self.runno
+            self.numfile = 0
         except:
-            self.field_runno.setText("Enter the integer") 
+            self.field_runno.setText("Enter correct Run Number") 
 
     def updateDataSummary(self):
         trigger, self.dataSum = self.data.getDataSummary()
@@ -191,9 +167,17 @@ class MainWindow(QWidget):
             label = slice.label() + "\t" + str(int(slice.value())) + "("
             label = label + "{:.2f}%".format(100 * slice.percentage()) + ")"
             slice.setLabel(label)
-             
+
         self.chart.setTitle("Total Triggers : " + str(trigger))
         self._chart_view.update()
+    
+    def havenewsubrun(self):
+        self.filepath = self.dirname + "/" + "Run" + str(self.runno) + "*.h5"
+        self.files = gl.glob(self.filepath)
+        self.files.sort(key=os.path.getmtime, reverse=True)
+        self.data.filename = self.files[0]
+        self.data.getdatafromfile(self.readallsubruns)
+        self.updateDataSummary()
 
     def loaddata(self):
         """
@@ -204,4 +188,6 @@ class MainWindow(QWidget):
         self.readallsubruns = self.button_wholedata.isChecked()
         self.data.getdatafromfile(self.readallsubruns)
         self.updateDataSummary()
-        return(self.data)
+        if self.readallsubruns:
+            self.timer.stop()
+        # return(self.data)
