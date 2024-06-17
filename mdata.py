@@ -123,8 +123,11 @@ class MData():
         # preampLabels = Nab.nplt.returnPreampLabels(detfig.parameterFile.BoardChannelPixelMap[:128]) # Create the preamp labels
         # pLabels = [f'{i}\n{j}' for i,j in zip(np.arange(1,128),preampLabels)] # Otherwise, it will default to pixel number and preamp channel.
         # pLabels = [f'{i}\n{j}' for i,j in zip(np.arange(1,128),preampLabels)] # Otherwise, it will default to pixel number and preamp channel.
+        # scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=self.customcmap)
         pLabels = [f'{i}\n{j}' for i,j in zip(np.arange(1,128),pixdata)] # Add the values to the labels
-        detfig.setPixelLabels(aaxis, pLabels) 
+        detfig.setPixelLabels(aaxis, pLabels)
+        afig.set_tight_layout(tight=True)
+        acbar.formatter.set_powerlimits((0,0))
         
         return(afig, aaxis, acbar)
         

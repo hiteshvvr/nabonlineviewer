@@ -217,6 +217,7 @@ class BottomDetector(QWidget):  # SRW
         self.scalarMap = self.plotOneDetector(randompixhist, self.pxplfg, self.pxplax, cmap=self.customcmap)
         self.clbar = self.pxplfg.colorbar(self.scalarMap, ax=self.pxplax)
         
+        self.pxplax.text(-20,20, 'Data kk')
 
         self.pxplfg.set_tight_layout(tight=True)
         # scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=self.customcmap)
@@ -427,6 +428,7 @@ class BottomDetector(QWidget):  # SRW
         # self.pxplfg.clf()
         try:
             self.pixhits= self.data.getDetPixData(self.eventType, det = 'bottom')
+            self.pxplax.text(-20,20, 'la Data')
         except:
             self.pixhits = np.zeros(127)
             self.pxplax.text(-20,20, 'No Data')

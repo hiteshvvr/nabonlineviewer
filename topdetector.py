@@ -8,9 +8,6 @@ from pyqtgraph.Qt import QtCore
 from pyqtgraph.widgets.MatplotlibWidget import MatplotlibWidget
 import numpy as np
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
-
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.colors as colors
@@ -31,6 +28,8 @@ class TopDetector(QWidget): #SRW
 
         # self.height
         self.width = 100
+        self.totpixhits = 0
+        self.total_hits = 0 
 
         # Create First Tab
         # self.tab1.layout = QVBoxLayout(self)
@@ -41,20 +40,6 @@ class TopDetector(QWidget): #SRW
         self.r1layout = QHBoxLayout()
         self.r2layout = QHBoxLayout()
 
-        # self.foldname = "../datafiles/hdf5files/"
-        # self.runno = 1612
-
-        # self.button_foldname = QPushButton('Select Folder')
-        # self.button_foldname.clicked.connect(self.dialog)
-        # self.field_foldname = QLineEdit(self.foldname)
-        # self.field_runno = QLineEdit(str(self.runno))
-
-        # self.field_foldname.textChanged.connect(self.updatefoldname)
-        # self.field_runno.textChanged.connect(self.updaterunno)
-
-        # self.data.foldname = self.foldname
-        # self.data.runno = self.runno
-
         self.button_load = QPushButton('LoadData')
         self.button_load.clicked.connect(self.loaddata)
 
@@ -62,7 +47,7 @@ class TopDetector(QWidget): #SRW
         self.label_eventType = QLabel("Event Type")
         self.label_eventType.setFixedWidth(60)
         self.sel_eventType = QComboBox() 
-        self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsers')]) #These are the only event types nabpy can take as an argument  
+        self.sel_eventType.addItems([str('singles'), str('noise'), str('pulsers'), str('coincidences')]) #These are the only event types nabpy can take as an argument  
         self.sel_eventType.currentIndexChanged.connect(self.selecteventType)
         self.eventType = 'singles'
 
@@ -198,25 +183,33 @@ class TopDetector(QWidget): #SRW
 
         # ******************** Get PixHits (With random data)   **********************
         self.size = 2
-        self.pxplwg = MatplotlibWidget((4.5*self.size, 3.5 * self.size), dpi=100)
-        self.pxplwg.vbox.removeWidget(self.pxplwg.toolbar)
-        self.pxplwg.toolbar.setVisible(False)
+        self.pixel_plot_widget1 = MatplotlibWidget((4.5*self.size, 3.5 * self.size), dpi=100)
+        self.pixel_plot_widget1.vbox.removeWidget(self.pixel_plot_widget1.toolbar)
+        self.pixel_plot_widget1.toolbar.setVisible(False)
 
-        self.pxplfg = self.pxplwg.getFigure()
-        self.pxplax = self.pxplfg.add_subplot(111)
+        self.pixel_plot_figure1 = self.pixel_plot_widget1.getFigure()
+        self.pixel_plot_axis1 = self.pixel_plot_figure1.add_subplot(121)
+        self.pixel_plot_axis2 = self.pixel_plot_figure1.add_subplot(122)
         self.clbar = None
+        self.pixel_plot_figure1.suptitle("Run: " + str(self.data.runno))
 
-        randompixhist = 1 * np.random.random(127)        # Random pix hit without loading data
+        # randompixhist = 1 * np.random.random(127)        # Random pix hit without loading data
+        randompixhist = 1 * np.random.randint(100, size = 127)        # Random pix hit without loading data
         # self.customcmap = self.getmycmap(basemap='plasma') # To get better colormaps that in nabpy
         self.customcmap = self.getmycmap(basemap='cividis') # To get better colormaps that in nabpy
-        # self.pxplfg, self.pxplax, self.clbar = self.data.updatepixplot(randompixhist, self.pxplfg, self.pxplax, self.clbar, self.norm)
-        self.data.updatepixplot(randompixhist, self.pxplfg, self.pxplax, self.clbar, self.norm, self.customcmap)
+        # self.pixel_plot_figure1, self.pixel_plot_axis1, self.clbar = self.data.updatepixplot(randompixhist, self.pixel_plot_figure1, self.pixel_plot_axis1, self.clbar, self.norm)
+        self.pixel_plot_figure1, self.pixel_plot_axis1, self.clbar1 = self.data.updatepixplot(randompixhist, self.pixel_plot_figure1, self.pixel_plot_axis1, self.clbar, self.norm, self.customcmap)
 
-        # self.scalarMap = self.plotOneDetector(randompixhist, self.pxplfg, self.pxplax, cmap=self.customcmap)
-        # self.clbar = self.pxplfg.colorbar(self.scalarMap, ax=self.pxplax)
+        randompixhist = 1 * np.random.randint(100, size = 127)        # Random pix hit without loading data
+        self.pixel_plot_figure2, self.pixel_plot_axis2, self.clbar2 = self.data.updatepixplot(randompixhist, self.pixel_plot_figure1, self.pixel_plot_axis2, self.clbar, self.norm, self.customcmap)
+        # self.scalarMap = self.plotOneDetector(randompixhist, self.pixel_plot_figure1, self.pixel_plot_axis1, cmap=self.customcmap)
+        # self.clbar = self.pixel_plot_figure1.colorbar(self.scalarMap, ax=self.pixel_plot_axis1)
 
-        self.pxplfg.set_tight_layout(tight=True)
+        self.pixel_plot_figure1.set_tight_layout(tight=True)
         # scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=self.customcmap)
+
+        self.clbar1.formatter.set_powerlimits((0,0))
+        self.clbar2.formatter.set_powerlimits((0,0))
 
         # ********************* Get Second histogram with pix hist(with random data ***********) *******************
 
@@ -288,7 +281,8 @@ class TopDetector(QWidget): #SRW
 
         # ********************* Layouts ***********  #
         # self.r1layout.addWidget(self.pw1)
-        self.r1layout.addWidget(self.pxplwg)  # PixDec
+        self.r1layout.addWidget(self.pixel_plot_widget1)  # PixDec
+        # self.r1layout.addWidget(self.pixel_plot_widget2)  # PixDec
         self.r1layout.addWidget(self.pw2)
         # self.r2layout.addWidget(self.pw3)
         self.r2layout.addWidget(self.pw4)
@@ -362,15 +356,17 @@ class TopDetector(QWidget): #SRW
 
     def getnewfig(self):
         try:
-            del self.pxplax
-            del self.pxplfg
+            del self.pixel_plot_axis1
+            del self.pixel_plot_axis2
+            del self.pixel_plot_figure1
             del self.clbar
         except:
             pass
-        self.pxplfg = self.pxplwg.getFigure()
-        self.pxplax = self.pxplfg.add_subplot(111)
+        self.pixel_plot_figure1 = self.pixel_plot_widget1.getFigure()
+        self.pixel_plot_axis1 = self.pixel_plot_figure1.add_subplot(121)
+        self.pixel_plot_axis2 = self.pixel_plot_figure1.add_subplot(122)
         self.clbar = None
-        self.pxplfg.set_tight_layout(tight=True)
+        self.pixel_plot_figure1.set_tight_layout(tight=True)
 
     def getnewpw4fig(self):
         try:
@@ -444,7 +440,6 @@ class TopDetector(QWidget): #SRW
     def updateall(self):
         if self.data is not None:
             self.updatepixhits()
-            # self.updateenergyhistogram() #SRW commenting out for now to remove errors
             self.updatesingleevent()
             # self.updatemultipleevent()
             # self.updaterangeplot()
@@ -465,17 +460,16 @@ class TopDetector(QWidget): #SRW
 
         self.xdata, self.ydata = self.data.getmultipleeventdata( self.eventType, channel=self.chan, eventno=self.evtno)
         h = self.pw4ax.hist2d(self.xdata, self.ydata, bins=1000)
-        
+
         self.acmap = plt.get_cmap(self.customcmap)
-        
+
         self._cNorm = colors.Normalize(h[0].min(), h[0].max())
         self._scalarMap = cmx.ScalarMappable(norm=self._cNorm, cmap=self.acmap) 
-        
+
         self.pw4clbar = self.pw4fig.colorbar(self._scalarMap, ax=self.pw4ax)
         self.pw4clbar.update_normal(self._scalarMap)
-        
-        self.pw4.draw()
 
+        self.pw4.draw()
 
     def updatesingleevent(self):
         # self.timeax, self.pulsedata = self.data.getmultipleeventdata(self.eventType,channel = self.chan,eventno=self.evtno)
@@ -502,17 +496,25 @@ class TopDetector(QWidget): #SRW
         # a = np.random.choice(3)
         # self.pixhits = np.random.randint(1,100,127)
         # self.pixhits = self.pixhits**a
-        self.pxplax.cla()
-        self.pxplfg.clf()
+        self.pixel_plot_figure1.clf()
+        self.pixel_plot_axis1.cla()
+        self.pixel_plot_axis2.cla()
         self.getnewfig()
         # try:
         #     self.pixhits= self.data.getDetPixData(self.eventType, det = 'top')
         # except:
         #     self.pixhits = 0.0001*np.zeros(127)
-        #     self.pxplax.text(-10,10, 'No Data')
+        #     self.pixel_plot_axis1.text(-10,10, 'No Data')
         self.pixhits = self.data.getDetPixData(self.eventType, det = 'top')
-        self.data.updatepixplot(self.pixhits, self.pxplfg, self.pxplax, self.clbar, self.norm, self.customcmap)
-        self.pxplwg.draw()
+        self.data.updatepixplot(self.pixhits, self.pixel_plot_figure1, self.pixel_plot_axis1, self.clbar, self.norm, self.customcmap)
+        self.total_hits = self.total_hits + self.data.getDetPixData(self.eventType, det = 'top')
+        self.total_hits = self.total_hits + np.random.randint(100, size = 127)        # Random pix hit without loading data
+        self.data.updatepixplot(self.total_hits, self.pixel_plot_figure1, self.pixel_plot_axis2, self.clbar, self.norm, self.customcmap)
+        self.pixel_plot_axis2.set_axis_off()
+        self.pixel_plot_axis1.set_axis_off()
+        # cbar.formatter.set_powerlimits((0, 0))
+        self.pixel_plot_widget1.draw()
+
     # ***********************************************#*******************************#
 
     def updatexy(self):
@@ -588,89 +590,6 @@ class TopDetector(QWidget): #SRW
         # self.p4.setData(self.timeax,self.noisedata)
 
     # *************** Function to plot detetor hits*****************************************************#
-    # this is a simple function that plots values over each pixel
-    def plotOneDetector(self, values, fig=None, ax=None, numDet=1, cmap='cividis', size=2, showNum=True, showVal=True, alpha=1, rounding=None, title=None, norm=None, forceMin=None, forceMax=None, labels=None, filename=None, saveDontShow=False):
-        # if fig is None or ax is None:
-        #     fig, ax = plt.subplots(1, figsize=(
-        #         size * 7 + size, size * 7), constrained_layout=True)
-        # ax.cla()
-
-        # try:
-        # fig.delaxes(fig.axes[1])
-        # except:
-        # pass
-
-        # print("figure:", fig)
-        # print("axis:", ax)
-        ax.set_xlim(-size * 13, size * 13)
-        ax.set_ylim(-size * 13, size * 13)
-        # cm = plt.get_cmap(cmap)
-        cm = cmap
-        cNorm = None
-        minval = np.min(values)
-        maxval = np.max(values)
-        if forceMin is not None:
-            minval = forceMin
-        elif norm == 'log':
-            if minval <= 0:
-                minval = 0.01
-        if forceMax is not None:
-            maxval = forceMax
-        if norm is None:
-            cNorm = colors.Normalize(minval, maxval)
-        elif norm == 'log':
-            cNorm = colors.LogNorm(minval, maxval)
-        else:
-            print('unrecognized normalization option: needs to be log or not set')
-            return (fig, ax)
-        scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cm)
-        vertOffset = size * np.sqrt(3)
-        horOffset = size * 1.5
-        colEnd = [7, 15, 24, 34, 45, 57, 70, 82, 93, 103, 112, 120, 127]
-        colStart = [1, 8, 16, 25, 35, 46, 58, 71, 83, 94, 104, 113, 121]
-        colLen = list(np.array(colEnd) - np.array(colStart) + 1)
-        numCol = len(colEnd)
-        for pixel in range(1, len(values)+1):
-            col = 0
-            for j in range(len(colEnd)):
-                if pixel >= colStart[j] and pixel <= colEnd[j]:
-                    col = j
-            # number in the column from the top of the column
-            numInCol = pixel - colStart[col]
-            horPosition = (col - numCol/2)*horOffset
-            topOfCol = colLen[col]/2*vertOffset - vertOffset/2
-            verPosition = topOfCol - vertOffset*numInCol
-            hex = patches.RegularPolygon((horPosition, verPosition), numVertices=6, radius=size, facecolor=scalarMap.to_rgba(
-                values[pixel-1]), orientation=np.pi/2, alpha=alpha, edgecolor='black')
-            ax.add_patch(hex)
-            txt = ''
-            if showNum == True:
-                txt += str(pixel)
-            if labels is not None:
-                if txt != '':
-                    txt += '\n'
-                txt += str(labels[pixel-1])
-            if showVal:
-                if txt != '':
-                    txt += '\n'
-                if rounding is not None:
-                    if rounding == 'int':
-                        txt += str(int(values[pixel-1]))
-                    else:
-                        txt += str(round(values[pixel-1], rounding))
-            if txt != '':
-                ax.text(horPosition-size/2, verPosition,
-                        txt, ma='center', va='center')
-        # axColor = plt.axes([size*6, size*-6, size, size*])
-        # plt.colorbar(scalarMap, cax = axColor, orientation="vertical")
-        # try:
-        # fig.delaxes(fig.axes[1])
-        # except:
-        # pass
-        # fig.colorbar(scalarMap, ax=ax)
-        # fig.colorbar(scalarMap, ax=ax)
-        # plt.axis('off')
-        return scalarMap
 
     def getmycmap(self, basemap='viridis'):
         ocmap = plt.get_cmap(basemap)
