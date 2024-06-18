@@ -117,7 +117,7 @@ class MainWindow(QWidget):
         # #********************* Timer if needed ***********  #
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.havenewsubrun)
-        self.timer.start(2000)
+        self.timer.start(200000)
 
         # ********************* Layouts ***********  #
         self.mainlayout.addLayout(self.inlayout)
@@ -183,6 +183,11 @@ class MainWindow(QWidget):
         """
         Get the data in the data class
         """
+        self.filepath = self.dirname + "/" + "Run" + str(self.runno) + "*.h5"
+        self.files = gl.glob(self.filepath)
+        self.files.sort(key=os.path.getmtime, reverse=True)
+        self.data.filename = self.files[0]
+ 
         self.updatefoldname()
         self.updaterunno()
         self.readallsubruns = self.button_wholedata.isChecked()

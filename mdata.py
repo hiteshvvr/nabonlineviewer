@@ -27,6 +27,25 @@ class MData():
         self.dataarea = 0
         self.timebinwidth = 320e-6
         self.bins = 100
+        self.headerdf = pd.DataFrame({'timestamp':[0,0], 'pixel':[0,0], 'evttype':['dummy','dummy']})
+        
+        self.rundata = {
+            "top":{
+                "trigger": np.random.randint(100, size=127),
+                "single": np.random.randint(100, size=127),
+                "coincidence": np.random.randint(100, size=127),
+                "pulser": np.random.randint(100, size=127),
+                "noise": np.random.randint(100, size=127),
+            },
+            
+            "bottom":{
+                "trigger": np.random.randint(100, size=127),
+                "single": np.random.randint(100, size=127),
+                "coincidence": np.random.randint(100, size=127),
+                "pulser": np.random.randint(100, size=127),
+                "noise": np.random.randint(100, size=127),
+            },
+        }
 
     def geteventdataframe(self):
         self.rawdata = hd.File(self.fname,'r')
@@ -56,25 +75,38 @@ class MData():
             self.hdFile = Nab.DataRun(self.dirname, self.runno) 
         else:
             self.hdFile = Nab.File(self.filename) 
-            
-            
-        
-#         files = glob.glob("/home/chrisg/Pictures/*.jpg")
-# files += glob.glob("/home/chrisg/Pictures/*.png")
-# files += glob.glob("/home/chrisg/Pictures/*.gif")
-# files.sort(key=os.path.getmtime, reverse=True)
-
-# for file in files:
-#     print(file)
-#         print(self.runpath)
-        
-        # self.hdFile = Nab.DataRun(self.runpath, self.runno) 
-        # self.hdFile = Nab.DataRun(self.filePath, 2430) #We will have to chnage this later so user can input the run number 
         self.fileData = self.hdFile.noiseWaves().headers()
-
+        
+        tdf = self.hdFile.singleWaves().headers()
+        if tdf is not None:
+            self.clean_and_append_df(tdf, 'single')
+            del tdf
+        tdf = self.hdFile.coincWaves().headers()
+        if tdf is not None:
+            self.clean_and_append_df(tdf, 'coincidence')
+            del tdf
+        tdf = self.hdFile.pulsrWaves().headers()
+        if tdf is not None:
+            self.clean_and_append_df(tdf, 'pulser')
+            del tdf
+        tdf = self.hdFile.noiseWaves().headers()
+        if tdf is not None:
+            self.clean_and_append_df(tdf, 'noise')
+            del tdf
+        print(self.headerdf.shape)
+    
+    def clean_and_append_df(self, df, evttype):
+        df = df.drop(columns=['result', 'bc', 'req', 'event type', 'hit type', 'blank', 'eventid', 'checksum', 'board', 'channel', 'unix timestamp'])
+        df['evttype'] = evttype
+        self.headerdf = pd.concat([self.headerdf,df])
+        
+        
     def getDetPixData(self,eventType, det = 'top'):
         self.eventType = eventType
-        self.pixhist = self.hdFile.plotHitLocations(self.eventType, det = det)
+        try:
+            self.pixhist = self.hdFile.plotHitLocations(self.eventType, det = det)
+        except:
+            self.pixhist = np.zeros(127)
         return(self.pixhist)
 
     #YOU NEED TO FIGURE THIS OUT :,)
@@ -127,13 +159,14 @@ class MData():
         pLabels = [f'{i}\n{j}' for i,j in zip(np.arange(1,128),pixdata)] # Add the values to the labels
         detfig.setPixelLabels(aaxis, pLabels)
         afig.set_tight_layout(tight=True)
-        acbar.formatter.set_powerlimits((0,0))
+        aaxis.set_axis_off()
+        try:
+            acbar.formatter.set_powerlimits((0,0))
+        except:
+            pass
         
         return(afig, aaxis, acbar)
         
-        
-
-
     def getpixelhistogram(self): 
         self.pixdata = np.array(self.fileData.iloc[:,11]) #This is code from SRW jupyter notebook
         # print(len(self.pixdata))
@@ -141,49 +174,58 @@ class MData():
         # print(self.hx, self.hy)
         # print("getpixelhistogram ran successfully")
         return(self.hy,self.hx)
+   
+    def getpulsedata_old(self, eventType = 'noise', eventno = 0, len = 1):
+        try:
+            if eventType == 'noise':
+                self.pulsedata = self.hdFile.noiseWaves().waves()[eventno:eventno+len].compute()
+            elif eventType == 'single':
+                self.pulsedata = self.hdFile.singleWaves().waves()[eventno:eventno+len].compute()
+            elif eventType == 'coincidence':
+                self.pulsedata = self.hdFile.coincWaves().waves()[eventno:eventno+len].compute()
+            elif eventType == 'pulser':
+                self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno:eventno+len].compute()
+            elif eventType == 'trigger':
+                self.pulsedata = self.hdFile.singleWaves().waves()[eventno:eventno+len].compute()
+            
+        except:
+            self.pulsedata = np.random.normal(size = (len,10))
+            
+        if len == 1:
+            self.pulsedata = self.pulsedata[0]  
+   
+    
+    def getpulsedata(self, eventType = 'noise', eventno = 0, len = 1):
+        try:
+            if eventType == 'noise':
+                self.pulsedata = self.hdFile.noiseWaves().waves()[eventno].compute()
+            elif eventType == 'single':
+                self.pulsedata = self.hdFile.singleWaves().waves()[eventno].compute()
+            elif eventType == 'coincidence':
+                self.pulsedata = self.hdFile.coincWaves().waves()[eventno].compute()
+            elif eventType == 'pulser':
+                self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno].compute()
+            elif eventType == 'trigger':
+                self.pulsedata = self.hdFile.singleWaves().waves()[eventno].compute()
+            
+        except:
+            self.pulsedata = np.random.normal(size = (len,10))
+            
+        # if len == 1:
+            # self.pulsedata = self.pulsedata[0]
 
-    def getsingleeventdata(self,eventType='noise',channel='0',eventno=0):
-    #def getsingleeventdata(self,channel='0',eventno=0):
-        self.pulsedata= np.random.random(10)
-        self.timeaxis = np.arange(10)
-
-        if eventType == 'noise':
-            self.pulsedata = self.hdFile.noiseWaves().waves()[eventno].compute()
-        elif eventType == 'singles':
-            self.pulsedata = self.hdFile.singleWaves().waves()[eventno].compute()
-        else:
-            # self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno].compute()
-            self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno].compute()
-        
+    def getsingleeventdata(self,eventType='noise',eventno=0, chan = 0):
+        self.getpulsedata(eventType=eventType, eventno=eventno)
         self.timeaxis = np.arange(len(self.pulsedata)) * 4e-9
-        print(len(self.pulsedata))
-        # self.noisedata = np.array(self.singledata)
-        # print(len(self.noisedata),len(self.timeaxis))
-        # print(self.noisedata[:2],self.timeaxis[:2])
 
         return(self.timeaxis,self.pulsedata)
     
     
-    def getmultipleeventdata(self,eventType='noise',channel='0',eventno=0):
-    #def getsingleeventdata(self,channel='0',eventno=0):
-        self.pulsedata= np.random.random(10)
-        self.timeaxis = np.arange(10)
-        tt = []
-        for i in range(300):
-            tt.append(np.random.randint(21000))
-        tt = np.array(tt)
+    def getmultipleeventdata(self,eventType='noise',events=0):
+        self.getpulsedata(eventType=eventType, eventno=events, len=200)
+        self.timeaxis = np.arange(len(self.pulsedata)) * 4e-9
         
-
-        if eventType == 'noise':
-            self.pulsedata = self.hdFile.noiseWaves().waves()[eventno:eventno + 500].compute()
-            # self.pulsedata = self.hdFile.noiseWaves().waves()[tt].compute()
-        elif eventType == 'singles':
-            self.pulsedata = self.hdFile.singleWaves().waves()[eventno:eventno + 500].compute()
-            # self.pulsedata = self.hdFile.singleWaves().waves()[tt].compute()
-        else:
-            # self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno].compute()
-            self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno:eventno + 500].compute()
-            
+        print(self.pulsedata.ndim)
             
         xbins = np.arange(len(self.pulsedata[0])) * 4e-9
         self.timeaxis = np.tile(xbins, len(self.pulsedata))
@@ -192,10 +234,6 @@ class MData():
         self.pulsedata = self.pulsedata.flatten()
         ybins = 200
         H, xbin, ybin = np.histogram2d(self.timeaxis, self.pulsedata, bins = (xbins, ybins))
-        # self.noisedata = np.array(self.singledata)
-        # print(len(self.noisedata),len(self.timeaxis))
-        # print(self.noisedata[:2],self.timeaxis[:2])
-        # return(self.timeaxis, self.pulsedata)
         return(H, xbin, ybin)
 
     #*******************Attempt 2 extracting energies*********************
