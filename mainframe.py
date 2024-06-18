@@ -4,8 +4,9 @@ from mainwindow import MainWindow
 from monitorwindow import Monitor
 from flippingratio import Flipper
 from mdata import MData
-from topdetector import TopDetector #SRW
-from bottomdetector import BottomDetector #SRW
+from topdetector import TopDetector 
+from bottomdetector import BottomDetector
+from analysis import Analysis
 
 
 
@@ -23,7 +24,7 @@ class MainFrame(QWidget):
         self.tab1 = MainWindow(self.data)
         self.tab2 = TopDetector(self.data)
         self.tab3 = BottomDetector(self.data)
-        self.tab4 = BottomDetector(self.data)
+        self.tab4 = Analysis(self.data)
         # self.tab3 = Monitor(self.data)
         # self.tab4 = Flipper()
         # self.tab5 = Monitor(self.data)

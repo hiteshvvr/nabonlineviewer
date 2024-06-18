@@ -14,7 +14,7 @@ import matplotlib.colors as colors
 import matplotlib.cm as cmx
 
 
-class BottomDetector(QWidget):
+class BottomDetector(QWidget):  # SRW
     # def __init__(self, parent) -> None:
     def __init__(self, data):
         super(QWidget, self).__init__()
@@ -278,7 +278,9 @@ class BottomDetector(QWidget):
 
         # ********************* Third histogram Not used now ************************************
 
-        self.pw3 = pg.PlotWidget(title="Many Events One after other")
+        self.pw3 = pg.PlotWidget(
+            title='<span style="color: #000; font-size: 16pt;">Single Trace</span>'
+        )
         self.p3 = self.pw3.plot()
         self.p3.setPen(color=(0, 0, 0), width=5)
         self.pw3.setLabel("left", "Value", units="V")
@@ -292,7 +294,7 @@ class BottomDetector(QWidget):
 
         # ********************* Example of scatter plot if needed ***********  #
         self.pw4 = pg.PlotWidget(
-            title='<span style="color: #000; font-size: 16pt;">Single Event Plot</span>'
+            title='<span style="color: #000; font-size: 16pt;">Multiple Events</span>'
         )
         self.p4 = pg.ImageItem()  # (image=self.noisedata)
         self.xnoise = np.random.random(500)
@@ -410,7 +412,7 @@ class BottomDetector(QWidget):
 
     # *************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
     def selectchannel(self):
-        self.chan = int(self.sel_channo.currentText())
+        self.chan = 1000 + int(self.sel_channo.currentText())
         # print(tchan, type(tchan))
         self.updateenergyhistogram()
         self.updatesingleevent()
@@ -515,7 +517,11 @@ class BottomDetector(QWidget):
         indxarr = self.data.headerdf.query(
             "evttype == @self.eventType and pixel == @self.chan"
         ).index
-        print(indxarr)
+        print(len(indxarr))
+        if len(indxarr) == 0:
+            self.timeax, self.pulsedata = self.getrandomdata()
+            self.p3.setData(self.timeax, self.pulsedata)
+            return
         if len(indxarr) < self.evtno:
             self.evtno = len(indxarr) // 2
             self.value_evtno.setText(str(self.evtno))
@@ -528,18 +534,29 @@ class BottomDetector(QWidget):
             self.timeax, self.pulsedata = self.data.getsingleeventdata(
                 self.eventType, eventno=indxarr[self.evtno], chan=self.chan
             )
-        # self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,'0',eventno=self.evtno)
-        # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
         self.p3.setData(self.timeax, self.pulsedata)
+        # self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,'0',eventno=self.evtno)
 
     def updatemultipleevents(self):
+        indxarr = self.data.headerdf.query(
+            "evttype == @self.eventType and pixel == @self.chan"
+        ).index
+        print(len(indxarr))
+        if len(indxarr) == 0:
+            self.p4.clear()
+            return
+        if len(indxarr) < 200:
+            events = indxarr
+        else:
+            events = np.random.choice(indxarr, 200)
+
         if self.eventType == "trigger":
             self.pulseimg, self.xbin, self.ybin = self.data.getmultipleeventdata(
-                "single", eventno=self.evtno
+                "single", events=events
             )
         else:
             self.pulseimg, self.xbin, self.ybin = self.data.getmultipleeventdata(
-                self.eventType, eventno=self.evtno
+                self.eventType, events=events
             )
         self.p4.clear()
         self.p4.setImage(self.pulseimg, autoLevels=True)  # , log = logval)
@@ -561,7 +578,7 @@ class BottomDetector(QWidget):
         self.pixel_plot_subrunaxis.cla()
         self.getnewfig()
 
-        self.pixhits = self.data.getDetPixData(self.eventType, det="top")
+        self.pixhits = self.data.getDetPixData(self.eventType, det="bottom")
         self.pixhits[self.pixhits <= 0] = 0.01
         self.data.updatepixplot(
             self.pixhits,
@@ -573,13 +590,10 @@ class BottomDetector(QWidget):
         )
         print(self.eventType)
 
-        self.data.rundata["top"][self.eventType] = self.data.rundata["top"][
-            self.eventType
-        ] + np.random.randint(
-            100, size=127
-        )  # Random pix hit without loading data
+        # self.data.rundata['top'][self.eventType] = self.data.rundata['top'][self.eventType] + np.random.randint(100, size = 127)        # Random pix hit without loading data
+        self.data.rundata["bottom"][self.eventType] = self.pixhits + np.random.randint( 2, size=127)  # Random pix hit without loading data
         self.data.updatepixplot(
-            self.data.rundata["top"][self.eventType],
+            self.data.rundata["bottom"][self.eventType],
             self.pixel_plot_figure1,
             self.pixel_plot_runaxis,
             self.clbar,
@@ -617,6 +631,11 @@ class BottomDetector(QWidget):
             self.evtno = self.lims[0]
             self.value_evtno.setText(str(self.evtno))
             self.updatexy()
+
+    def getrandomdata(self):
+        x = np.random.normal(size=(10))
+        y = np.random.normal(size=(10))
+        return (x, y)
 
     def runfreerun(self):
         if self.button_freerun.isChecked():

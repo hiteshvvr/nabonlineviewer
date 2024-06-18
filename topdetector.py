@@ -517,7 +517,8 @@ class TopDetector(QWidget): #SRW
         self.data.updatepixplot(self.pixhits, self.pixel_plot_figure1, self.pixel_plot_subrunaxis, self.clbar, self.norm, self.customcmap)
         print(self.eventType)
 
-        self.data.rundata['top'][self.eventType] = self.data.rundata['top'][self.eventType] + np.random.randint(100, size = 127)        # Random pix hit without loading data
+        # self.data.rundata['top'][self.eventType] = self.data.rundata['top'][self.eventType] + np.random.randint(100, size = 127)        # Random pix hit without loading data
+        self.data.rundata['top'][self.eventType] = self.pixhits + np.random.randint(2, size = 127)        # Random pix hit without loading data
         self.data.updatepixplot(self.data.rundata['top'][self.eventType], self.pixel_plot_figure1, self.pixel_plot_runaxis, self.clbar, self.norm, self.customcmap)
         self.pixel_plot_widget1.draw()
 

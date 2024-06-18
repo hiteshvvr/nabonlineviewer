@@ -90,11 +90,16 @@ class MainWindow(QWidget):
         self.series.append("Pulser", 20)
 
         self.chart = QChart()
+        self.chart1 = QChart()
         self.chart.addSeries(self.series)
         self.chart.setTitle("Total Triggers : 100")
         self.label_dataSummary = QLabel("Run Data Summary")
         self.chart.legend().setAlignment(Qt.AlignRight)
-        self._chart_view = QChartView(self.chart)
+        # self._chart_view = QChartView(self.chart)
+        self._chart_view = QChartView()
+        self._chart_view.setChart(self.chart)
+        # self._chart_view.setChart(self.chart1)
+        # self._chart_view.addChart(self.chart)
 
         # ******************** Initializing Textbox for Main Manual *******************************
         self.getManualBox = QPlainTextEdit(self)
@@ -156,6 +161,7 @@ class MainWindow(QWidget):
             self.numfile = 0
         except:
             self.field_runno.setText("Enter correct Run Number") 
+        print(self.runno)
 
     def updateDataSummary(self):
         trigger, self.dataSum = self.data.getDataSummary()
@@ -172,6 +178,8 @@ class MainWindow(QWidget):
         self._chart_view.update()
     
     def havenewsubrun(self):
+        self.updatefoldname()
+        self.updaterunno()
         self.filepath = self.dirname + "/" + "Run" + str(self.runno) + "*.h5"
         self.files = gl.glob(self.filepath)
         self.files.sort(key=os.path.getmtime, reverse=True)
@@ -183,13 +191,14 @@ class MainWindow(QWidget):
         """
         Get the data in the data class
         """
+        self.updatefoldname()
+        self.updaterunno()
         self.filepath = self.dirname + "/" + "Run" + str(self.runno) + "*.h5"
+        print(self.filepath)
         self.files = gl.glob(self.filepath)
         self.files.sort(key=os.path.getmtime, reverse=True)
         self.data.filename = self.files[0]
  
-        self.updatefoldname()
-        self.updaterunno()
         self.readallsubruns = self.button_wholedata.isChecked()
         self.data.getdatafromfile(self.readallsubruns)
         self.updateDataSummary()
