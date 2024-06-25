@@ -82,22 +82,33 @@ class MainWindow(QWidget):
         # self.inlayout.addWidget(self.sel_channo)
 
         self.series = QPieSeries()
+        self.runseries = QPieSeries()
 
-        self.series.append("Trigger", 20)
-        self.series.append("Singles", 20)
-        self.series.append("Coincidence", 20)
-        self.series.append("Noise", 20)
-        self.series.append("Pulser", 20)
+        self.series.append("Singles", 15)
+        self.series.append("Coincidence", 35)
+        self.series.append("Noise", 35)
+        self.series.append("Pulser", 15)
+        
+        self.runseries.append("Singles", 2)
+        self.runseries.append("Coincidence", 1)
+        self.runseries.append("Noise", 1)
+        self.runseries.append("Pulser", 2)
+
 
         self.chart = QChart()
-        self.chart1 = QChart()
+        self.runchart = QChart()
         self.chart.addSeries(self.series)
-        self.chart.setTitle("Total Triggers : 100")
+        self.runchart.addSeries(self.runseries)
+        self.chart.setTitle(" Subrun Total Triggers : 100")
+        self.runchart.setTitle(" Run Total Triggers : 6")
         self.label_dataSummary = QLabel("Run Data Summary")
         self.chart.legend().setAlignment(Qt.AlignRight)
+        self.runchart.legend().setAlignment(Qt.AlignRight)
         # self._chart_view = QChartView(self.chart)
         self._chart_view = QChartView()
+        self._runchart_view = QChartView()
         self._chart_view.setChart(self.chart)
+        self._runchart_view.setChart(self.runchart)
         # self._chart_view.setChart(self.chart1)
         # self._chart_view.addChart(self.chart)
 
@@ -113,6 +124,7 @@ class MainWindow(QWidget):
         self.label_manualBox = QLabel("GUI User Manual")
 
         # self.in2layout.addWidget(self.label_dataSummary)
+        self.in2layout.addWidget(self._runchart_view)
         self.in2layout.addWidget(self._chart_view)
         # self.in4layout.addWidget(self.label_manualBox)
         self.in3layout.addWidget(self.getManualBox)
@@ -166,16 +178,28 @@ class MainWindow(QWidget):
     def updateDataSummary(self):
         trigger, self.dataSum = self.data.getDataSummary()
         self.series.clear()
+        self.runseries.clear()
         for evttype, counts in self.dataSum.items():
             self.series.append(evttype, counts)
+        
+        for evttype in list(self.data.runstats.keys())[1:]:
+            self.runseries.append(evttype, self.data.runstats[evttype])
 
         for slice in self.series.slices():
             label = slice.label() + "\t" + str(int(slice.value())) + "("
             label = label + "{:.2f}%".format(100 * slice.percentage()) + ")"
             slice.setLabel(label)
 
-        self.chart.setTitle("Total Triggers : " + str(trigger))
+        for slice in self.runseries.slices():
+            label = slice.label() + "\t" + str(int(slice.value())) + "("
+            label = label + "{:.2f}%".format(100 * slice.percentage()) + ")"
+            slice.setLabel(label)
+
+
+        self.chart.setTitle("SubRun Total Triggers : " + str(trigger))
+        self.runchart.setTitle("Run Total Triggers : " + str(self.data.runstats["Trigger"]))
         self._chart_view.update()
+        self._runchart_view.update()
     
     def havenewsubrun(self):
         self.updatefoldname()
