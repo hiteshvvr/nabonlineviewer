@@ -51,7 +51,7 @@ class MData:
         }
 
         self.runstats = { "Trigger": 7, "Single": 3, "Coincidence": 2, "Pulser": 1, "Noise": 1 }
-        
+
     def geteventdataframe(self):
         self.rawdata = hd.File(self.fname, "r")
         self.eventsdata = self.rawdata["events"][()]
@@ -293,20 +293,41 @@ class MData:
     def getenergyhistogram(self, bins=10, channel=27182):
         self.bins = bins
         self.trigs = self.hdFile.triggers().triggers()
-        if (
-            channel == 27182
-        ):  # this number is natural log, chosed to represent all pixels in lower detector
+        if( channel == 27182):  # this number is natural log, chosed to represent all pixels in lower detector
             self.energy = self.trigs.query("pixel<128").energy.to_numpy()
-        elif (
-            channel == 31415
-        ):  # this number is pi, chosed to represent all pixels in upper detector
+        elif( channel == 31415):  # this number is pi, chosed to represent all pixels in upper detector
             self.energy = self.trigs.query("pixel>128").energy.to_numpy()
         else:
             self.energy = self.trigs.query("pixel == @channel").energy.to_numpy()
 
         self.counts, self.bins = np.histogram(self.energy, self.bins)
 
-        return (
-            self.counts,
-            self.bins,
-        )  # maybe instead do self.enerG?? So we can do query in top/bottom detector??
+        return( self.counts, self.bins)  # maybe instead do self.enerG?? So we can do query in top/bottom detector??
+
+    def getbcpixmap(self):
+        bctopixmap = self.hdFile.parameterFile().BoardChannelPixelMap
+        self.bcpixmap = {}
+        for i in bctopixmap:
+            self.bcpixmap[int(i[0])] = int(i[1])
+        self.vectorized_map = np.vectorize(self.bcpixmap.get) 
+
+    def evtarr(self,ele):
+        ptof = (ele[7][0] - ele[8][0]) * 4e-9 / 1e-6  # in microseconds
+        pener = ele[7][2]
+        evttype = ele[1]
+        numtrig = ele[4]
+        ppix = ele[7][1]
+        epix = ele[8][1]
+        eener = ele[8][2] + ele[9][2] + ele[10][2] + ele[11][2] + ele[12][2]
+        return(np.array([evttype, numtrig, ptof, pener, ppix, eener, epix]))
+
+    def get_coinc_df(self):
+        self.events = self.hdFile.eventFile().getevents()
+        evtarr = np.array(list(map(self.evtarr, self.events)))
+        evtarr[:,4]= self.vectorized_map(evtarr[:,4])
+        evtarr[:,6]= self.vectorized_map(evtarr[:,6])
+        evtarr = evtarr[evtarr[:,0] == 1]
+        evtdf = pd.DataFrame(evtarr)
+        evtdf.columns = ['evttype', 'numtrig', 'ptof', 'pener', 'ppix', 'eener', 'epix']
+        return(evtdf)   
+    

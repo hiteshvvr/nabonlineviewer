@@ -225,6 +225,7 @@ class MainWindow(QWidget):
  
         self.readallsubruns = self.button_wholedata.isChecked()
         self.data.getdatafromfile(self.readallsubruns)
+        self.data.getbcpixmap()
         self.updateDataSummary()
         if self.readallsubruns:
             self.timer.stop()
