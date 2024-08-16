@@ -53,6 +53,8 @@ class Analysis(QWidget):
         self.data = data
         self.ii = 0
         self.numfile = 0
+        
+        
         # Initialize Tab
         self.maintab = QWidget()
 
