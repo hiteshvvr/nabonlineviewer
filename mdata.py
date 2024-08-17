@@ -29,28 +29,48 @@ class MData:
         self.dataarea = 0
         self.timebinwidth = 320e-6
         self.bins = 100
-        self.headerdf = pd.DataFrame(
-            {"timestamp": [0, 0], "pixel": [0, 0], "evttype": ["dummy", "dummy"]}
-        )
+        self._detector = ['top', 'bottom']
+        self._eventType = ['trigger', 'single', 'coincidence', 'pulser', 'noise']
+        
+        self.coinEventdf = pd.DataFrame({'evttype':np.zeros(2), 'numtrig':np.zeros(2), 'ptof':np.zeros(2), 'pener':np.zeros(2), 'ppix':np.zeros(2), 'eener':np.zeros(2), 'epix':np.zeros(2)})
+        
 
         self.rundata = {
             "top": {
-                "trigger": np.random.randint(100, size=127),
-                "single": np.random.randint(100, size=127),
-                "coincidence": np.random.randint(100, size=127),
-                "pulser": np.random.randint(100, size=127),
-                "noise": np.random.randint(100, size=127),
+                "trigger": np.random.randint(1, size=127),
+                "single": np.random.randint(1, size=127),
+                "coincidence": np.random.randint(1, size=127),
+                "pulser": np.random.randint(1, size=127),
+                "noise": np.random.randint(1, size=127),
             },
             "bottom": {
-                "trigger": np.random.randint(100, size=127),
-                "single": np.random.randint(100, size=127),
-                "coincidence": np.random.randint(100, size=127),
-                "pulser": np.random.randint(100, size=127),
-                "noise": np.random.randint(100, size=127),
+                "trigger": np.random.randint(1, size=127),
+                "single": np.random.randint(1, size=127),
+                "coincidence": np.random.randint(1, size=127),
+                "pulser": np.random.randint(1, size=127),
+                "noise": np.random.randint(1, size=127),
             },
         }
 
+        self.subrundata = {
+            "top": {
+                "trigger": np.random.randint(1, size=127),
+                "single": np.random.randint(1, size=127),
+                "coincidence": np.random.randint(1, size=127),
+                "pulser": np.random.randint(1, size=127),
+                "noise": np.random.randint(1, size=127),
+            },
+            "bottom": {
+                "trigger": np.random.randint(1, size=127),
+                "single": np.random.randint(1, size=127),
+                "coincidence": np.random.randint(1, size=127),
+                "pulser": np.random.randint(1, size=127),
+                "noise": np.random.randint(1, size=127),
+            },
+        }       
+
         self.runstats = { "Trigger": 7, "Single": 3, "Coincidence": 2, "Pulser": 1, "Noise": 1 }
+        self.subrunstats = { "Trigger": 7, "Single": 3, "Coincidence": 2, "Pulser": 1, "Noise": 1 }
 
     def geteventdataframe(self):
         self.rawdata = hd.File(self.fname, "r")
@@ -76,29 +96,51 @@ class MData:
         """
         Load various datas in the current viewer
         """
-        if readallsubruns:
-            self.hdFile = Nab.DataRun(self.dirname, self.runno)
-        else:
-            self.hdFile = Nab.File(self.filename)
-        self.fileData = self.hdFile.noiseWaves().headers()
+        
+        self.headerdf = pd.DataFrame( {"timestamp": [0, 0], "pixel": [0, 0], "evttype": ["dummy", "dummy"]})
+        
+        # if readallsubruns:
+        #     self._thisRun = Nab.DataRun(self.dirname, self.runno)
+        # else:
+        #     self._thisRun = Nab.File(self.filename)
+    
+        self._thisRun = Nab.File(self.filename)
+        self.fileData = self._thisRun.noiseWaves().headers()
 
-        tdf = self.hdFile.singleWaves().headers()
+        self.get_data_summary()
+
+        for i in self._detector:
+            for j in self._eventType:
+                # print(i,j)
+                try:
+                    self.subrundata[i][j] = self._thisRun.plotHitLocations(j, det=i)
+                    self.rundata[i][j] = self.rundata[i][j] + self.subrundata[i][j]
+                except:
+                    self.subrundata[i][j] = np.zeros(127)  
+                    self.rundata[i][j] = self.rundata[i][j] + self.subrundata[i][j]
+
+                self.rundata[i][j][self.rundata[i][j] <= 0 ] = 0.01
+                self.subrundata[i][j][self.subrundata[i][j] <= 0 ] = 0.01
+
+        tdf = self._thisRun.singleWaves().headers()
         if tdf is not None:
             self.clean_and_append_df(tdf, "single")
             del tdf
-        tdf = self.hdFile.coincWaves().headers()
+        tdf = self._thisRun.coincWaves().headers()
         if tdf is not None:
             self.clean_and_append_df(tdf, "coincidence")
             del tdf
-        tdf = self.hdFile.pulsrWaves().headers()
+        tdf = self._thisRun.pulsrWaves().headers()
         if tdf is not None:
             self.clean_and_append_df(tdf, "pulser")
             del tdf
-        tdf = self.hdFile.noiseWaves().headers()
+        tdf = self._thisRun.noiseWaves().headers()
         if tdf is not None:
             self.clean_and_append_df(tdf, "noise")
             del tdf
-        print(self.headerdf.shape)
+        # print(self.headerdf.shape)
+        
+        self.coinEventdf = pd.concat([self.coinEventdf, self.get_coinc_df()])
 
     def clean_and_append_df(self, df, evttype):
         df = df.drop(
@@ -122,37 +164,36 @@ class MData:
     def getDetPixData(self, eventType, det="top"):
         self.eventType = eventType
         try:
-            self.pixhist = self.hdFile.plotHitLocations(self.eventType, det=det)
+            self.pixhist = self._thisRun.plotHitLocations(self.eventType, det=det)
         except:
             self.pixhist = np.zeros(127)
         return self.pixhist
 
     # YOU NEED TO FIGURE THIS OUT :,)
-    def getDataSummary(self):
-        summary = {}
-        self.trigger = 0
-        self.trigger = self.hdFile.triggers().numtrigs
-        # summary["Triggers"] = self.trigger
-        self.singles = self.hdFile.singleWaves().numWaves
-        summary["Singles"] = self.singles
-        self.coincs = self.hdFile.coincWaves().numWaves
-        summary["Coincences"] = self.coincs
-        self.noise = self.hdFile.noiseWaves().numWaves
-        summary["Noise"] = self.noise
-        self.pulse = self.hdFile.pulsrWaves().numWaves
-        summary["Pulser"] = self.pulse
+    def get_data_summary(self):
+        self.subrunstats['Trigger'] = self._thisRun.triggers().numtrigs
+        self.runstats['Trigger'] = self.runstats['Trigger'] + self.subrunstats['Trigger']
 
-        # return(str(summary))
-        return (self.trigger, summary)
+        self.subrunstats['Single'] = self._thisRun.singleWaves().numWaves
+        self.runstats['Single'] = self.runstats['Single'] + self.subrunstats['Single']
+
+        self.subrunstats["Coincidence"] = self._thisRun.coincWaves().numWaves
+        self.runstats['Coincidence'] = self.runstats['Coincidence'] + self.subrunstats['Coincidence']
+
+        self.subrunstats['Noise'] = self._thisRun.noiseWaves().numWaves
+        self.runstats['Noise'] = self.runstats['Noise'] + self.subrunstats['Noise']
+
+        self.subrunstats['Pulser'] = self._thisRun.pulsrWaves().numWaves
+        self.runstats['Pulser'] = self.runstats['Pulser'] + self.subrunstats['Pulser']
 
         # return(self.strTrig, self.strSingles, self.strCoincs, self.strNoise, self.strPulse)
         # print(type(self.strTrig))
 
-        # print('Triggers: ', self.hdFile.triggers().numtrigs)
-        # print('Singles: ', self.hdFile.singleWaves().numWaves)
-        # print('Coincidences: ', self.hdFile.coincWaves().numWaves)
-        # print('Baseline Traces: ', self.hdFile.noiseWaves().numWaves)
-        # print('Pulsers: ', self.hdFile.pulsrWaves().numWaves)
+        # print('Triggers: ', self._thisRun.triggers().numtrigs)
+        # print('Singles: ', self._thisRun.singleWaves().numWaves)
+        # print('Coincidences: ', self._thisRun.coincWaves().numWaves)
+        # print('Baseline Traces: ', self._thisRun.noiseWaves().numWaves)
+        # print('Pulsers: ', self._thisRun.pulsrWaves().numWaves)
 
     def getsinglesdata(self):
         """
@@ -199,23 +240,23 @@ class MData:
         try:
             if eventType == "noise":
                 self.pulsedata = (
-                    self.hdFile.noiseWaves().waves()[eventno : eventno + len].compute()
+                    self._thisRun.noiseWaves().waves()[eventno : eventno + len].compute()
                 )
             elif eventType == "single":
                 self.pulsedata = (
-                    self.hdFile.singleWaves().waves()[eventno : eventno + len].compute()
+                    self._thisRun.singleWaves().waves()[eventno : eventno + len].compute()
                 )
             elif eventType == "coincidence":
                 self.pulsedata = (
-                    self.hdFile.coincWaves().waves()[eventno : eventno + len].compute()
+                    self._thisRun.coincWaves().waves()[eventno : eventno + len].compute()
                 )
             elif eventType == "pulser":
                 self.pulsedata = (
-                    self.hdFile.pulsrWaves().waves()[eventno : eventno + len].compute()
+                    self._thisRun.pulsrWaves().waves()[eventno : eventno + len].compute()
                 )
             elif eventType == "trigger":
                 self.pulsedata = (
-                    self.hdFile.singleWaves().waves()[eventno : eventno + len].compute()
+                    self._thisRun.singleWaves().waves()[eventno : eventno + len].compute()
                 )
 
         except:
@@ -227,15 +268,15 @@ class MData:
     def getpulsedata(self, eventType="noise", eventno=0, len=1):
         try:
             if eventType == "noise":
-                self.pulsedata = self.hdFile.noiseWaves().waves()[eventno].compute()
+                self.pulsedata = self._thisRun.noiseWaves().waves()[eventno].compute()
             elif eventType == "single":
-                self.pulsedata = self.hdFile.singleWaves().waves()[eventno].compute()
+                self.pulsedata = self._thisRun.singleWaves().waves()[eventno].compute()
             elif eventType == "coincidence":
-                self.pulsedata = self.hdFile.coincWaves().waves()[eventno].compute()
+                self.pulsedata = self._thisRun.coincWaves().waves()[eventno].compute()
             elif eventType == "pulser":
-                self.pulsedata = self.hdFile.pulsrWaves().waves()[eventno].compute()
+                self.pulsedata = self._thisRun.pulsrWaves().waves()[eventno].compute()
             elif eventType == "trigger":
-                self.pulsedata = self.hdFile.singleWaves().waves()[eventno].compute()
+                self.pulsedata = self._thisRun.singleWaves().waves()[eventno].compute()
 
         except:
             self.pulsedata = np.random.normal(size=(len, 10))
@@ -292,7 +333,7 @@ class MData:
     ##Generating a list of all energies for each event
     def getenergyhistogram(self, bins=10, channel=27182):
         self.bins = bins
-        self.trigs = self.hdFile.triggers().triggers()
+        self.trigs = self._thisRun.triggers().triggers()
         if( channel == 27182):  # this number is natural log, chosed to represent all pixels in lower detector
             self.energy = self.trigs.query("pixel<128").energy.to_numpy()
         elif( channel == 31415):  # this number is pi, chosed to represent all pixels in upper detector
@@ -304,8 +345,9 @@ class MData:
 
         return( self.counts, self.bins)  # maybe instead do self.enerG?? So we can do query in top/bottom detector??
 
+    ############# STUFF RELATED TO ANALYSIS TAB ########################
     def getbcpixmap(self):
-        bctopixmap = self.hdFile.parameterFile().BoardChannelPixelMap
+        bctopixmap = self._thisRun.parameterFile().BoardChannelPixelMap
         self.bcpixmap = {}
         for i in bctopixmap:
             self.bcpixmap[int(i[0])] = int(i[1])
@@ -322,7 +364,8 @@ class MData:
         return(np.array([evttype, numtrig, ptof, pener, ppix, eener, epix]))
 
     def get_coinc_df(self):
-        self.events = self.hdFile.eventFile().getevents()
+        self.getbcpixmap()
+        self.events = self._thisRun.eventFile().getevents()
         evtarr = np.array(list(map(self.evtarr, self.events)))
         evtarr[:,4]= self.vectorized_map(evtarr[:,4])
         evtarr[:,6]= self.vectorized_map(evtarr[:,6])
@@ -330,4 +373,3 @@ class MData:
         evtdf = pd.DataFrame(evtarr)
         evtdf.columns = ['evttype', 'numtrig', 'ptof', 'pener', 'ppix', 'eener', 'epix']
         return(evtdf)   
-    

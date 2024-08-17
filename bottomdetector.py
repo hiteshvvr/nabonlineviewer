@@ -78,7 +78,7 @@ class BottomDetector(QWidget):  # SRW
         self.label_channo.setFixedWidth(60)
         self.sel_channo = QComboBox()
         self.sel_channo.addItems(
-            [str(i + 1) for i in np.arange(127)]
+            [str(i + 1) for i in np.arange(127,254)]
         )  # The channel numbers for top detector are 1-127
         self.sel_channo.currentIndexChanged.connect(self.selectchannel)
         self.chan = 0
@@ -211,6 +211,26 @@ class BottomDetector(QWidget):  # SRW
         self.pixel_plot_widget1.vbox.removeWidget(self.pixel_plot_widget1.toolbar)
         self.pixel_plot_widget1.toolbar.setVisible(False)
 
+        self.size = 2
+        self.multipleSignalsPlot = MatplotlibWidget(
+            (5.5 * self.size, 3.5 * self.size), dpi=100
+        )
+        # self.multipleSignalsPlot.vbox.removeWidget(self.multipleSignalsPlot.toolbar)
+        # self.multipleSignalsPlot.toolbar.setVisible(False)
+        self.multipleSignalsFig = self.multipleSignalsPlot.getFigure()
+        self.multipleSignalsAxis = self.multipleSignalsFig.add_subplot(111)
+
+        self.pulseimg, self.xbin, self.ybin = np.histogram2d(
+            np.random.random(100), np.random.random(100), bins=[20, 20]
+        )
+        meshx, meshy = np.meshgrid(self.xbin, self.ybin)
+        mappable = self.multipleSignalsAxis.pcolormesh(meshx, meshy, self.pulseimg)
+        self.multipleSignalsFig.colorbar(
+            mappable, ax=self.multipleSignalsAxis, pad=0.01
+        )
+        self.multipleSignalsFig.tight_layout()
+        self.multipleSignalsPlot.draw()
+
         self.getnewfig()
 
         # randompixhist = 1 * np.random.random(127)        # Random pix hit without loading data
@@ -260,22 +280,6 @@ class BottomDetector(QWidget):  # SRW
         self.pw2.setLabel("bottom", "Bin", units="arb")
         self.pw2.showGrid(x=True, y=True)
 
-        # This is the new energy histgram stuff 3/27/2023
-        # self.energies = self.data.getenergyhistogram()
-        # self.energies.defineCut('energy', '>', 100)
-        # self.energiesNew = self.energies.hist('energy', bins = Nab.np.arange(0, 200))
-        # self.energiesNew = self.energies.hist('energy')
-        # self.enerGNew = np.reshape(self.energiesNew, (1,))
-        # self.enerG.show()
-        # self.p2.setData(self.energiesNew)
-
-        # This is all the old stuff
-        # self.hy, self.hx = np.histogram(np.random.random(100),bins=20)
-        # self.p2.setData(self.hx, self.hy)
-        # self.hy,self.hx = self.data.getpixelhistogram() #SRW newly written line
-        # print("printing hx, hy", self.hx, self.hy)
-        # print(len(self.hx), len(self.hy))
-
         # ********************* Third histogram Not used now ************************************
 
         self.pw3 = pg.PlotWidget(
@@ -292,30 +296,18 @@ class BottomDetector(QWidget):  # SRW
 
         self.p3.setData(x=self.timeax, y=self.noisedata)
 
-        # ********************* Example of scatter plot if needed ***********  #
-        self.pw4 = pg.PlotWidget(
-            title='<span style="color: #000; font-size: 16pt;">Multiple Events</span>'
-        )
-        self.p4 = pg.ImageItem()  # (image=self.noisedata)
-        self.xnoise = np.random.random(500)
-        self.ynoise = np.random.random(500)
-        self.noisedata, xas, yas = np.histogram2d(self.xnoise, self.ynoise)
-        self.p4.setImage(self.noisedata)
-        self.correctscale(self.p4, xscale=xas, yscale=yas)
-
-        self.pw4.addItem(self.p4)
-        self.pw4.addColorBar(self.p4, colorMap="CET-L17")
-
         # #********************* Timer if needed ***********  #
         self.timer = QtCore.QTimer()
-
+        self.timer.timeout.connect(self.updatepixhits)
+        self.timer.start(1000)
         # ********************* Layouts ***********  #
         # self.r1layout.addWidget(self.pw1)
         self.r1layout.addWidget(self.pixel_plot_widget1)  # PixDec
         # self.r1layout.addWidget(self.pixel_plot_widget2)  # PixDec
         self.r1layout.addWidget(self.pw2)
         self.r2layout.addWidget(self.pw3)
-        self.r2layout.addWidget(self.pw4)
+        # self.r2layout.addWidget(self.pw4)  # If we want plot from pyqtgraph
+        self.r2layout.addWidget(self.multipleSignalsPlot)
 
         # self.alayout.addWidget(self.setallVolt)
         # self.alayout.addWidget(self.gwin)
@@ -361,18 +353,6 @@ class BottomDetector(QWidget):  # SRW
         else:
             self.file = "file not found!!"
 
-    # def updatefoldname(self):
-    # self.foldname = self.field_foldname.text()
-    # self.data.foldname = self.foldname
-
-    # def updaterunno(self):
-    # try:
-    # self.runno = int(self.field_runno.text())
-    # print("what is runno:", self.runno)
-    # self.data.runno = self.runno
-    # except:
-    # self.field_runno.setText("Inter the integer")
-
     def loaddata(self):
         """
         Get the data in the data class
@@ -398,25 +378,23 @@ class BottomDetector(QWidget):  # SRW
         self.pixel_plot_subrunaxis.set_title("SubRun")
         self.clbar = None
 
-    def getnewpw4fig(self):
+    def getnew_multipesignalplot(self):
         try:
-            del self.pw4ax
-            del self.pw4fig
-            del self.pw4clbar
+            del self.multipleSignalFig
+            del self.multipleSignalAxis
         except:
             pass
-        self.pw4fig = self.pw4.getFigure()
-        self.pw4ax = self.pw4fig.add_subplot(111)
-        self.pw4clbar = None
-        self.pw4fig.set_tight_layout(tight=True)
+        self.multipleSignalsFig = self.multipleSignalsPlot.getFigure()
+        self.multipleSignalsAxis = self.multipleSignalsFig.add_subplot(111)
 
     # *************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
     def selectchannel(self):
-        self.chan = 1000 + int(self.sel_channo.currentText())
+        self.chan = int(self.sel_channo.currentText())
         # print(tchan, type(tchan))
         self.updateenergyhistogram()
         self.updatesingleevent()
         # self.updatemultipleevent()
+        self.updatemultipleeventwithmatplotlib()
         # print(self.chan)
 
     # Connecting conditional selection to energy histogram code
@@ -440,7 +418,8 @@ class BottomDetector(QWidget):  # SRW
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
         self.updatesingleevent()  # Idk if this one is right; maybe add energy histogram if we can figure out later how to add event type
         self.updatepixhits()
-        self.updatemultipleevents()
+        self.updatemultipleeventwithmatplotlib()
+        # self.updatemultipleevents()
 
     def getevntno(self):
         self.tempevnt = self.value_evtno.text().split(sep=",")
@@ -478,10 +457,7 @@ class BottomDetector(QWidget):  # SRW
         if self.data is not None:
             self.updatepixhits()
             self.updatesingleevent()
-            self.updatemultipleevents()
-            # self.updaterangeplot()
-            # self.updatedistribution()
-            # self.updatestackplot()
+            self.updatemultipleeventwithmatplotlib()
 
     # **************** Function to update Energy histogram *******************************#
     def updateenergyhistogram(self):  # SRW commenting out for now to remove errors
@@ -489,28 +465,42 @@ class BottomDetector(QWidget):  # SRW
             bins=200, channel=self.chan
         )
         self.p2.setData(self.edges, self.counts)
-        # Maybe do if/else statement here for Define Cuts?
 
     # **************** Function to update Single Event *******************************#
     def updatemultipleeventwithmatplotlib(self):
-        self.pw4ax.cla()
-        self.pw4fig.clf()
-        self.getnewpw4fig()
+        self.multipleSignalsAxis.cla()
+        self.multipleSignalsFig.clf()
+        indxarr = self.data.headerdf.query(
+            "evttype == @self.eventType and pixel == @self.chan"
+        ).index
+        # print(len(indxarr))
+        if len(indxarr) == 0:
+            self.multipleSignalsFig.clear()
+            return
+        if len(indxarr) < 200:
+            events = indxarr
+        else:
+            events = np.random.choice(indxarr, 200)
 
-        self.xdata, self.ydata = self.data.getmultipleeventdata(
-            self.eventType, channel=self.chan, eventno=self.evtno
-        )
-        h = self.pw4ax.hist2d(self.xdata, self.ydata, bins=1000)
+        if self.eventType == "trigger":
+            self.pulseimg, self.xbin, self.ybin = self.data.getmultipleeventdata(
+                "single", events=events
+            )
+        else:
+            self.pulseimg, self.xbin, self.ybin = self.data.getmultipleeventdata(
+                self.eventType, events=events
+            )
 
-        self.acmap = plt.get_cmap(self.customcmap)
+        self.getnew_multipesignalplot()
 
-        self._cNorm = colors.Normalize(h[0].min(), h[0].max())
-        self._scalarMap = cmx.ScalarMappable(norm=self._cNorm, cmap=self.acmap)
+        meshx, meshy = np.meshgrid(self.xbin, self.ybin)
+        self.pulseimg[self.pulseimg < 1] = np.inf
 
-        self.pw4clbar = self.pw4fig.colorbar(self._scalarMap, ax=self.pw4ax)
-        self.pw4clbar.update_normal(self._scalarMap)
+        mappable = self.multipleSignalsAxis.pcolormesh(meshx, meshy, self.pulseimg.T)
 
-        self.pw4.draw()
+        self.multipleSignalsFig.colorbar(mappable, ax=self.multipleSignalsAxis, pad=0.1)
+        self.multipleSignalsFig.tight_layout()
+        self.multipleSignalsPlot.draw()
 
     # **************** Function to update Single Event *******************************#
     def updatesingleevent(self):
@@ -544,7 +534,7 @@ class BottomDetector(QWidget):  # SRW
         print(len(indxarr))
         if len(indxarr) == 0:
             self.p4.clear()
-            return
+            # return
         if len(indxarr) < 200:
             events = indxarr
         else:
@@ -578,20 +568,15 @@ class BottomDetector(QWidget):  # SRW
         self.pixel_plot_subrunaxis.cla()
         self.getnewfig()
 
-        self.pixhits = self.data.getDetPixData(self.eventType, det="bottom")
-        self.pixhits[self.pixhits <= 0] = 0.01
         self.data.updatepixplot(
-            self.pixhits,
+            self.data.subrundata["bottom"][self.eventType],
             self.pixel_plot_figure1,
             self.pixel_plot_subrunaxis,
             self.clbar,
             self.norm,
             self.customcmap,
         )
-        print(self.eventType)
 
-        # self.data.rundata['top'][self.eventType] = self.data.rundata['top'][self.eventType] + np.random.randint(100, size = 127)        # Random pix hit without loading data
-        self.data.rundata["bottom"][self.eventType] = self.pixhits + np.random.randint( 2, size=127)  # Random pix hit without loading data
         self.data.updatepixplot(
             self.data.rundata["bottom"][self.eventType],
             self.pixel_plot_figure1,
@@ -600,6 +585,7 @@ class BottomDetector(QWidget):  # SRW
             self.norm,
             self.customcmap,
         )
+
         self.pixel_plot_widget1.draw()
 
     # ***********************************************#*******************************#

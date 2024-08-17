@@ -205,8 +205,6 @@ class TopDetector(QWidget): #SRW
         self.multipleSignalsFig.tight_layout()
         self.multipleSignalsPlot.draw()
 
-
-
         self.getnewfig()
 
         # randompixhist = 1 * np.random.random(127)        # Random pix hit without loading data
@@ -244,7 +242,8 @@ class TopDetector(QWidget): #SRW
 
         # #********************* Timer if needed ***********  #
         self.timer = QtCore.QTimer()
-
+        self.timer.timeout.connect(self.updatepixhits)
+        self.timer.start(1000)
         # ********************* Layouts ***********  #
         # self.r1layout.addWidget(self.pw1)
         self.r1layout.addWidget(self.pixel_plot_widget1)  # PixDec
@@ -403,17 +402,12 @@ class TopDetector(QWidget): #SRW
         if self.data is not None:
             self.updatepixhits()
             self.updatesingleevent()
-            # self.updatemultipleevents()
             self.updatemultipleeventwithmatplotlib()
-            # self.updaterangeplot()
-            # self.updatedistribution()
-            # self.updatestackplot()
 
     # **************** Function to update Energy histogram *******************************#
     def updateenergyhistogram(self): #SRW commenting out for now to remove errors
         self.counts, self.edges = self.data.getenergyhistogram(bins = 200,channel=self.chan)
         self.p2.setData(self.edges, self.counts)
-        # Maybe do if/else statement here for Define Cuts?
 
     # **************** Function to update Single Event *******************************#
     def updatemultipleeventwithmatplotlib(self):
@@ -428,24 +422,22 @@ class TopDetector(QWidget): #SRW
             events = indxarr
         else:
             events = np.random.choice(indxarr, 200)
-        
+
         if self.eventType == 'trigger':
             self.pulseimg, self.xbin, self.ybin = self.data.getmultipleeventdata('single', events = events)
         else:
             self.pulseimg, self.xbin, self.ybin = self.data.getmultipleeventdata(self.eventType, events = events)
-        
+
         self.getnew_multipesignalplot()   
-        print("I am running")
 
         meshx, meshy = np.meshgrid(self.xbin, self.ybin)
         self.pulseimg[self.pulseimg < 1] = np.inf
-        
+
         mappable = self.multipleSignalsAxis.pcolormesh(meshx, meshy, self.pulseimg.T)
-        
+
         self.multipleSignalsFig.colorbar(mappable, ax = self.multipleSignalsAxis, pad = 0.1)
         self.multipleSignalsFig.tight_layout()
         self.multipleSignalsPlot.draw()
-
 
     # **************** Function to update Single Event *******************************#
     def updatesingleevent(self):
@@ -466,7 +458,6 @@ class TopDetector(QWidget): #SRW
         self.p3.setData(self.timeax, self.pulsedata) 
         # self.timeax, self.pulsedata = self.data.getsingleeventdata(self.eventType,'0',eventno=self.evtno)
 
-
     def updatemultipleevents(self):
         indxarr = self.data.headerdf.query('evttype == @self.eventType and pixel == @self.chan').index
         print(len(indxarr))
@@ -477,7 +468,7 @@ class TopDetector(QWidget): #SRW
             events = indxarr
         else:
             events = np.random.choice(indxarr, 200)
-        
+
         if self.eventType == 'trigger':
             self.pulseimg, self.xbin, self.ybin = self.data.getmultipleeventdata('single', events = events)
         else:
@@ -502,14 +493,10 @@ class TopDetector(QWidget): #SRW
         self.pixel_plot_subrunaxis.cla()
         self.getnewfig()
 
-        self.pixhits = self.data.getDetPixData(self.eventType, det = 'top')
-        self.pixhits[self.pixhits <= 0] = 0.01
-        self.data.updatepixplot(self.pixhits, self.pixel_plot_figure1, self.pixel_plot_subrunaxis, self.clbar, self.norm, self.customcmap)
-        print(self.eventType)
+        self.data.updatepixplot(self.data.subrundata['top'][self.eventType], self.pixel_plot_figure1, self.pixel_plot_subrunaxis, self.clbar, self.norm, self.customcmap)
 
-        # self.data.rundata['top'][self.eventType] = self.data.rundata['top'][self.eventType] + np.random.randint(100, size = 127)        # Random pix hit without loading data
-        self.data.rundata['top'][self.eventType] = self.pixhits + np.random.randint(2, size = 127)        # Random pix hit without loading data
         self.data.updatepixplot(self.data.rundata['top'][self.eventType], self.pixel_plot_figure1, self.pixel_plot_runaxis, self.clbar, self.norm, self.customcmap)
+
         self.pixel_plot_widget1.draw()
 
     # ***********************************************#*******************************#

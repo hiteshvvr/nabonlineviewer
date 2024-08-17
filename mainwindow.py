@@ -88,12 +88,11 @@ class MainWindow(QWidget):
         self.series.append("Coincidence", 35)
         self.series.append("Noise", 35)
         self.series.append("Pulser", 15)
-        
+
         self.runseries.append("Singles", 2)
         self.runseries.append("Coincidence", 1)
         self.runseries.append("Noise", 1)
         self.runseries.append("Pulser", 2)
-
 
         self.chart = QChart()
         self.runchart = QChart()
@@ -134,7 +133,6 @@ class MainWindow(QWidget):
         # #********************* Timer if needed ***********  #
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.havenewsubrun)
-        self.timer.start(200000)
 
         # ********************* Layouts ***********  #
         self.mainlayout.addLayout(self.inlayout)
@@ -176,13 +174,13 @@ class MainWindow(QWidget):
         print(self.runno)
 
     def updateDataSummary(self):
-        trigger, self.dataSum = self.data.getDataSummary()
         self.series.clear()
         self.runseries.clear()
-        for evttype, counts in self.dataSum.items():
+        for evttype, counts in self.data.subrunstats.items():
             self.series.append(evttype, counts)
-        
-        for evttype in list(self.data.runstats.keys())[1:]:
+
+        # for evttype in list(self.data.runstats.keys())[1:]:
+        for evttype, counts in self.data.runstats.items():
             self.runseries.append(evttype, self.data.runstats[evttype])
 
         for slice in self.series.slices():
@@ -195,20 +193,25 @@ class MainWindow(QWidget):
             label = label + "{:.2f}%".format(100 * slice.percentage()) + ")"
             slice.setLabel(label)
 
-
-        self.chart.setTitle("SubRun Total Triggers : " + str(trigger))
+        self.chart.setTitle("SubRun Total Triggers : " + str(self.data.subrunstats['Trigger']))
         self.runchart.setTitle("Run Total Triggers : " + str(self.data.runstats["Trigger"]))
         self._chart_view.update()
         self._runchart_view.update()
-    
+
     def havenewsubrun(self):
         self.updatefoldname()
         self.updaterunno()
+        print("Looking for new file")
         self.filepath = self.dirname + "/" + "Run" + str(self.runno) + "*.h5"
         self.files = gl.glob(self.filepath)
         self.files.sort(key=os.path.getmtime, reverse=True)
-        self.data.filename = self.files[0]
+        if len(self.files) > self.noofdatafiles and len(self.files) > 2:
+            self.data.filename = self.files[1]
+            self.noofdatafiles = len(self.files)
+        else:
+            return
         self.data.getdatafromfile(self.readallsubruns)
+        print("Read new file")
         self.updateDataSummary()
 
     def loaddata(self):
@@ -221,12 +224,19 @@ class MainWindow(QWidget):
         print(self.filepath)
         self.files = gl.glob(self.filepath)
         self.files.sort(key=os.path.getmtime, reverse=True)
+        self.noofdatafiles = len(self.files)
         self.data.filename = self.files[0]
- 
+
         self.readallsubruns = self.button_wholedata.isChecked()
-        self.data.getdatafromfile(self.readallsubruns)
+        if self.readallsubruns:
+            for i in self.files[:20]:
+                self.data.filename = i
+                self.data.getdatafromfile(self.readallsubruns)
+        else:
+            self.data.getdatafromfile(self.readallsubruns)
         self.data.getbcpixmap()
         self.updateDataSummary()
+        self.timer.start(5000)
         if self.readallsubruns:
             self.timer.stop()
         # return(self.data)

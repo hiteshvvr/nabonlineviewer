@@ -53,13 +53,11 @@ class Analysis(QWidget):
         self.data = data
         self.ii = 0
         self.numfile = 0
-        
-        
         # Initialize Tab
         self.maintab = QWidget()
 
         # self.height
-        #self.width = 100
+        # self.width = 100
 
         # Create First Tab
         # self.tab1.layout = QVBoxLayout(self)
@@ -106,7 +104,7 @@ class Analysis(QWidget):
         self.customcmap = self.getmycmap( basemap="cividis")  # To get better colormaps that in nabpy
         # self.analysis_figure, self.pixel_plot_runaxis, self.clbar1 = ( self.data.updatepixplot( randompixhist, self.analysis_figure, self.pixel_plot_runaxis, self.clbar, self.norm, self.customcmap,))
 
-        #randompixhist = 1 * np.random.randint( 100, size=127)  # Random pix hit without loading data
+        # randompixhist = 1 * np.random.randint( 100, size=127)  # Random pix hit without loading data
         # self.pixel_plot_figure2, self.pixel_plot_subrunaxis, self.clbar2 = ( self.data.updatepixplot( randompixhist, self.analysis_figure, self.pixel_plot_subrunaxis, self.clbar, self.norm, self.customcmap,))
         self.in2layout.addWidget(self.pixel_plot_widget1)
         # ********************* Get Second histogram with pix hist (with random data) *******************
@@ -147,7 +145,7 @@ class Analysis(QWidget):
         self.tight_fullteardrop_axis = self.analysis_figure.add_subplot(236)
         # self.raw_fullteardrop_axis = self.analysis_figure.add_subplot(232)
         self.clbar = None
-        
+
         # self.raw_subrunteardrop_axis.clear()
         # self.raw_fullteardrop_axis.clear()
         # self.tight_fullteardrop_axis.clear()
@@ -165,8 +163,7 @@ class Analysis(QWidget):
 
     def strict_coinc(self, propix,elepix):
         '''
-         This is a hardcoded one-pixel coincident map.
-            It's fast but not great
+         Strict coincidence Map.
         '''
         out = np.zeros(len(propix),dtype=bool)
         for i in np.arange(1,8):
@@ -201,39 +198,35 @@ class Analysis(QWidget):
         return out
 
     def getdataarray(self):
-        self.evtdf = self.data.get_coinc_df()
+        self.evtdf = self.data.coinEventdf.copy()
 
     def getteardrop(self):
         self.analysis_figure.clf()
         # self.pixel_plot_runaxis.cla()
         self.getnewfig()
-        
+
         self.getdataarray()
-        
-        
+
         ppix = self.evtdf.ppix.to_numpy()
         self.protonpix_axis.clear()
         mappable = self.protonpix_axis.hist(ppix, bins = 500, log=True, histtype='step')
-        
+
         # self.protonpix_axis.grid()
         self.protonpix_axis.set_title("Proton pixel distribution")
         self.protonpix_axis.set_xlabel("Proton hit pixel" )
         self.protonpix_axis.set_ylabel("counts")
-        
+
         epix= self.evtdf.epix.to_numpy()
         self.electronpix_axis.clear()
         mappable = self.electronpix_axis.hist(epix, bins = 500, log=True, histtype='step')
-        
+
         # self.electronpix_axis.grid()
         self.electronpix_axis.set_title("Electron pixel distribution")
         self.electronpix_axis.set_xlabel("Proton hit pixel" )
         self.electronpix_axis.set_ylabel("counts")
-        
 
-        
-        
         self.cutdf = self.evtdf.query("ppix < 200 and ppix != 64 and pener < 150 ")
-        
+
         x = self.cutdf.ptof.to_numpy()
         y = self.cutdf.eener.to_numpy()
         hist2d, binx, biny = np.histogram2d( y * 0.3, 1 / (x * x), bins=[np.linspace(0, 1000, 100), np.linspace(0, 0.008, 100)])
@@ -243,15 +236,13 @@ class Analysis(QWidget):
         self.raw_subrunteardrop_axis.clear()
         mappable = self.raw_subrunteardrop_axis.pcolormesh(meshx, meshy, hist2d.T)
         self.analysis_figure.colorbar(mappable, ax=self.raw_subrunteardrop_axis)
-        
+
         self.raw_subrunteardrop_axis.grid()
         # self.raw_subrunteardrop_axis.colorbars()
         self.raw_subrunteardrop_axis.set_title("SubRun Teardrop")
-        self.raw_subrunteardrop_axis.set_xlabel("Approximate electron energy in keV with factor 0.3" )
+        self.raw_subrunteardrop_axis.set_xlabel("Energy(~keV [0.3 x ADC])")
         self.raw_subrunteardrop_axis.set_ylabel("$t_p^{-2}$ ($\mu s^{-2}$)")
-        
-        
-        
+
         tight_coinc = self.strict_coinc(self.cutdf.ppix.to_numpy(), self.cutdf.epix.to_numpy())
         x = self.cutdf.ptof.to_numpy()
         y = self.cutdf.eener.to_numpy()
@@ -264,13 +255,12 @@ class Analysis(QWidget):
         self.tight_fullteardrop_axis.clear()
         mappable = self.tight_fullteardrop_axis.pcolormesh(meshx, meshy, hist2d.T)
         self.analysis_figure.colorbar(mappable, ax=self.tight_fullteardrop_axis)
-        
+
         self.tight_fullteardrop_axis.grid()
         self.tight_fullteardrop_axis.set_title("Run Teardrop [tight cuts]")
-        self.tight_fullteardrop_axis.set_xlabel("Approximate electron energy in keV with factor 0.3" )
+        self.tight_fullteardrop_axis.set_xlabel("Energy(~keV [0.3 x ADC])")
         self.tight_fullteardrop_axis.set_ylabel("$t_p^{-2}$ ($\mu$s^{-2})")
-        
-        
+
         x = self.evtdf.ptof.to_numpy()
         y = self.evtdf.pener.to_numpy()
         hist2d, binx, biny = np.histogram2d( y * 0.3, x, bins=[100,100])
@@ -280,13 +270,12 @@ class Analysis(QWidget):
         self.proton_tofener_axis.clear()
         mappable = self.proton_tofener_axis.pcolormesh(meshx, meshy, hist2d.T)
         self.analysis_figure.colorbar(mappable, ax=self.proton_tofener_axis)
-        
+
         self.proton_tofener_axis.grid()
         self.proton_tofener_axis.set_title("Proton Energy -TOF")
-        self.proton_tofener_axis.set_xlabel("Approximate proton energy in keV with factor 0.3" )
+        self.proton_tofener_axis.set_xlabel("Energy(~keV [0.3 x ADC])" )
         self.proton_tofener_axis.set_ylabel("proton tof $\mu s$")
-        
-        
+
         x = self.evtdf.ptof.to_numpy()
         y = self.evtdf.eener.to_numpy()
         hist2d, binx, biny = np.histogram2d( y * 0.3, x, bins=[100,100])
@@ -296,14 +285,12 @@ class Analysis(QWidget):
         self.electron_tofener_axis.clear()
         mappable = self.electron_tofener_axis.pcolormesh(meshx, meshy, hist2d.T)
         self.analysis_figure.colorbar(mappable, ax=self.electron_tofener_axis)
-        
+
         self.electron_tofener_axis.grid()
         self.electron_tofener_axis.set_title("Electron Energy -proton TOF")
-        self.electron_tofener_axis.set_xlabel("Approximate proton energy in keV with factor 0.3" )
-        self.electron_tofener_axis.set_ylabel("proton tof $\mu s$")
-        
+        self.electron_tofener_axis.set_xlabel("Energy(~keV [0.3 x ADC])")
+        self.electron_tofener_axis.set_ylabel("Electron tof $\mu s$")
 
-       
         self.analysis_figure.tight_layout()
         self.pixel_plot_widget1.draw()
 
