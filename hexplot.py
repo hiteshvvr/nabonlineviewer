@@ -1,6 +1,6 @@
 import sys
 import matplotlib.pyplot as plt
-# plt.use('Qt5Agg')
+plt.use('Qt5Agg')
 
 from PyQt5 import QtCore, QtWidgets
 
