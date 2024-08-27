@@ -218,11 +218,15 @@ class Analysis(QWidget):
 
         epix= self.evtdf.epix.to_numpy()
         self.electronpix_axis.clear()
-        mappable = self.electronpix_axis.hist(epix, bins = 500, log=True, histtype='step')
+        epix_bottom_det = epix[epix>300] - 1000
+        epix_top_det = epix[epix<300]
+        mappable = self.electronpix_axis.hist( epix_top_det, bins=500, log=True, histtype="step", alpha=0.99, label="Top")
+        mappable = self.electronpix_axis.hist( epix_bottom_det, bins=500, log=True, histtype="step", alpha=0.99, label="Bottom")
+        self.electronpix_axis.legend(loc="upper right")
 
         # self.electronpix_axis.grid()
         self.electronpix_axis.set_title("Electron pixel distribution")
-        self.electronpix_axis.set_xlabel("Proton hit pixel" )
+        self.electronpix_axis.set_xlabel("Proton hit pixel")
         self.electronpix_axis.set_ylabel("counts")
 
         self.cutdf = self.evtdf.query("ppix < 200 and ppix != 64 and pener < 150 ")
