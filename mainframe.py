@@ -14,10 +14,8 @@ class MainFrame(QWidget):
         self.layout = QVBoxLayout(self)
         pg.setConfigOption('background', 'w')
 
-        # Define Data
         self.data = MData()
 
-        # Define Tabs
         self.tabs = QTabWidget()
         self.tab1 = MainWindow(self.data)
         self.tab2 = TopDetector(self.data)
@@ -25,7 +23,6 @@ class MainFrame(QWidget):
         self.tab4 = Analysis(self.data)
 
 
-        # Add Tabs
         self.tabs.addTab(self.tab1, "Main Window")
         self.tabs.addTab(self.tab2, "Top Detector")
         self.tabs.addTab(self.tab3, "Bottom Detector")

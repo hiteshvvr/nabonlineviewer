@@ -24,20 +24,15 @@ import nabPy as Nab
 import h5py as hd
 
 class MainWindow(QWidget):
-    # def __init__(self, parent) -> None:
     def __init__(self, data):
         super(QWidget, self).__init__()
         self.layout = QVBoxLayout(self)
-        # pg.setConfigOption('background', 'w')
 
-        # Initialize DATA
         self.data = data
         self.ii = 0
         self.numfile = 0
-        # Initialize Tab
         self.maintab = QWidget()
 
-        # Load previously set values
         self.settings = QSettings("./oldsettings.ini", QSettings.IniFormat)
         try:
             self.dirname = self.settings.value('directory')
@@ -45,20 +40,14 @@ class MainWindow(QWidget):
         except:
             self.dirname = "Select folder to record data"
 
-        # self.height
         self.width = 100
 
-        # Create First Tab
-        # self.tab1.layout = QVBoxLayout(self)
         self.mainlayout = QVBoxLayout()
         self.inlayout = QHBoxLayout()
         self.in2layout = QHBoxLayout()
         self.in3layout = QHBoxLayout()
 
-        # self.dirname = "../datafiles/hdf5files/Aug2023/"
-        # self.runno = 2447
 
-        # First Row with Folder name etc.
 
         self.buttion_dirname = QPushButton('Select Folder')
         self.buttion_dirname.clicked.connect(self.dialog)
@@ -79,7 +68,6 @@ class MainWindow(QWidget):
         self.inlayout.addWidget(self.field_runno)
         self.inlayout.addWidget(self.button_wholedata)
         self.inlayout.addWidget(self.button_load)
-        # self.inlayout.addWidget(self.sel_channo)
 
         self.series = QPieSeries()
         self.runseries = QPieSeries()
@@ -103,52 +91,38 @@ class MainWindow(QWidget):
         self.label_dataSummary = QLabel("Run Data Summary")
         self.chart.legend().setAlignment(Qt.AlignRight)
         self.runchart.legend().setAlignment(Qt.AlignRight)
-        # self._chart_view = QChartView(self.chart)
         self._chart_view = QChartView()
         self._runchart_view = QChartView()
         self._chart_view.setChart(self.chart)
         self._runchart_view.setChart(self.runchart)
-        # self._chart_view.setChart(self.chart1)
-        # self._chart_view.addChart(self.chart)
 
-        # ******************** Initializing Textbox for Main Manual *******************************
         self.getManualBox = QPlainTextEdit(self)
         manual = " "
         for line in open("./manual.txt"):
             manual = manual + line
         self.getManualBox.insertPlainText(manual)
 
-        # self.getManualBox.resize(400,200) #Setting size of textbox; useless because I swithed to layouts
         self.getManualBox.setReadOnly(True)
         self.label_manualBox = QLabel("GUI User Manual")
 
-        # self.in2layout.addWidget(self.label_dataSummary)
         self.in2layout.addWidget(self._runchart_view)
         self.in2layout.addWidget(self._chart_view)
-        # self.in4layout.addWidget(self.label_manualBox)
         self.in3layout.addWidget(self.getManualBox)
 
-        # ********************* Get Second histogram with pix hist (with random data) *******************
 
-        # #********************* Timer if needed ***********  #
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.havenewsubrun)
 
-        # ********************* Layouts ***********  #
         self.mainlayout.addLayout(self.inlayout)
         self.mainlayout.addLayout(self.in2layout)
         self.mainlayout.addLayout(self.in3layout)
 
         self.maintab.setLayout(self.mainlayout)
-        # self.tab1.setLayout(self.alayout)
 
-        # Add tabs to Widget
         self.layout.addWidget(self.maintab)
         self.setLayout(self.layout)
 
-    # ************************************************************************** FUNCTIONS ****************************************************************************************  #
 
-    # ***************Functions for loading Data *****************************************************#
 
     def dialog(self):
         self.dirname = QFileDialog.getExistingDirectory(
@@ -179,7 +153,6 @@ class MainWindow(QWidget):
         for evttype, counts in self.data.subrunstats.items():
             self.series.append(evttype, counts)
 
-        # for evttype in list(self.data.runstats.keys())[1:]:
         for evttype, counts in self.data.runstats.items():
             self.runseries.append(evttype, self.data.runstats[evttype])
 
@@ -239,4 +212,3 @@ class MainWindow(QWidget):
         self.timer.start(5000)
         if self.readallsubruns:
             self.timer.stop()
-        # return(self.data)

@@ -1,7 +1,6 @@
 from matplotlib.pyplot import axis
 import numpy as np
 
-# import h5py as hd
 import pandas as pd
 import glob as gl
 import sys
@@ -22,7 +21,6 @@ class MData:
         self.dirname = None
         self.filename = None
         self.runno = None
-        # self.eventsig = 0xaa55f154
         self.mdata = None
         self.headerinfo = 1
         self.totalevents = 0
@@ -99,10 +97,6 @@ class MData:
         
         self.headerdf = pd.DataFrame( {"timestamp": [0, 0], "pixel": [0, 0], "evttype": ["dummy", "dummy"]})
         
-        # if readallsubruns:
-        #     self._thisRun = Nab.DataRun(self.dirname, self.runno)
-        # else:
-        #     self._thisRun = Nab.File(self.filename)
     
         self._thisRun = Nab.File(self.filename)
         self.fileData = self._thisRun.noiseWaves().headers()
@@ -111,7 +105,6 @@ class MData:
 
         for i in self._detector:
             for j in self._eventType:
-                # print(i,j)
                 try:
                     self.subrundata[i][j] = self._thisRun.plotHitLocations(j, det=i)
                     self.rundata[i][j] = self.rundata[i][j] + self.subrundata[i][j]
@@ -138,7 +131,6 @@ class MData:
         if tdf is not None:
             self.clean_and_append_df(tdf, "noise")
             del tdf
-        # print(self.headerdf.shape)
         
         self.coinEventdf = pd.concat([self.coinEventdf, self.get_coinc_df()])
 
@@ -169,7 +161,6 @@ class MData:
             self.pixhist = np.zeros(127)
         return self.pixhist
 
-    # YOU NEED TO FIGURE THIS OUT :,)
     def get_data_summary(self):
         self.subrunstats['Trigger'] = self._thisRun.triggers().numtrigs
         self.runstats['Trigger'] = self.runstats['Trigger'] + self.subrunstats['Trigger']
@@ -186,14 +177,7 @@ class MData:
         self.subrunstats['Pulser'] = self._thisRun.pulsrWaves().numWaves
         self.runstats['Pulser'] = self.runstats['Pulser'] + self.subrunstats['Pulser']
 
-        # return(self.strTrig, self.strSingles, self.strCoincs, self.strNoise, self.strPulse)
-        # print(type(self.strTrig))
 
-        # print('Triggers: ', self._thisRun.triggers().numtrigs)
-        # print('Singles: ', self._thisRun.singleWaves().numWaves)
-        # print('Coincidences: ', self._thisRun.coincWaves().numWaves)
-        # print('Baseline Traces: ', self._thisRun.noiseWaves().numWaves)
-        # print('Pulsers: ', self._thisRun.pulsrWaves().numWaves)
 
     def getsinglesdata(self):
         """
@@ -209,10 +193,6 @@ class MData:
         detfig.cbar = acbar
         detfig.cmap = cmap
         afig, aaxis, acbar = detfig.createFigure(pixdata)
-        # preampLabels = Nab.nplt.returnPreampLabels(detfig.parameterFile.BoardChannelPixelMap[:128]) # Create the preamp labels
-        # pLabels = [f'{i}\n{j}' for i,j in zip(np.arange(1,128),preampLabels)] # Otherwise, it will default to pixel number and preamp channel.
-        # pLabels = [f'{i}\n{j}' for i,j in zip(np.arange(1,128),preampLabels)] # Otherwise, it will default to pixel number and preamp channel.
-        # scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=self.customcmap)
         pLabels = [
             f"{i}\n{j}" for i, j in zip(np.arange(1, 128), pixdata)
         ]  # Add the values to the labels
@@ -230,10 +210,7 @@ class MData:
         self.pixdata = np.array(
             self.fileData.iloc[:, 11]
         )  # This is code from SRW jupyter notebook
-        # print(len(self.pixdata))
         self.hy, self.hx = np.histogram(self.pixdata)
-        # print(self.hx, self.hy)
-        # print("getpixelhistogram ran successfully")
         return (self.hy, self.hx)
 
     def getpulsedata_old(self, eventType="noise", eventno=0, len=1):
@@ -281,8 +258,6 @@ class MData:
         except:
             self.pulsedata = np.random.normal(size=(len, 10))
 
-        # if len == 1:
-        # self.pulsedata = self.pulsedata[0]
 
     def getsingleeventdata(self, eventType="noise", eventno=0, chan=0):
         self.getpulsedata(eventType=eventType, eventno=eventno)
@@ -307,30 +282,7 @@ class MData:
         )
         return (H, xbin, ybin)
 
-    # *******************Attempt 2 extracting energies*********************
-    ##Generating a list of all energies for each event
-    # def getenergyhistogram(self):
-    ##Extracting nested array
-    # self.newhdFile = hd.File("../datafiles/hdf5files/Run1612_0.h5", "r")
-    # self.evdata = np.array(self.newhdFile['events']) #Not sure if this line will work... might need to chnage data read-in
-    # self.energyExtract = np.array([i[6] for i in self.evdata])
-    ##Isolating energies
-    # self.energy_list = []
-    # self.energyList = []
-    # for j in range (len(self.energyExtract)):
-    # self.energy_list.append([x[2] for x in self.energyExtract[j]])
-    # for i in range (len(self.energy_list)):
-    # self.energyList.append(float(self.energy_list[:][i][0]))
-    # self.updateEnList = np.asarray(self.energyList)
-    # print(self.updateEnList.dtype)
-    # print(self.updateEnList)
-    # self.hy,self.hx = np.histogram(self.updateEnList)
-    # self.hyNew=float(self.hy)
-    # self.hxNew=float(self.hx)
-    # return(self.hyNew, self.hxNew)
 
-    # *******************Attempt 2 extracting energies*********************
-    ##Generating a list of all energies for each event
     def getenergyhistogram(self, bins=10, channel=27182):
         self.bins = bins
         self.trigs = self._thisRun.triggers().triggers()
@@ -345,7 +297,6 @@ class MData:
 
         return( self.counts, self.bins)  # maybe instead do self.enerG?? So we can do query in top/bottom detector??
 
-    ############# STUFF RELATED TO ANALYSIS TAB ########################
     def getbcpixmap(self):
         bctopixmap = self._thisRun.parameterFile().BoardChannelPixelMap
         self.bcpixmap = {}
