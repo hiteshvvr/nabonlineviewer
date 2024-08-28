@@ -32,7 +32,7 @@ class MData:
         self._detector = ['top', 'bottom']
         self._eventType = ['trigger', 'single', 'coincidence', 'pulser', 'noise']
         
-        self.coinEventdf = pd.DataFrame({'evttype':np.zeros(2), 'numtrig':np.zeros(2), 'ptof':np.zeros(2), 'pener':np.zeros(2), 'ppix':np.zeros(2), 'eener':np.zeros(2), 'epix':np.zeros(2)})
+        self.coinEventdf = pd.DataFrame({'evttype':np.zeros(2), 'numtrig':np.zeros(2), 'ptof':np.zeros(2), 'pener':np.zeros(2), 'ppix':np.zeros(2), 'eener':np.zeros(2), 'epix':np.zeros(2), 'tstamp': np.zeros(2)})
         
 
         self.rundata = {
@@ -95,6 +95,7 @@ class MData:
     def getdatafromfile(self, readallsubruns=False):
         """
         Load various datas in the current viewer
+        readallsubruns argument will be deprecated in future!
         """
         
         self.headerdf = pd.DataFrame( {"timestamp": [0, 0], "pixel": [0, 0], "evttype": ["dummy", "dummy"]})
@@ -354,6 +355,7 @@ class MData:
         self.vectorized_map = np.vectorize(self.bcpixmap.get) 
 
     def evtarr(self,ele):
+        tstamp = ele[7][0]
         ptof = (ele[7][0] - ele[8][0]) * 4e-9 / 1e-6  # in microseconds
         pener = ele[7][2]
         evttype = ele[1]
@@ -361,7 +363,7 @@ class MData:
         ppix = ele[7][1]
         epix = ele[8][1]
         eener = ele[8][2] + ele[9][2] + ele[10][2] + ele[11][2] + ele[12][2]
-        return(np.array([evttype, numtrig, ptof, pener, ppix, eener, epix]))
+        return(np.array([evttype, numtrig, ptof, pener, ppix, eener, epix, tstamp]))
 
     def get_coinc_df(self):
         self.getbcpixmap()
@@ -371,5 +373,5 @@ class MData:
         evtarr[:,6]= self.vectorized_map(evtarr[:,6])
         evtarr = evtarr[evtarr[:,0] == 1]
         evtdf = pd.DataFrame(evtarr)
-        evtdf.columns = ['evttype', 'numtrig', 'ptof', 'pener', 'ppix', 'eener', 'epix']
+        evtdf.columns = ['evttype', 'numtrig', 'ptof', 'pener', 'ppix', 'eener', 'epix', 'tstamp']
         return(evtdf)   

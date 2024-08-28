@@ -210,6 +210,7 @@ class Analysis(QWidget):
         ppix = self.evtdf.ppix.to_numpy()
         self.protonpix_axis.clear()
         mappable = self.protonpix_axis.hist(ppix, bins = 500, log=True, histtype='step')
+        print(self.evtdf.head())
 
         # self.protonpix_axis.grid()
         self.protonpix_axis.set_title("Proton pixel distribution")

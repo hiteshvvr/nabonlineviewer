@@ -5,6 +5,7 @@ from mdata import MData
 from topdetector import TopDetector 
 from bottomdetector import BottomDetector
 from analysis import Analysis
+from timeevolution import TimeEvolution
 
 
 
@@ -23,6 +24,7 @@ class MainFrame(QWidget):
         self.tab2 = TopDetector(self.data)
         self.tab3 = BottomDetector(self.data)
         self.tab4 = Analysis(self.data)
+        self.tab5 = TimeEvolution(self.data)
 
 
         # Add Tabs
@@ -30,6 +32,7 @@ class MainFrame(QWidget):
         self.tabs.addTab(self.tab2, "Top Detector")
         self.tabs.addTab(self.tab3, "Bottom Detector")
         self.tabs.addTab(self.tab4, "Analysis")
+        self.tabs.addTab(self.tab5, "TimeEvolution")
 
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
