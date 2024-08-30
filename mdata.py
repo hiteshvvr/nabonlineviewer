@@ -32,7 +32,8 @@ class MData:
         self._detector = ['top', 'bottom']
         self._eventType = ['trigger', 'single', 'coincidence', 'pulser', 'noise']
         
-        self.coinEventdf = pd.DataFrame({'evttype':np.zeros(2), 'numtrig':np.zeros(2), 'ptof':np.zeros(2), 'pener':np.zeros(2), 'ppix':np.zeros(2), 'eener':np.zeros(2), 'epix':np.zeros(2), 'tstamp': np.zeros(2)})
+        # self.coinEventdf = pd.DataFrame({'evttype':np.zeros(2), 'numtrig':np.zeros(2), 'ptof':np.zeros(2), 'pener':np.zeros(2), 'ppix':np.zeros(2), 'eener':np.zeros(2), 'epix':np.zeros(2), 'tstamp': np.zeros(2)})
+        self.coinEventdf = pd.DataFrame()
         
 
         self.rundata = {
@@ -374,4 +375,5 @@ class MData:
         evtarr = evtarr[evtarr[:,0] == 1]
         evtdf = pd.DataFrame(evtarr)
         evtdf.columns = ['evttype', 'numtrig', 'ptof', 'pener', 'ppix', 'eener', 'epix', 'tstamp']
+        # evtdf['time'] = (evtdf.tstamp - evtdf.tstamp.min())*4e-9
         return(evtdf)   

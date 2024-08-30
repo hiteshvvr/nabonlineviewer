@@ -78,7 +78,7 @@ class BottomDetector(QWidget):  # SRW
         self.label_channo.setFixedWidth(60)
         self.sel_channo = QComboBox()
         self.sel_channo.addItems(
-            [str(i + 1) for i in np.arange(127,254)]
+            [str(i + 1) for i in np.arange(0,127)]
         )  # The channel numbers for top detector are 1-127
         self.sel_channo.currentIndexChanged.connect(self.selectchannel)
         self.chan = 0

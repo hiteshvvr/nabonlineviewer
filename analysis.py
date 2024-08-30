@@ -277,7 +277,7 @@ class Analysis(QWidget):
         self.analysis_figure.colorbar(mappable, ax=self.proton_tofener_axis)
 
         self.proton_tofener_axis.grid()
-        self.proton_tofener_axis.set_title("Proton Energy -TOF")
+        self.proton_tofener_axis.set_title("Proton Energy - proton TOF")
         self.proton_tofener_axis.set_xlabel("Energy(~keV [0.3 x ADC])" )
         self.proton_tofener_axis.set_ylabel("proton tof $\mu s$")
 
@@ -292,9 +292,9 @@ class Analysis(QWidget):
         self.analysis_figure.colorbar(mappable, ax=self.electron_tofener_axis)
 
         self.electron_tofener_axis.grid()
-        self.electron_tofener_axis.set_title("Electron Energy -proton TOF")
+        self.electron_tofener_axis.set_title("Electron Energy - proton TOF")
         self.electron_tofener_axis.set_xlabel("Energy(~keV [0.3 x ADC])")
-        self.electron_tofener_axis.set_ylabel("Electron tof $\mu s$")
+        self.electron_tofener_axis.set_ylabel("prton tof $\mu s$")
 
         self.analysis_figure.tight_layout()
         self.pixel_plot_widget1.draw()

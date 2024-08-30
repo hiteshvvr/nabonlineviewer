@@ -75,7 +75,7 @@ class TimeEvolution(QWidget):
         self.label_channo = QLabel("Channel")
         self.label_channo.setFixedWidth(60)
         self.sel_channo = QComboBox()
-        self.sel_channo.addItems([str(i+1) for i in np.arange(127)]) #The channel numbers for top detector are 1-127 
+        self.sel_channo.addItems([str(i) for i in np.arange(127)]) #The channel numbers for top detector are 1-127 
         self.sel_channo.currentIndexChanged.connect(self.selectchannel)
         self.chan = 0
 
@@ -123,7 +123,8 @@ class TimeEvolution(QWidget):
         self.analysis_figure = self.pixel_plot_widget1.getFigure()
         self.analysis_figure.tight_layout(pad=0)
         # self.pixel_plot_runaxis = self.analysis_figure.add_subplot(111)
-        self.avg_p_energy_axis = self.analysis_figure.add_subplot(111)
+        self.avg_p_energy_axis = self.analysis_figure.add_subplot(211)
+        self.avg_e_energy_axis = self.analysis_figure.add_subplot(212)
         # self.avg_p_energy_axis = self.analysis_figure.add_subplot(231)
         # self.electronpix_axis = self.analysis_figure.add_subplot(232)
         # self.electron_tofener_axis = self.analysis_figure.add_subplot(233)
@@ -141,6 +142,8 @@ class TimeEvolution(QWidget):
 
     def getdataarray(self):
         self.evtdf = self.data.coinEventdf.copy()
+        self.evtdf['time'] = (self.evtdf.tstamp - self.evtdf.tstamp.min()) * 4e-9
+        self.tbins = np.arange(self.evtdf.time.min(), self.evtdf.time.max(),1)
     
     def selectchannel(self):
         self.chan = int(self.sel_channo.currentText())
@@ -155,26 +158,41 @@ class TimeEvolution(QWidget):
         self.getdataarray()
         self.log = False
         self.avg_p_energy_axis.clear()
-        self.mintime = self.evtdf.tstamp.min()
+        title = "[ Channel:  " + str(self.chan) + "]"
+        
         tdf = self.evtdf.query("ppix == @self.chan")
-        tdf['tstamp'] = tdf.tstamp * 4e-9
-        tbins = np.linspace(tdf.tstamp.min(), tdf.tstamp.max(), 100)
-        avgpener = tdf.groupby(pd.cut(tdf.tstamp, tbins)).pener.mean().to_numpy()
-        avgpener_err = tdf.groupby(pd.cut(tdf.tstamp, tbins)).pener.std().to_numpy()
-        # mappable = self.avg_p_energy_axis.scatter(tbins[1:], avgpener)#, log = self.log)
-        mappable = self.avg_p_energy_axis.errorbar(tbins[1:], avgpener, yerr=avgpener_err, fmt='o')#, log = self.log)
+        if self.chan is 0:
+            tdf = self.evtdf.query("ppix != @self.chan")
+            title = " [ All Channels: 0]"
+        avgpener = tdf.groupby(pd.cut(tdf.time, self.tbins)).pener.mean().to_numpy()
+        avgpener_err = tdf.groupby(pd.cut(tdf.time, self.tbins)).pener.std().to_numpy()
+        mappable = self.avg_p_energy_axis.errorbar(self.tbins[1:], avgpener, yerr=avgpener_err, fmt='o')#, log = self.log)
         self.avg_p_energy_axis.grid()
-        self.avg_p_energy_axis.set_title("Proton Energy OverTime")
+        self.avg_p_energy_axis.set_title("Proton Energy" + title)
         self.avg_p_energy_axis.set_xlabel("Time in sec" )
         self.avg_p_energy_axis.set_ylabel("adc val")
 
-        # epix= self.evtdf.epix.to_numpy()
-        # self.electronpix_axis.clear()
-        # epix_bottom_det = epix[epix>300] - 1000
-        # epix_top_det = epix[epix<300]
-        # mappable = self.electronpix_axis.hist( epix_top_det, bins=500, log=True, histtype="step", alpha=0.99, label="Top")
-        # mappable = self.electronpix_axis.hist( epix_bottom_det, bins=500, log=True, histtype="step", alpha=0.99, label="Bottom")
-        # self.electronpix_axis.legend(loc="upper right")
+        tdf = self.evtdf.query("epix == @self.chan")
+        if self.chan is 0:
+            tdf = self.evtdf.query("epix < 500")
+        avgeener = tdf.groupby(pd.cut(tdf.time, self.tbins)).eener.mean().to_numpy()
+        avgeener_err = tdf.groupby(pd.cut(tdf.time, self.tbins)).eener.std().to_numpy()
+        mappable = self.avg_e_energy_axis.errorbar(self.tbins[1:], avgeener, yerr=avgeener_err, fmt='o', label = 'top')#, log = self.log)
+        
+        tdf = self.evtdf.query("epix == 1000+@self.chan")
+        if self.chan is 0:
+            tdf = self.evtdf.query("epix > 500")
+        avgeener = tdf.groupby(pd.cut(tdf.time, self.tbins)).eener.mean().to_numpy()
+        avgeener_err = tdf.groupby(pd.cut(tdf.time, self.tbins)).eener.std().to_numpy()
+        mappable = self.avg_e_energy_axis.errorbar(self.tbins[1:], avgeener, yerr=avgeener_err, fmt='o', label = 'bottom')#, log = self.log)
+        self.avg_e_energy_axis.legend(loc="upper right")
+        
+
+        self.avg_e_energy_axis.grid()
+        self.avg_e_energy_axis.set_title("Electron Energy" + title )
+        self.avg_e_energy_axis.set_xlabel("Time in sec" )
+        self.avg_e_energy_axis.set_ylabel("adc val")
+
 
         # # self.electronpix_axis.grid()
         # self.electronpix_axis.set_title("Electron pixel distribution")
