@@ -85,10 +85,10 @@ class Analysis(QWidget):
         self.button_load = QPushButton("GetTearDrop")
         self.button_load.clicked.connect(self.getteardrop)
 
-        self.inlayout.addWidget(self.buttion_dirname)
-        self.inlayout.addWidget(self.field_dirname)
-        self.inlayout.addWidget(self.field_runno)
-        self.inlayout.addWidget(self.button_wholedata)
+        # self.inlayout.addWidget(self.buttion_dirname)
+        # self.inlayout.addWidget(self.field_dirname)
+        # self.inlayout.addWidget(self.field_runno)
+        # self.inlayout.addWidget(self.button_wholedata)
         self.inlayout.addWidget(self.button_load)
         # self.inlayout.addWidget(self.sel_channo)
 

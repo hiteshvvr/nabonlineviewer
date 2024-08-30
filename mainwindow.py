@@ -220,6 +220,7 @@ class MainWindow(QWidget):
         """
         self.updatefoldname()
         self.updaterunno()
+        self.data.reset_containers()
         self.filepath = self.dirname + "/" + "Run" + str(self.runno) + "*.h5"
         print(self.filepath)
         self.files = gl.glob(self.filepath)

@@ -380,7 +380,17 @@ class TopDetector(QWidget): #SRW
         self.energyCut = int(float(self.tempEnergy[0]))
 
     def updateEnergyCut(self):
-        self.getEnergyCut()
+        # self.getenergyrange()
+        self.pixel_plot_figure1.clf()
+        self.pixel_plot_runaxis.cla()
+        self.pixel_plot_subrunaxis.cla()
+        self.getnewfig()
+        
+        
+        pixels = self.data.get_energycut_pixhits('top', self.eventType, energylow = 100, energyhigh = 2000)
+        
+        self.data.updatepixplot(pixels, self.pixel_plot_figure1, self.pixel_plot_subrunaxis, self.clbar, self.norm, self.customcmap)
+        self.pixel_plot_widget1.draw()
 
     def getPixelCut(self):
         self.tempPixel = self.value_pixelCut.text().split(sep=",")
@@ -493,10 +503,9 @@ class TopDetector(QWidget): #SRW
         self.pixel_plot_subrunaxis.cla()
         self.getnewfig()
 
-        self.data.updatepixplot(self.data.subrundata['top'][self.eventType], self.pixel_plot_figure1, self.pixel_plot_subrunaxis, self.clbar, self.norm, self.customcmap)
 
         self.data.updatepixplot(self.data.rundata['top'][self.eventType], self.pixel_plot_figure1, self.pixel_plot_runaxis, self.clbar, self.norm, self.customcmap)
-
+        self.data.updatepixplot(self.data.subrundata['top'][self.eventType], self.pixel_plot_figure1, self.pixel_plot_subrunaxis, self.clbar, self.norm, self.customcmap)
         self.pixel_plot_widget1.draw()
 
     # ***********************************************#*******************************#
