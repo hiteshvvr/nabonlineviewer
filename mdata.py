@@ -353,21 +353,28 @@ class MData:
         self.trigs = self._thisRun.triggers().triggers()
         if (
             channel == 27182
-        ):  # this number is natural log, chosed to represent all pixels in lower detector
+        ):  # this number is natural log, chosed to represent all pixels in upper detector
             self.energy = self.trigs.query("pixel<128").energy.to_numpy()
         elif (
             channel == 31415
-        ):  # this number is pi, chosed to represent all pixels in upper detector
+        ):  # this number is pi, chosed to represent all pixels in lower detector
             self.energy = self.trigs.query("pixel>128").energy.to_numpy()
         else:
             self.energy = self.trigs.query("pixel == @channel").energy.to_numpy()
-
-        self.counts, self.bins = np.histogram(self.energy, self.bins)
+        # self.energy = self.trigs.energy.to_numpy()
+        print(self.energy)
+        self.energy_tmp = self.energy[self.energy<200]
+        self.counts_pro, self.bins_pro = np.histogram(self.energy_tmp, self.bins)
+        self.energy_tmp = self.energy[self.energy>100]
+        self.energy_tmp = self.energy_tmp[self.energy_tmp<10000]
+        self.counts_ele, self.bins_ele = np.histogram(self.energy_tmp, self.bins)
 
         return (
-            self.counts,
-            self.bins,
-        )  # maybe instead do self.enerG?? So we can do query in top/bottom detector??
+            self.counts_pro,
+            self.bins_pro,
+            self.counts_ele,
+            self.bins_ele,
+        )  
 
     def getbcpixmap(self):
         bctopixmap = self._thisRun.parameterFile().BoardChannelPixelMap
