@@ -362,7 +362,7 @@ class MData:
         else:
             self.energy = self.trigs.query("pixel == @channel").energy.to_numpy()
         # self.energy = self.trigs.energy.to_numpy()
-        print(self.energy)
+        # print(self.energy)
         self.energy_tmp = self.energy[self.energy<200]
         self.counts_pro, self.bins_pro = np.histogram(self.energy_tmp, self.bins)
         self.energy_tmp = self.energy[self.energy>100]

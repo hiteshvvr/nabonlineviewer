@@ -64,35 +64,33 @@ class BottomDetector(QWidget):  # SRW
         self.eventType = "single"
 
         # Creating conditionals dropdown menu for energy histogram
-        self.label_conditional = QLabel("Conditionals")
-        self.label_conditional.setFixedWidth(60)
-        self.sel_conditional = QComboBox()
-        self.sel_conditional.addItems(
-            [str(">"), str(">="), str("<"), str("<="), str("="), str("!="), str("or")]
-        )  # These are the conditional symbols outlined in basicCuts from nabpy code
-        self.sel_conditional.currentIndexChanged.connect(self.selectconditional)
-        self.cond = 0
+        # self.label_conditional = QLabel("Conditionals")
+        # self.label_conditional.setFixedWidth(60)
+        # self.sel_conditional = QComboBox()
+        # self.sel_conditional.addItems([str('>'), str('>='), str('<'), str('<='), str('='), str('!='), str('or')]) #These are the conditional symbols outlined in basicCuts from nabpy code
+        # self.sel_conditional.currentIndexChanged.connect(self.selectconditional)
+        # self.cond = 0
 
         # Creating dropdown menu to select the channel number
         self.label_channo = QLabel("Channel")
         self.label_channo.setFixedWidth(60)
         self.sel_channo = QComboBox()
         self.sel_channo.addItems(
-            [str(i + 1) for i in np.arange(0,127)]
-        )  # The channel numbers for top detector are 1-127
+            [str(i) for i in np.arange(127)]
+        )  # Channels in bottom detector. Though pixels are labelled from 127-256, here we label them from 1-127
         self.sel_channo.currentIndexChanged.connect(self.selectchannel)
         self.chan = 0
 
+        self.minEnergy = -np.inf
+        self.maxEnergy = np.inf
         self.button_loadEnergyCuts = QPushButton("LoadEnergyCuts")
         self.button_loadEnergyCuts.clicked.connect(
-            self.updateEnergyCut
+            self.updateEnergyCutPlot
         )  # Should I use loaddata or define new fucntion specifically for the cuts?
-        self.button_loadPixelCuts = QPushButton("LoadPixelCuts")
-        self.button_loadPixelCuts.clicked.connect(self.updatePixelCut)
+        # self.button_loadPixelCuts = QPushButton('LoadPixelCuts')
+        # self.button_loadPixelCuts.clicked.connect(self.updatePixelCut)
 
         self.evtno = 42
-        self.energyCut = "energy", ">", 0
-        self.pixelCut = "pixel", ">", 0
 
         self.lims = [2, 10]
         self.totevnt = 0
@@ -100,12 +98,14 @@ class BottomDetector(QWidget):  # SRW
         self.tbinwidth = 320e-6
         self.evtsig = 0xAA55F154
         self.norm = None
+        self.multiple = False
 
         self.label_Energy = QLabel("Energy Cuts")
-        self.value_energyCut = QLineEdit(str(self.energyCut))
+        self.value_MinenergyCut = QLineEdit("min")
+        self.value_MaxenergyCut = QLineEdit("max")
 
-        self.label_Pixel = QLabel("Pixel Cuts")
-        self.value_pixelCut = QLineEdit(str(self.pixelCut))
+        # self.label_Pixel = QLabel("Pixel Cuts")
+        # self.value_pixelCut =QLineEdit(str(self.pixelCut))
 
         self.button_freerun = QPushButton("FreeRun")
         self.button_freerun.setCheckable(True)
@@ -121,6 +121,10 @@ class BottomDetector(QWidget):  # SRW
         self.button_norm.setCheckable(True)
         self.button_norm.clicked.connect(self.selectnormalization)
 
+        self.button_multiple = QPushButton("showmultiple")
+        self.button_multiple.setCheckable(True)
+        self.button_multiple.clicked.connect(self.selectshowmultiple)
+
         self.label_evtno = QLabel("Event")
         # self.label_evtno.setFixedWidth(60)
         self.value_evtno = QLineEdit(str(self.evtno))
@@ -134,11 +138,12 @@ class BottomDetector(QWidget):  # SRW
         self.value_totarea = QLineEdit(str(self.totarea))
 
         self.value_evtno.textChanged.connect(self.updateevent)
-        self.value_energyCut.textChanged.connect(self.updateEnergyCut)
-        self.value_pixelCut.textChanged.connect(self.updatePixelCut)
-        self.label_lims = QLabel("Range")
-        self.value_lims = QLineEdit(str(self.lims)[1:-1])
-        self.label_lims.setFixedWidth(60)
+        self.value_MinenergyCut.textChanged.connect(self.update_energy_range)
+        self.value_MaxenergyCut.textChanged.connect(self.update_energy_range)
+        # self.value_pixelCut.textChanged.connect(self.updatePixelCut)
+        # self.label_lims = QLabel("Range")
+        # self.value_lims = QLineEdit(str(self.lims)[1:-1])
+        # self.label_lims.setFixedWidth(60)
         # self.value_lims.textChanged.connect(self.updatestackplot)
         # self.field_fname.setMaximumWidth(self.width)
         # self.space = QSpacerItem(10,5)
@@ -150,23 +155,22 @@ class BottomDetector(QWidget):  # SRW
         self.inlayout.addWidget(
             self.sel_eventType
         )  # Dropdown menu that allows user to select the event type
-        self.inlayout.addWidget(
-            self.sel_conditional
-        )  # Dropdown menu that allows user to select a conditional symbol
+        # self.inlayout.addWidget(self.sel_conditional) #Dropdown menu that allows user to select a conditional symbol
         self.inlayout.addWidget(self.sel_channo)
 
         self.in2layout.addWidget(self.label_Energy)
-        self.in2layout.addWidget(self.value_energyCut)
+        self.in2layout.addWidget(self.value_MinenergyCut)
+        self.in2layout.addWidget(self.value_MaxenergyCut)
         self.in2layout.addWidget(self.button_loadEnergyCuts)
-        self.in2layout.addWidget(self.label_Pixel)
-        self.in2layout.addWidget(self.value_pixelCut)
-
-        self.in2layout.addWidget(self.button_loadPixelCuts)
+        # self.in2layout.addWidget(self.label_Pixel)
+        # self.in2layout.addWidget(self.value_pixelCut)
+        # self.in2layout.addWidget(self.button_loadPixelCuts)
 
         self.in3layout.addWidget(self.button_freerun)
         self.in3layout.addWidget(self.button_previousevt)  # SRW
         self.in3layout.addWidget(self.button_nextevt)
         self.in3layout.addWidget(self.button_norm)
+        self.in3layout.addWidget(self.button_multiple)
         self.in3layout.addWidget(self.label_evtno)
         self.in3layout.addWidget(self.value_evtno)
         # self.in2layout.addWidget(self.label_lims)
@@ -269,16 +273,12 @@ class BottomDetector(QWidget):  # SRW
         # ********************* Get Second histogram with pix hist(with random data ***********) *******************
 
         # self.pw2 = pg.PlotWidget(title="Hit Pixel Data")
-        self.pw2 = pg.PlotWidget(
-            title='<span style="color: #000; font-size: 16pt;">Energy Histogram</span>'
-        )
-        self.p2 = self.pw2.plot(
-            stepMode="center", fillLevel=0
-        )  # , fillOutline=True,brush=(100,0,0))
-        self.p2.setPen(color=(0, 0, 0), width=2)
-        self.pw2.setLabel("left", "Energy", units="arb")
-        self.pw2.setLabel("bottom", "Bin", units="arb")
-        self.pw2.showGrid(x=True, y=True)
+        # self.pw2 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Energy Histogram</span>')
+        # self.p2 = self.pw2.plot(stepMode="center",fillLevel=0)#, fillOutline=True,brush=(100,0,0))
+        # self.p2.setPen(color=(0, 0, 0), width=2)
+        # self.pw2.setLabel('left', 'Energy', units='arb')
+        # self.pw2.setLabel('bottom', 'Bin', units='arb')
+        # self.pw2.showGrid(x=True, y=True)
 
         # ********************* Third histogram Not used now ************************************
 
@@ -298,13 +298,13 @@ class BottomDetector(QWidget):  # SRW
 
         # #********************* Timer if needed ***********  #
         self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.updatepixhits)
-        self.timer.start(1000)
+        # self.timer.timeout.connect(self.updateenergyhistogram)
+        # self.timer.start(1000)
         # ********************* Layouts ***********  #
         # self.r1layout.addWidget(self.pw1)
         self.r1layout.addWidget(self.pixel_plot_widget1)  # PixDec
         # self.r1layout.addWidget(self.pixel_plot_widget2)  # PixDec
-        self.r1layout.addWidget(self.pw2)
+        # self.r1layout.addWidget(self.pw2)
         self.r2layout.addWidget(self.pw3)
         # self.r2layout.addWidget(self.pw4)  # If we want plot from pyqtgraph
         self.r2layout.addWidget(self.multipleSignalsPlot)
@@ -337,7 +337,7 @@ class BottomDetector(QWidget):  # SRW
         xmin = xscale.min()
         ymin = yscale.min()
 
-        print(xs, ys, xmin, ymin)
+        # print(xs, ys, xmin, ymin)
         tr = QTransform()
         tr.translate(xmin, ymin)
         tr.scale(xs, ys)
@@ -372,10 +372,15 @@ class BottomDetector(QWidget):  # SRW
         except:
             pass
         self.pixel_plot_figure1 = self.pixel_plot_widget1.getFigure()
-        self.pixel_plot_runaxis = self.pixel_plot_figure1.add_subplot(121)
-        self.pixel_plot_subrunaxis = self.pixel_plot_figure1.add_subplot(122)
+        self.pixel_plot_runaxis = self.pixel_plot_figure1.add_subplot(131)
+        self.pixel_plot_subrunaxis = self.pixel_plot_figure1.add_subplot(132)
+        self.plot_energyaxis_ele = self.pixel_plot_figure1.add_subplot(133)
+        self.plot_energyaxis_pro = self.pixel_plot_figure1.add_subplot(
+            133, frame_on=False
+        )
         self.pixel_plot_runaxis.set_title("Run: " + str(self.data.runno))
         self.pixel_plot_subrunaxis.set_title("SubRun")
+        # self.plot_energyaxis_pro.set_title("Energy")
         self.clbar = None
 
     def getnew_multipesignalplot(self):
@@ -414,11 +419,12 @@ class BottomDetector(QWidget):  # SRW
 
         # print(tchan, type(tchan))
         self.eventType = teventType
-        print(self.eventType)
+        # print(self.eventType)
         # self.value_totarea.setText(str(self.data.getarea(self.chan)))
         self.updatesingleevent()  # Idk if this one is right; maybe add energy histogram if we can figure out later how to add event type
-        self.updatepixhits()
+        # self.updatepixhits()
         self.updatemultipleeventwithmatplotlib()
+        self.updateenergyhistogram()  # changed from self.updateall()
         # self.updatemultipleevents()
 
     def getevntno(self):
@@ -430,19 +436,48 @@ class BottomDetector(QWidget):  # SRW
         # self.updatexy()
         # self.sc1.draw()
 
-    def getEnergyCut(self):
-        self.tempEnergy = self.value_energyCut.text().split(sep=",")
-        self.energyCut = int(float(self.tempEnergy[0]))
+    def update_energy_range(self):
+        try:
+            self.minEnergy = int(self.value_MinenergyCut.text())
+            self.maxEnergy = int(self.value_MaxenergyCut.text())
+        except:
+            self.minEnergy = -np.inf
+            self.maxEnergy = np.inf
 
-    def updateEnergyCut(self):
-        self.getEnergyCut()
+    def updateEnergyCutPlot(self):
 
-    def getPixelCut(self):
-        self.tempPixel = self.value_pixelCut.text().split(sep=",")
-        self.pixelCut = int(float(self.tempPixel[0]))
+        self.timer.stop()
+        self.update_energy_range()
+        self.pixel_plot_figure1.clf()
+        self.pixel_plot_runaxis.cla()
+        self.pixel_plot_subrunaxis.cla()
+        self.getnewfig()
 
-    def updatePixelCut(self):
-        self.getPixelCut()
+        pixels = self.data.get_energycut_pixhits(
+            "bottom", self.eventType, energylow=self.minEnergy, energyhigh=self.maxEnergy
+        )
+
+        self.data.updatepixplot(
+            self.data.rundata["bottom"][self.eventType],
+            self.pixel_plot_figure1,
+            self.pixel_plot_runaxis,
+            self.clbar,
+            self.norm,
+            self.customcmap,
+        )
+
+        self.data.updatepixplot(
+            pixels,
+            self.pixel_plot_figure1,
+            self.pixel_plot_subrunaxis,
+            self.clbar,
+            self.norm,
+            self.customcmap,
+        )
+
+        self.pixel_plot_widget1.draw()
+
+        self.updateenergyhistogram()  # changed from self.updateall()
 
     # def geteventindexes(self):
     #     self.single_index = self.data.singleWaves().headers().query("pixel < 200").index.to_numpy()
@@ -458,16 +493,94 @@ class BottomDetector(QWidget):  # SRW
             self.updatepixhits()
             self.updatesingleevent()
             self.updatemultipleeventwithmatplotlib()
+            self.updateenergyhistogram()
 
     # **************** Function to update Energy histogram *******************************#
-    def updateenergyhistogram(self):  # SRW commenting out for now to remove errors
-        self.counts, self.edges = self.data.getenergyhistogram(
-            bins=200, channel=self.chan
+    def updateenergyhistogram(self):
+        if self.chan == 0:
+            self.chan = 31415
+        self.counts_pro, self.edges_pro, self.counts_ele, self.edges_ele = (
+            self.data.getenergyhistogram(bins=200, channel=self.chan)
         )
-        self.p2.setData(self.edges, self.counts)
+        # self.p2.setData(self.edges_ele, self.counts_ele)
+        # self.p2.setData(self.edges_ele, self.counts_ele)
+
+        self.pixel_plot_figure1.clf()
+        self.pixel_plot_runaxis.cla()
+        self.pixel_plot_subrunaxis.cla()
+        self.plot_energyaxis_pro.cla()
+        self.plot_energyaxis_ele.cla()
+        self.getnewfig()
+
+        binwidth = self.edges_ele[1] - self.edges_ele[0]
+        self.plot_energyaxis_ele.stairs(self.counts_ele, self.edges_ele, color="C0")
+        # self.plot_energyaxis_ele.legend('electron')
+        self.plot_energyaxis_ele.set_xlabel("Electron energy", color="C0")
+        self.plot_energyaxis_ele.set_ylabel(
+            "Counts/" + str(binwidth) + "chan", color="C0"
+        )
+        self.plot_energyaxis_ele.tick_params(axis="x", colors="C0")
+        self.plot_energyaxis_ele.tick_params(axis="y", colors="C0")
+        self.plot_energyaxis_ele.ticklabel_format(axis="y", scilimits=[-3, 3])
+
+        binwidth = self.edges_pro[1] - self.edges_pro[0]
+        self.plot_energyaxis_pro.stairs(self.counts_pro, self.edges_pro, color="C1")
+        self.plot_energyaxis_pro.xaxis.tick_top()
+        self.plot_energyaxis_pro.yaxis.tick_right()
+        self.plot_energyaxis_pro.set_xlabel("Proton energy", color="C1")
+        self.plot_energyaxis_pro.set_ylabel(
+            "Counts/" + str(binwidth) + "chan", color="C1"
+        )
+        self.plot_energyaxis_pro.xaxis.set_label_position("top")
+        self.plot_energyaxis_pro.yaxis.set_label_position("right")
+        self.plot_energyaxis_pro.tick_params(axis="x", colors="C1")
+        self.plot_energyaxis_pro.tick_params(axis="y", colors="C1")
+        # self.plot_energyaxis_pro.legend('proton')
+        self.plot_energyaxis_pro.ticklabel_format(axis="y", scilimits=[-3, 3])
+
+        # self.plot_energyaxis.plot(np.arange(9), np.arange(9))
+
+        try:
+            pixels = self.data.get_energycut_pixhits(
+                "bottom",
+                self.eventType,
+                energylow=self.minEnergy,
+                energyhigh=self.maxEnergy,
+            )
+            self.data.updatepixplot(
+                pixels,
+                self.pixel_plot_figure1,
+                self.pixel_plot_subrunaxis,
+                self.clbar,
+                self.norm,
+                self.customcmap,
+            )
+        except:
+            self.data.updatepixplot(
+                self.data.subrundata["bottom"][self.eventType],
+                self.pixel_plot_figure1,
+                self.pixel_plot_subrunaxis,
+                self.clbar,
+                self.norm,
+                self.customcmap,
+            )
+
+        self.data.updatepixplot(
+            self.data.rundata["bottom"][self.eventType],
+            self.pixel_plot_figure1,
+            self.pixel_plot_runaxis,
+            self.clbar,
+            self.norm,
+            self.customcmap,
+        )
+
+        self.pixel_plot_figure1.set_tight_layout(tight=True)
+        self.pixel_plot_widget1.draw()
 
     # **************** Function to update Single Event *******************************#
     def updatemultipleeventwithmatplotlib(self):
+        if self.multiple is False:
+            return
         self.multipleSignalsAxis.cla()
         self.multipleSignalsFig.clf()
         indxarr = self.data.headerdf.query(
@@ -507,7 +620,7 @@ class BottomDetector(QWidget):  # SRW
         indxarr = self.data.headerdf.query(
             "evttype == @self.eventType and pixel == @self.chan"
         ).index
-        print(len(indxarr))
+        # print(len(indxarr))
         if len(indxarr) == 0:
             self.timeax, self.pulsedata = self.getrandomdata()
             self.p3.setData(self.timeax, self.pulsedata)
@@ -531,7 +644,7 @@ class BottomDetector(QWidget):  # SRW
         indxarr = self.data.headerdf.query(
             "evttype == @self.eventType and pixel == @self.chan"
         ).index
-        print(len(indxarr))
+        # print(len(indxarr))
         if len(indxarr) == 0:
             self.p4.clear()
             # return
@@ -569,15 +682,6 @@ class BottomDetector(QWidget):  # SRW
         self.getnewfig()
 
         self.data.updatepixplot(
-            self.data.subrundata["bottom"][self.eventType],
-            self.pixel_plot_figure1,
-            self.pixel_plot_subrunaxis,
-            self.clbar,
-            self.norm,
-            self.customcmap,
-        )
-
-        self.data.updatepixplot(
             self.data.rundata["bottom"][self.eventType],
             self.pixel_plot_figure1,
             self.pixel_plot_runaxis,
@@ -585,7 +689,15 @@ class BottomDetector(QWidget):  # SRW
             self.norm,
             self.customcmap,
         )
-
+        self.data.updatepixplot(
+            self.data.subrundata["bottom"][self.eventType],
+            self.pixel_plot_figure1,
+            self.pixel_plot_subrunaxis,
+            self.clbar,
+            self.norm,
+            self.customcmap,
+        )
+        self.pixel_plot_figure1.tight_layout()
         self.pixel_plot_widget1.draw()
 
     # ***********************************************#*******************************#
@@ -601,10 +713,6 @@ class BottomDetector(QWidget):  # SRW
         self.lims[1] = 20
         x, y = self.data.getrangedata(self.lims[0], self.lims[1], self.chan)
         self.p3.setData(x=x, y=y)
-
-    def updatedistribution(self):
-        hx, hy = self.data.gethistdistribution(self.chan)
-        self.p2.setData(hx, hy)
 
     # *************** Other Functions not used now *****************************************************#
     def getlims(self):
@@ -648,6 +756,12 @@ class BottomDetector(QWidget):  # SRW
         else:
             self.norm = None
         self.updatepixhits()
+
+    def selectshowmultiple(self):
+        if self.button_multiple.isChecked():
+            self.multiple = True
+        else:
+            self.multiple = False
 
         # self.timeax, self.noisedata = self.data.getnoisedata(self.evtno)
         # print(self.timeax, self.noisedata)
