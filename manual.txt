@@ -1,31 +1,49 @@
 This manual gives basic information for operating the Nab Online Analysis GUI.
- Before moving to other tabs in the GUI, make sure to start in the Main Window tab. Here you should begin by setting your local path by either manually typing your path into the first textfield, or by selecting the appropriate path using the SelectFolder button. Next, select the desired run number by typing the number into the second textfield. The program should automatically save last used directory and run number.  The final step in the Main Window tab is to press the LoadData button.
+
+For the errors look in the terminal where you opened the onlineanalysis program.
+
+
+Before moving to other tabs in the GUI, make sure to start in the Main Window tab. Here you should begin by setting your local path by either manually typing your path into the first textfield, or by selecting the appropriate path using the SelectFolder button. Next, select the desired run number by typing the number into the second textfield. The 
+program should automatically save last used directory and run number.  The final step in the Main Window tab is to press the LoadData button.
+
 This should show the statistics for Run and current subrun.
+
+
 Also Once the loadData is pressed the program will automatically search for new subruns for the current subrun and update summary.
 
 Now, you are free to move to the next tab!
+Detector tabs:
+We now move to the Detector tab. Here, we begin by first pressing the LoadData button. It should update the pixhits plots(Run:XXXX and SubRun), showing TOTAL hits on the detector. 
+If particular type of hits are not present in the file, change hit type by next
+dropdown menu.
 
- We now move to the Detector tab. Here, we begin by first pressing the LoadData button. Next, in order to accurately visualize the data, open the first dropdown menu in the top row and change the event type from singles to noise. This dropdown menu is currently connected to the Pixelated Detector plot and the Single Event Plot. After this step, you can select any event type desired. The second dropdown menu is a conditionals menu, but it currently is not used in the code. It will not make changes to the plots. The third dropdown menu is a list of the channels for the top detector. This dropdown menu is currently connected to the Energy Histogram and will later be connected to the Single Event Plot. 
+Now you can select the channel, with the last dropdown menu, here '0' means all
+the channels.
+For selected channel if you see any hit in the pixhit plot, and if you select
+that channel, it should update energy plot, single trace, and multiple traces.
+If there are no hits on that channel then, it will just show some random events.
+
+##### ENERGY PLOT SHOWS ONLY TRIGGERED EVENTS AND NOT DIFFERENT EVENT TYPE#######
+
+You can use 'Back', 'Next' and 'FreeRun' buttons to change the number of event
+to see, also you can enter the event as number to see it. That menu is in the
+third row.
+
+The second row menu on Detector tabs let you put cut on the energy. It shows the
+events on the detector based on its energy selected by entering in 'min' and
+'max' entry box and pressing loadenergycuts. The energycuts are updated in the 
+subRun pix hit plot.
 
 
- In the second row of this tab, we have textfields for Energy and Pixel Cuts. See Define Cuts Guide above for more details on what these textfields accept. If you wish to make cuts based on either of these variables, define the cuts and then press the LoadEnergyCuts and/or the LoadPixelCuts button(s). These cuts will later be connected to the Pixelated Detector plot and the Energy Histogram. Finally, we move to the third row. The FreeRun button, when pressed, displays different events plotted in the Single Event Plot automatically and continuously until the button is pressed to stop this continuous display. The Next and Back buttons are also connected to the Single Event plot and allow the user to filter through events in this plot one-by-one. The textfield at the end of the third row is for the manual entry of an event number. Again, this is connected to the Single Event plot only. Two of the plots given in this tab are dynamic. The Energy Histogram and Single Event plot can be manipulated by scrolling up or down with your mouse or by clicking and dragging in any direction.
+Analysis Tab:
+Here you press getTearDrop and you get all the relevant plots.
 
- The Bottom Detector tab follows the same format as the Top Detector tab. The only difference is the channel numbers listed in the third dropdown menu of the top row. 
+Time Evolution Tab:
+This looks at the data with time. 
+It is mainly the coincidence data to look for protons incident with time.
+You can select a channel number or look at all the channels at same time.
+
+This Manual is the text file: ~/software/nabonlineviewer/manual.txt
 
 
- #####################################################
- DEFININIG Cuts
- ###################################################
-This manual shows all valid entries for the Energy and Pixel Cuts
-made in the Top Detector and Bottom Detector tabs. Sample entries 
-have been included in both textfields. These examples consist of 
-three components: the variable we wish to cut by, the conditional,
-and the number. The variable name (given as Energy or Pixel)
-should never be altered. The only two items in the list that should
-be changed are the conditional and the number. The conditional 
-symbols currently available to use are >, <, =, <=, >=, and !=. 
-The number can be any valid energy in keV or any valid pixel 
-number based on the detector the user is viewing.\n
-Examples:
-('energy', '!=', 180)
-('pixel', '>=', 7)
+

@@ -32,8 +32,8 @@ import os
 
 import sys
 
-nabPath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/pyNab/src"
-deltaRicePath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/deltarice/build/lib.macosx-11.0-arm64-cpython-312/"
+deltaRicePath= "/home/nabreplay/software/deltarice/build/lib.linux-x86_64-3.10"
+nabPath = "/home/nabreplay/software/pyNab/src"
 
 sys.path.append(deltaRicePath)
 sys.path.append(nabPath)

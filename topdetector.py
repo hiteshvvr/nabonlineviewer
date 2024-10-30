@@ -34,6 +34,7 @@ class TopDetector(QWidget): #SRW
         self.noise_index = None
         self.coincidence_index = None
         self.pulser_index = None
+        self.pixOffset = 0
 
         # Create First Tab
         # self.tab1.layout = QVBoxLayout(self)
@@ -236,10 +237,10 @@ class TopDetector(QWidget): #SRW
 
         # ********************* Third histogram Not used now ************************************
 
-        self.pw3 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Single Trace</span>')
+        self.pw3 = pg.PlotWidget( title='<span style="color: #000; font-size: 16pt;">Individual Trace</span>')
         self.p3 = self.pw3.plot()
         self.p3.setPen(color=(0, 0, 0), width=5)
-        self.pw3.setLabel('left', 'Value', units='V')
+        self.pw3.setLabel('left', 'Value', units='ADC')
         self.pw3.setLabel('bottom', 'Time', units='s')
         self.pw3.showGrid(x=True, y=True)
 
@@ -329,8 +330,8 @@ class TopDetector(QWidget): #SRW
         self.pixel_plot_subrunaxis = self.pixel_plot_figure1.add_subplot(132)
         self.plot_energyaxis_ele= self.pixel_plot_figure1.add_subplot(133)
         self.plot_energyaxis_pro= self.pixel_plot_figure1.add_subplot(133, frame_on = False)
-        self.pixel_plot_runaxis.set_title("Run: " + str(self.data.runno))
-        self.pixel_plot_subrunaxis.set_title("SubRun")
+        self.pixel_plot_runaxis.set_title("Run: " + str(self.data.runno) + ": Total counts")
+        self.pixel_plot_subrunaxis.set_title("SubRun: Total counts")
         # self.plot_energyaxis_pro.set_title("Energy")
         self.clbar = None
 
@@ -346,6 +347,7 @@ class TopDetector(QWidget): #SRW
     # *************** Functions for Selecting stuff like channen no. event no etc. *****************************************************#
     def selectchannel(self):
         self.chan = int(self.sel_channo.currentText())
+        self.chan = self.chan + self.pixOffset
         # print(tchan, type(tchan))
         self.updateenergyhistogram()
         self.updatesingleevent()
@@ -446,8 +448,8 @@ class TopDetector(QWidget): #SRW
         binwidth = self.edges_ele[1] - self.edges_ele[0]
         self.plot_energyaxis_ele.stairs(self.counts_ele, self.edges_ele, color = 'C0')
         # self.plot_energyaxis_ele.legend('electron')
-        self.plot_energyaxis_ele.set_xlabel("Electron energy", color="C0")
-        self.plot_energyaxis_ele.set_ylabel("Counts/" + str(binwidth) + "chan", color="C0")
+        self.plot_energyaxis_ele.set_xlabel("Electron energy(ADC)", color="C0")
+        self.plot_energyaxis_ele.set_ylabel("Counts/" + f"{binwidth:.2f}" + "chan", color="C0")
         self.plot_energyaxis_ele.tick_params(axis='x', colors="C0")
         self.plot_energyaxis_ele.tick_params(axis='y', colors="C0")
         self.plot_energyaxis_ele.ticklabel_format(axis="y", scilimits=[-3, 3])
@@ -456,8 +458,9 @@ class TopDetector(QWidget): #SRW
         self.plot_energyaxis_pro.stairs(self.counts_pro, self.edges_pro, color = 'C1')
         self.plot_energyaxis_pro.xaxis.tick_top() 
         self.plot_energyaxis_pro.yaxis.tick_right() 
-        self.plot_energyaxis_pro.set_xlabel("Proton energy", color="C1")
-        self.plot_energyaxis_pro.set_ylabel("Counts/" + str(binwidth) + "chan", color="C1")
+        self.plot_energyaxis_pro.set_xlabel("Proton energy(ADC)", color="C1")
+#        self.plot_energyaxis_pro.set_ylabel("Counts/" + str(binwidth) + "chan", color="C1")
+        self.plot_energyaxis_pro.set_ylabel("Counts/" + f"{binwidth:.2f}" + "chan", color="C1")
         self.plot_energyaxis_pro.xaxis.set_label_position('top')
         self.plot_energyaxis_pro.yaxis.set_label_position('right')
         self.plot_energyaxis_pro.tick_params(axis='x', colors="C1")
@@ -507,6 +510,8 @@ class TopDetector(QWidget): #SRW
 
         mappable = self.multipleSignalsAxis.pcolormesh(meshx, meshy, self.pulseimg.T)
 
+        self.multipleSignalsAxis.set_xlabel("time(sec)")
+        self.multipleSignalsAxis.set_ylabel("ADC")
         self.multipleSignalsFig.colorbar(mappable, ax = self.multipleSignalsAxis, pad = 0.1)
         self.multipleSignalsFig.tight_layout()
         self.multipleSignalsPlot.draw()

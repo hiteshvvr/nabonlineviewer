@@ -209,13 +209,14 @@ class Analysis(QWidget):
 
         ppix = self.evtdf.ppix.to_numpy()
         self.protonpix_axis.clear()
-        mappable = self.protonpix_axis.hist(ppix, bins = 500, log=True, histtype='step')
-        print(self.evtdf.head())
+        mappable = self.protonpix_axis.hist(ppix, bins = 500, log=True, histtype='step',label="Top")
+        #print(self.evtdf.head())
 
         # self.protonpix_axis.grid()
         self.protonpix_axis.set_title("Proton pixel distribution")
         self.protonpix_axis.set_xlabel("Proton hit pixel" )
         self.protonpix_axis.set_ylabel("counts")
+        self.protonpix_axis.legend(loc="upper right")
 
         epix= self.evtdf.epix.to_numpy()
         self.electronpix_axis.clear()
@@ -244,7 +245,7 @@ class Analysis(QWidget):
 
         self.raw_subrunteardrop_axis.grid()
         # self.raw_subrunteardrop_axis.colorbars()
-        self.raw_subrunteardrop_axis.set_title("SubRun Teardrop")
+        self.raw_subrunteardrop_axis.set_title("Teardrop")
         self.raw_subrunteardrop_axis.set_xlabel("Energy(~keV [0.3 x ADC])")
         self.raw_subrunteardrop_axis.set_ylabel("$t_p^{-2}$ ($\mu s^{-2}$)")
 
@@ -262,7 +263,7 @@ class Analysis(QWidget):
         self.analysis_figure.colorbar(mappable, ax=self.tight_fullteardrop_axis)
 
         self.tight_fullteardrop_axis.grid()
-        self.tight_fullteardrop_axis.set_title("Run Teardrop [tight cuts]")
+        self.tight_fullteardrop_axis.set_title("Teardrop [tight cuts]")
         self.tight_fullteardrop_axis.set_xlabel("Energy(~keV [0.3 x ADC])")
         self.tight_fullteardrop_axis.set_ylabel("$t_p^{-2}$ ($\mu$s^{-2})")
 
@@ -294,7 +295,7 @@ class Analysis(QWidget):
         self.electron_tofener_axis.grid()
         self.electron_tofener_axis.set_title("Electron Energy - proton TOF")
         self.electron_tofener_axis.set_xlabel("Energy(~keV [0.3 x ADC])")
-        self.electron_tofener_axis.set_ylabel("prton tof $\mu s$")
+        self.electron_tofener_axis.set_ylabel("proton tof $\mu s$")
 
         self.analysis_figure.tight_layout()
         self.pixel_plot_widget1.draw()
