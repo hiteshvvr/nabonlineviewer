@@ -8,14 +8,18 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 from PyQt5.QtChart import QChart, QChartView, QPieSeries
 from PyQt5.QtCore import Qt
+import numpy as np
 
 import glob as gl
 import os
 
 import sys
 
-nabPath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/pyNab/src"
-deltaRicePath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/deltarice/build/lib.macosx-11.0-arm64-cpython-312/"
+deltaRicePath= "/home/nabreplay/software/deltarice/build/lib.linux-x86_64-3.10"
+nabPath = "/home/nabreplay/software/pyNab/src"
+
+#nabPath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/pyNab/src"
+#deltaRicePath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/deltarice/build/lib.macosx-11.0-arm64-cpython-312/"
 
 sys.path.append(deltaRicePath)
 sys.path.append(nabPath)
@@ -193,8 +197,9 @@ class MainWindow(QWidget):
             label = label + "{:.2f}%".format(100 * slice.percentage()) + ")"
             slice.setLabel(label)
 
-        self.chart.setTitle("SubRun Total Triggers : " + str(self.data.subrunstats['Trigger']))
+        self.chart.setTitle("SubRun Total Triggers : " + str(self.data.subrunstats['Trigger']) + "in " + str(self.data.times['subruntime']) + " secs")
         self.runchart.setTitle("Run Total Triggers : " + str(self.data.runstats["Trigger"]))
+        self.runchart.setTitle("Run Total Triggers : " + str(self.data.runstats['Trigger']) + "in " + str(self.data.times['runtime']) + " secs")
         self._chart_view.update()
         self._runchart_view.update()
 
@@ -230,8 +235,13 @@ class MainWindow(QWidget):
 
         self.readallsubruns = self.button_wholedata.isChecked()
         if self.readallsubruns:
-            for i in self.files[:20]:
-                self.data.filename = i
+            numfiles = len(self.files)
+            indices = np.linspace(0, numfiles-1, 10, dtype = int)
+#            indices = [10,11,12,13,14,15]
+            print(indices)
+            for i in indices:
+                print(self.files[i])
+                self.data.filename = self.files[i]
                 self.data.getdatafromfile(self.readallsubruns)
         else:
             self.data.getdatafromfile(self.readallsubruns)

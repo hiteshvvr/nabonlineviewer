@@ -29,7 +29,7 @@ class TopDetector(QWidget): #SRW
         # self.height
         self.width = 100
         self.totpixhits = 0
-        self.total_hits = 0 
+        self.total_hits = 0
         self.single_index = None
         self.noise_index = None
         self.coincidence_index = None
@@ -45,16 +45,16 @@ class TopDetector(QWidget): #SRW
         self.r1layout = QHBoxLayout()
         self.r2layout = QHBoxLayout()
 
-        self.button_load = QPushButton('LoadData')
+        self.button_load = QPushButton("LoadData")
         self.button_load.clicked.connect(self.loaddata)
 
         # Creating dropdown menu to select event type
         self.label_eventType = QLabel("Event Type")
         self.label_eventType.setFixedWidth(60)
-        self.sel_eventType = QComboBox() 
-        self.sel_eventType.addItems([str('trigger'), str('single'), str('coincidence'), str('pulser'), str('noise')]) #These are the only event types nabpy can take as an argument  
+        self.sel_eventType = QComboBox()
+        self.sel_eventType.addItems([str('trigger'), str('single'), str('coincidence'), str('pulser'), str('noise')]) #These are the only event types nabpy can take as an argument
         self.sel_eventType.currentIndexChanged.connect(self.selecteventType)
-        self.eventType = 'single'
+        self.eventType = "single"
 
         # Creating conditionals dropdown menu for energy histogram
         # self.label_conditional = QLabel("Conditionals")
@@ -90,23 +90,23 @@ class TopDetector(QWidget): #SRW
         self.multiple = False
 
         self.label_Energy = QLabel("Energy Cuts")
-        self.value_MinenergyCut= QLineEdit('min')
-        self.value_MaxenergyCut = QLineEdit('max')
+        self.value_MinenergyCut = QLineEdit('min')
+        self.value_MaxenergyCut = QLineEdit("max")
 
         # self.label_Pixel = QLabel("Pixel Cuts")
         # self.value_pixelCut =QLineEdit(str(self.pixelCut))
 
-        self.button_freerun = QPushButton('FreeRun')
+        self.button_freerun = QPushButton("FreeRun")
         self.button_freerun.setCheckable(True)
         self.button_freerun.clicked.connect(self.runfreerun)
 
-        self.button_previousevt = QPushButton('Back') #SRW
-        self.button_previousevt.clicked.connect(self.showpreviousevent) #SRW
+        self.button_previousevt = QPushButton("Back")  # SRW
+        self.button_previousevt.clicked.connect(self.showpreviousevent)  # SRW
 
-        self.button_nextevt = QPushButton('Next')
+        self.button_nextevt = QPushButton("Next")
         self.button_nextevt.clicked.connect(self.shownextevent)
 
-        self.button_norm = QPushButton('logpixhit')
+        self.button_norm = QPushButton("logpixhit")
         self.button_norm.setCheckable(True)
         self.button_norm.clicked.connect(self.selectnormalization)
 
@@ -435,6 +435,8 @@ class TopDetector(QWidget): #SRW
         if self.chan == 0:
             self.chan = 27182
         self.counts_pro, self.edges_pro, self.counts_ele, self.edges_ele  = self.data.getenergyhistogram(bins = 200,channel=self.chan)
+        if self.eventType == 'coincidence':
+            self.counts_pro, self.edges_pro, self.counts_ele, self.edges_ele  = self.data.getenergyhistogram_coin(bins = 200,channel=self.chan)
         # self.p2.setData(self.edges_ele, self.counts_ele)
         # self.p2.setData(self.edges_ele, self.counts_ele)
          

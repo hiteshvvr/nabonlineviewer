@@ -10,6 +10,10 @@ import os
 deltaRicePath= "/home/nabreplay/software/deltarice/build/lib.linux-x86_64-3.10"
 nabPath = "/home/nabreplay/software/pyNab/src"
 
+#nabPath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/pyNab/src"
+#deltaRicePath = "/Users/seeker/TNwork/nabonlineanalysis/nabpyinstallations/deltarice/build/lib.macosx-11.0-arm64-cpython-312/"
+
+
 sys.path.append(deltaRicePath)
 sys.path.append(nabPath)
 
@@ -38,20 +42,25 @@ class MData:
     def reset_containers(self):
 
         self.coinEventdf = pd.DataFrame()
+        
+        self.times = {
+            "runtime": 0,
+            "subruntime": 0
+        }
 
         self.runstats = {
-            "Trigger": 7,
-            "Single": 3,
-            "Coincidence": 2,
-            "Pulser": 1,
-            "Noise": 1,
+            "Trigger": 0,
+            "Single": 0,
+            "Coincidence": 0,
+            "Pulser": 0,
+            "Noise": 0,
         }
         self.subrunstats = {
-            "Trigger": 7,
-            "Single": 3,
-            "Coincidence": 2,
-            "Pulser": 1,
-            "Noise": 1,
+            "Trigger": 0,
+            "Single": 0,
+            "Coincidence": 0,
+            "Pulser": 0,
+            "Noise": 0,
         }
 
         self.subrundata = {
@@ -208,6 +217,10 @@ class MData:
 
         self.subrunstats["Pulser"] = self._thisRun.pulsrWaves().numWaves
         self.runstats["Pulser"] = self.runstats["Pulser"] + self.subrunstats["Pulser"]
+        
+        temp_tstamps = self._thisRun.triggers().triggers().timestamp.to_numpy()
+        self.times['subruntime'] = (temp_tstamps[-1] - temp_tstamps[0])*4/1e9
+        self.times['runtime'] = self.times['runtime'] + self.times['subruntime']
 
         # return(self.strTrig, self.strSingles, self.strCoincs, self.strNoise, self.strPulse)
         # print(type(self.strTrig))
@@ -230,9 +243,13 @@ class MData:
         # pLabels = [f'{i}\n{j}' for i,j in zip(np.arange(1,128),preampLabels)] # Otherwise, it will default to pixel number and preamp channel.
         # pLabels = [f'{i}\n{j}' for i,j in zip(np.arange(1,128),preampLabels)] # Otherwise, it will default to pixel number and preamp channel.
         # scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=self.customcmap)
-        pLabels = [
-            f"{i}\n{j}" for i, j in zip(np.arange(1, 128), pixdata)
-        ]  # Add the values to the labels
+        # pLabels = [
+        #     f"{i}\n{j}" for i, j in zip(np.arange(1, 128), np.ones(128))
+        # ]  
+        
+        pLabels = [ f"{i}" for i in np.arange(1, 128)]
+        
+        # Add the values to the labels
         detfig.setPixelLabels(aaxis, pLabels)
         afig.set_tight_layout(tight=True)
         aaxis.set_axis_off()
@@ -348,6 +365,33 @@ class MData:
 
     # *******************Attempt 2 extracting energies*********************
     ##Generating a list of all energies for each event
+
+    def getenergyhistogram_coin(self, bins=10, channel=27182):
+        # self.coinEventdf
+        self.bins = bins
+        energy_tmp = self.coinEventdf.query("ppix < 1000 and 20 < pener < 80").pener.to_numpy()
+        print("aa", len(energy_tmp))
+        energy_tmp = self.coinEventdf.query("ppix == @channel").pener.to_numpy()
+        if channel == 27182:
+            energy_tmp = self.coinEventdf.query("ppix < 1000").pener.to_numpy()
+        if channel == 31415:
+            energy_tmp = self.coinEventdf.query("ppix > 1000").pener.to_numpy()
+        self.counts_pro, self.bins_pro = np.histogram(energy_tmp, self.bins)
+        
+        energy_tmp = self.coinEventdf.query("epix == @channel").eener.to_numpy()
+        if channel == 27182:
+            energy_tmp = self.coinEventdf.query("epix < 1000").eener.to_numpy()
+        if channel == 31415:
+            energy_tmp = self.coinEventdf.query("epix > 1000").eener.to_numpy()
+        self.counts_ele, self.bins_ele = np.histogram(self.energy_tmp, self.bins)
+
+        return (
+            self.counts_pro,
+            self.bins_pro,
+            self.counts_ele,
+            self.bins_ele,
+        )  
+
     def getenergyhistogram(self, bins=10, channel=27182):
         self.bins = bins
         self.trigs = self._thisRun.triggers().triggers()
@@ -365,6 +409,9 @@ class MData:
         # print(self.energy)
         self.energy_tmp = self.energy[self.energy<200]
         self.counts_pro, self.bins_pro = np.histogram(self.energy_tmp, self.bins)
+        self.energy_tmp = self.energy_tmp[20<self.energy_tmp]
+        print(len(self.energy_tmp[self.energy_tmp<80]))
+        
         self.energy_tmp = self.energy[self.energy>100]
         self.energy_tmp = self.energy_tmp[self.energy_tmp<10000]
         self.counts_ele, self.bins_ele = np.histogram(self.energy_tmp, self.bins)

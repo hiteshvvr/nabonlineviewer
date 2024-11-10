@@ -52,15 +52,7 @@ class BottomDetector(QWidget):  # SRW
         self.label_eventType = QLabel("Event Type")
         self.label_eventType.setFixedWidth(60)
         self.sel_eventType = QComboBox()
-        self.sel_eventType.addItems(
-            [
-                str("trigger"),
-                str("single"),
-                str("coincidence"),
-                str("pulser"),
-                str("noise"),
-            ]
-        )  # These are the only event types nabpy can take as an argument
+        self.sel_eventType.addItems( [ str("trigger"), str("single"), str("coincidence"), str("pulser"), str("noise")]) #These are the only event types nabpy can take as an argument
         self.sel_eventType.currentIndexChanged.connect(self.selecteventType)
         self.eventType = "single"
 
@@ -76,18 +68,14 @@ class BottomDetector(QWidget):  # SRW
         self.label_channo = QLabel("Channel")
         self.label_channo.setFixedWidth(60)
         self.sel_channo = QComboBox()
-        self.sel_channo.addItems(
-            [str(i) for i in np.arange(127)]
-        )  # Channels in bottom detector. Though pixels are labelled from 127-256, here we label them from 1-127
+        self.sel_channo.addItems( [str(i) for i in np.arange(127)])  # Channels in bottom detector. Though pixels are labelled from 127-256, here we label them from 1-127
         self.sel_channo.currentIndexChanged.connect(self.selectchannel)
         self.chan = 0
 
         self.minEnergy = -np.inf
         self.maxEnergy = np.inf
-        self.button_loadEnergyCuts = QPushButton("LoadEnergyCuts")
-        self.button_loadEnergyCuts.clicked.connect(
-            self.updateEnergyCutPlot
-        )  # Should I use loaddata or define new fucntion specifically for the cuts?
+        self.button_loadEnergyCuts = QPushButton('LoadEnergyCuts')
+        self.button_loadEnergyCuts.clicked.connect( self.updateEnergyCutPlot)  # Should I use loaddata or define new fucntion specifically for the cuts?
         # self.button_loadPixelCuts = QPushButton('LoadPixelCuts')
         # self.button_loadPixelCuts.clicked.connect(self.updatePixelCut)
 
@@ -97,12 +85,12 @@ class BottomDetector(QWidget):  # SRW
         self.totevnt = 0
         self.totarea = 0
         self.tbinwidth = 320e-6
-        self.evtsig = 0xAA55F154
+        self.evtsig = 0xaa55f154
         self.norm = None
         self.multiple = False
 
         self.label_Energy = QLabel("Energy Cuts")
-        self.value_MinenergyCut = QLineEdit("min")
+        self.value_MinenergyCut = QLineEdit('min')
         self.value_MaxenergyCut = QLineEdit("max")
 
         # self.label_Pixel = QLabel("Pixel Cuts")
@@ -153,9 +141,7 @@ class BottomDetector(QWidget):  # SRW
         # self.inlayout.addWidget(self.field_foldname)
         # self.inlayout.addWidget(self.field_runno)
         self.inlayout.addWidget(self.button_load)
-        self.inlayout.addWidget(
-            self.sel_eventType
-        )  # Dropdown menu that allows user to select the event type
+        self.inlayout.addWidget( self.sel_eventType)  # Dropdown menu that allows user to select the event type
         # self.inlayout.addWidget(self.sel_conditional) #Dropdown menu that allows user to select a conditional symbol
         self.inlayout.addWidget(self.sel_channo)
 
@@ -210,63 +196,34 @@ class BottomDetector(QWidget):  # SRW
 
         # ******************** Generate PixHit Plots   **********************
         self.size = 2
-        self.pixel_plot_widget1 = MatplotlibWidget(
-            (7.5 * self.size, 3.5 * self.size), dpi=100
-        )
+        self.pixel_plot_widget1 = MatplotlibWidget( (7.5 * self.size, 3.5 * self.size), dpi=100)
         self.pixel_plot_widget1.vbox.removeWidget(self.pixel_plot_widget1.toolbar)
         self.pixel_plot_widget1.toolbar.setVisible(False)
 
         self.size = 2
-        self.multipleSignalsPlot = MatplotlibWidget(
-            (5.5 * self.size, 3.5 * self.size), dpi=100
-        )
+        self.multipleSignalsPlot = MatplotlibWidget( (5.5 * self.size, 3.5 * self.size), dpi=100)
         # self.multipleSignalsPlot.vbox.removeWidget(self.multipleSignalsPlot.toolbar)
         # self.multipleSignalsPlot.toolbar.setVisible(False)
         self.multipleSignalsFig = self.multipleSignalsPlot.getFigure()
         self.multipleSignalsAxis = self.multipleSignalsFig.add_subplot(111)
 
-        self.pulseimg, self.xbin, self.ybin = np.histogram2d(
-            np.random.random(100), np.random.random(100), bins=[20, 20]
-        )
+        self.pulseimg, self.xbin, self.ybin = np.histogram2d( np.random.random(100), np.random.random(100), bins=[20, 20])
         meshx, meshy = np.meshgrid(self.xbin, self.ybin)
         mappable = self.multipleSignalsAxis.pcolormesh(meshx, meshy, self.pulseimg)
-        self.multipleSignalsFig.colorbar(
-            mappable, ax=self.multipleSignalsAxis, pad=0.01
-        )
+        self.multipleSignalsFig.colorbar( mappable, ax=self.multipleSignalsAxis, pad=0.01)
         self.multipleSignalsFig.tight_layout()
         self.multipleSignalsPlot.draw()
 
         self.getnewfig()
 
         # randompixhist = 1 * np.random.random(127)        # Random pix hit without loading data
-        randompixhist = 1 * np.random.randint(
-            100, size=127
-        )  # Random pix hit without loading data
+        randompixhist = 1 * np.random.randint( 100, size=127)  # Random pix hit without loading data
         # self.customcmap = self.getmycmap(basemap='plasma') # To get better colormaps that in nabpy
-        self.customcmap = self.getmycmap(
-            basemap="cividis"
-        )  # To get better colormaps that in nabpy
-        self.pixel_plot_figure1, self.pixel_plot_runaxis, self.clbar1 = (
-            self.data.updatepixplot(
-                randompixhist,
-                self.pixel_plot_figure1,
-                self.pixel_plot_runaxis,
-                self.clbar,
-                self.norm,
-                self.customcmap,
-            )
-        )
+        self.customcmap = self.getmycmap( basemap="cividis")  # To get better colormaps that in nabpy
+        self.pixel_plot_figure1, self.pixel_plot_runaxis, self.clbar1 = ( self.data.updatepixplot( randompixhist, self.pixel_plot_figure1, self.pixel_plot_runaxis, self.clbar, self.norm, self.customcmap,))
 
-        randompixhist = 1 * np.random.randint(
-            100, size=127
-        )  # Random pix hit without loading data
-        self.pixel_plot_figure2, self.pixel_plot_subrunaxis, self.clbar2 = (
-            self.data.updatepixplot(
-                randompixhist,
-                self.pixel_plot_figure1,
-                self.pixel_plot_subrunaxis,
-                self.clbar,
-                self.norm,
+        randompixhist = 1 * np.random.randint( 100, size=127)  # Random pix hit without loading data
+        self.pixel_plot_figure2, self.pixel_plot_subrunaxis, self.clbar2 = ( self.data.updatepixplot( randompixhist, self.pixel_plot_figure1, self.pixel_plot_subrunaxis, self.clbar, self.norm,
                 self.customcmap,
             )
         )
@@ -501,9 +458,10 @@ class BottomDetector(QWidget):  # SRW
     def updateenergyhistogram(self):
         if self.chan == self.pixOffset:
             self.chan = 31415
-        self.counts_pro, self.edges_pro, self.counts_ele, self.edges_ele = (
-            self.data.getenergyhistogram(bins=200, channel=self.chan)
-        )
+        self.counts_pro, self.edges_pro, self.counts_ele, self.edges_ele = ( self.data.getenergyhistogram(bins=200, channel=self.chan))
+        if self.eventType == 'coincidence':
+            self.counts_pro, self.edges_pro, self.counts_ele, self.edges_ele = ( self.data.getenergyhistogram_coin(bins=200, channel=self.chan))
+
         # self.p2.setData(self.edges_ele, self.counts_ele)
         # self.p2.setData(self.edges_ele, self.counts_ele)
 
